@@ -3,7 +3,7 @@ Export Routes — Generate Excel exports of payment data with filter support.
 """
 import io
 from datetime import datetime
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from backend.auth import get_current_user
 from backend.database import get_db
@@ -19,7 +19,11 @@ def export_payments_excel(
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """Export filtered payments to an Excel (.xlsx) file."""
+    """Export filtered payments to an Excel (.xlsx) file. Admin only."""
+    # Admin-only guard
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Export is restricted to administrators")
+
     import json
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side

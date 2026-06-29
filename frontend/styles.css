@@ -2033,8 +2033,12 @@ h4 {
 /* === Upload Options Grid (3-card layout) === */
 .upload-options-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-md);
+}
+
+#error-popup-modal {
+    z-index: 20000;
 }
 
 .upload-option-card {
@@ -3740,4 +3744,433 @@ h4 {
 .payments-filters .btn-export {
     margin-left: auto;
     white-space: nowrap;
+}
+
+/* ============================================
+   Manual Upload — Full Screen Overlay
+   ============================================ */
+.manual-upload-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: var(--color-bg);
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.manual-upload-overlay.open {
+    display: flex;
+    opacity: 1;
+}
+
+.manual-upload-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.manual-upload-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.manual-upload-header h2 svg {
+    width: 22px;
+    height: 22px;
+    color: var(--color-accent);
+}
+
+.manual-upload-close {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.manual-upload-close:hover {
+    background: var(--color-danger-light);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.manual-upload-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px 120px;
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.manual-upload-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+    z-index: 10001;
+}
+
+/* Manual Upload Form Sections */
+.manual-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.manual-section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border-light);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.manual-section-title .section-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.manual-section-title .section-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.manual-section-title .section-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.manual-section-title .section-icon.green { background: rgba(5,150,105,0.1); color: #059669; }
+.manual-section-title .section-icon.amber { background: rgba(217,119,6,0.1); color: #d97706; }
+.manual-section-title .section-icon.purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.manual-section-title .section-icon.teal { background: rgba(20,184,166,0.1); color: #14b8a6; }
+.manual-section-title .section-icon.red { background: rgba(220,38,38,0.1); color: #dc2626; }
+.manual-section-title .section-icon.orange { background: rgba(232,160,37,0.1); color: #E8A025; }
+
+.manual-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.manual-form-grid .form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Required field indicator */
+.manual-section label .required {
+    color: var(--color-danger);
+    margin-left: 2px;
+    font-weight: 600;
+}
+
+/* Dynamic Table in Manual Upload */
+.manual-dynamic-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.manual-dynamic-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--color-border);
+    background: var(--color-bg);
+}
+
+.manual-dynamic-table td {
+    padding: 6px 6px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.manual-dynamic-table .form-input {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    min-width: 80px;
+}
+
+.manual-dynamic-table select.form-input {
+    min-width: 100px;
+}
+
+.manual-dynamic-table input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.manual-dynamic-table input[type="number"]::-webkit-inner-spin-button,
+.manual-dynamic-table input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.btn-remove-row {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.btn-remove-row:hover {
+    background: var(--color-danger-light);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.btn-add-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-family: var(--font-primary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all var(--transition-fast);
+}
+
+.btn-add-row:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--color-accent-light);
+}
+
+.btn-add-row svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* File Upload Zone in Manual Form */
+.manual-file-zone {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--color-bg);
+}
+
+.manual-file-zone:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+}
+
+.manual-file-zone.has-file {
+    border-color: var(--color-success);
+    background: var(--color-success-light);
+    border-style: solid;
+}
+
+.manual-file-zone svg {
+    width: 32px;
+    height: 32px;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+}
+
+.manual-file-zone.has-file svg {
+    color: var(--color-success);
+}
+
+.manual-file-zone p {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+.manual-file-zone .file-name {
+    font-weight: 600;
+    color: var(--color-success);
+    font-size: 0.88rem;
+}
+
+.manual-file-zone .file-hint {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+}
+
+/* Cancel Warning Modal (layered on top of manual upload) */
+.cancel-warning-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.cancel-warning-overlay.open {
+    display: flex;
+}
+
+.cancel-warning-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    animation: cancelWarnIn 0.2s ease-out;
+}
+
+@keyframes cancelWarnIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.cancel-warning-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--color-warning-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.cancel-warning-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--color-warning);
+}
+
+.cancel-warning-modal h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+}
+
+.cancel-warning-modal p {
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.cancel-warning-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Note Section Display */
+.note-section {
+    background: var(--color-warning-light);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-top: 4px;
+}
+
+.note-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-warning);
+}
+
+.note-section-header svg {
+    width: 16px;
+    height: 16px;
+}
+
+.note-section-content {
+    font-size: 0.88rem;
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* Manual badge for cards */
+.badge-manual {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    border-radius: 6px;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    letter-spacing: 0.02em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .manual-upload-header {
+        padding: 12px 16px;
+    }
+    .manual-upload-body {
+        padding: 16px 16px 120px;
+    }
+    .manual-upload-footer {
+        padding: 12px 16px;
+    }
+    .manual-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .manual-section {
+        padding: 16px;
+    }
+    .manual-dynamic-table {
+        font-size: 0.78rem;
+    }
 }

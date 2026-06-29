@@ -205,6 +205,9 @@ def init_db():
         ("jurisdiction", "TEXT"),
         # Services
         ("services", "TEXT"),
+        # Manual Upload Support
+        ("note", "TEXT"),
+        ("upload_type", "TEXT DEFAULT 'automatic'"),
     ]
 
     for col_name, col_type in new_columns:

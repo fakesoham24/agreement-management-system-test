@@ -4,7 +4,7 @@ import re
 import gc
 import shutil
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Form, status
 from fastapi.responses import FileResponse as FastFileResponse
 from pydantic import BaseModel, validator
 from typing import Optional
@@ -52,6 +52,8 @@ class AnalysisUpdate(BaseModel):
     jurisdiction: Optional[str] = None
     # Services
     services: Optional[str] = None
+    # Note (manual upload explanation)
+    note: Optional[str] = None
 
     @validator('priority_level', pre=True, always=False)
     def validate_priority(cls, v):
@@ -103,6 +105,8 @@ ANALYSIS_COLUMNS = [
     "nda_included", "non_solicitation", "non_compete", "confidentiality_clause",
     "data_protection_clause", "arbitration_clause", "jurisdiction",
     "services",
+    "note",
+    "upload_type",
 ]
 
 
@@ -311,6 +315,208 @@ async def upload_agreement(
         if "GROQ_API_KEY" in error_msg:
             raise HTTPException(status_code=500, detail="AI service not configured. Please set your GROQ_API_KEY.")
         raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
+
+
+@router.post("/manual")
+async def manual_upload_agreement(
+    file: UploadFile = File(...),
+    analysis_data: str = Form(...),
+    current_user: dict = Depends(get_current_user),
+    db=Depends(get_db)
+):
+    """Manual agreement upload — file stored but not AI-processed. All fields provided by user."""
+    # Validate file extension
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only PDF and DOCX files are allowed")
+
+    # Parse analysis data JSON
+    try:
+        data = json.loads(analysis_data)
+    except (json.JSONDecodeError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid analysis data format")
+
+    # === Manual upload validation ===
+    missing = []
+    if not (data.get("company_name") or "").strip():
+        missing.append("Company Name")
+    if not (data.get("consulting_start_date") or "").strip():
+        missing.append("Consulting Start Date")
+    if not (data.get("consulting_end_date") or "").strip():
+        missing.append("Consulting End Date")
+
+    # Validate dates
+    start_date_str = (data.get("consulting_start_date") or "").strip()
+    end_date_str = (data.get("consulting_end_date") or "").strip()
+    if start_date_str and end_date_str:
+        try:
+            s_dt = datetime.strptime(start_date_str, "%Y-%m-%d")
+            e_dt = datetime.strptime(end_date_str, "%Y-%m-%d")
+            if e_dt <= s_dt:
+                missing.append("Consulting End Date must be after Start Date")
+        except ValueError:
+            missing.append("Invalid date format (use YYYY-MM-DD)")
+
+    # Payment plans — at least 1 with amount > 0 and due_date
+    plans_raw = data.get("payment_plans", "[]")
+    try:
+        plans = json.loads(plans_raw) if isinstance(plans_raw, str) else plans_raw
+    except (json.JSONDecodeError, TypeError):
+        plans = []
+    valid_plans = [p for p in (plans or []) if isinstance(p, dict) and (p.get("amount") or 0) > 0 and (p.get("due_date") or "").strip()]
+    if not valid_plans:
+        missing.append("Payment Structure (at least 1 plan with Amount and Due Date)")
+
+    # Consulting visits — at least 1 entry
+    visits_raw = data.get("consulting_visits", "[]")
+    try:
+        visits = json.loads(visits_raw) if isinstance(visits_raw, str) else visits_raw
+    except (json.JSONDecodeError, TypeError):
+        visits = []
+    valid_visits = [v for v in (visits or []) if isinstance(v, dict) and (v.get("role") or "").strip()]
+    if not valid_visits:
+        missing.append("Consulting Visit Schedule (at least 1 entry)")
+
+    # Services — at least 1 entry
+    services_raw = data.get("services", "[]")
+    try:
+        services = json.loads(services_raw) if isinstance(services_raw, str) else services_raw
+    except (json.JSONDecodeError, TypeError):
+        services = []
+    valid_services = [s for s in (services or []) if isinstance(s, dict) and (s.get("service_name") or "").strip()]
+    if not valid_services:
+        missing.append("Services Provided (at least 1 service)")
+
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Missing required fields: {', '.join(missing)}"
+        )
+
+    # Read and validate file size
+    max_size = MAX_SCANNED_FILE_SIZE  # Use larger limit
+    max_mb = max_size // (1024 * 1024)
+
+    # Create user upload directory
+    user_dir = os.path.join(UPLOAD_DIR, f"user_{current_user['id']}")
+    os.makedirs(user_dir, exist_ok=True)
+
+    # Generate unique filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_name = "".join(c for c in file.filename if c.isalnum() or c in '._- ').strip()
+    stored_name = f"{timestamp}_{safe_name}"
+    file_path = os.path.join(user_dir, stored_name)
+
+    # Stream file to disk
+    file_size = 0
+    try:
+        with open(file_path, "wb") as f:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                file_size += len(chunk)
+                if file_size > max_size:
+                    break
+                f.write(chunk)
+    except Exception:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(status_code=500, detail="Failed to save uploaded file")
+
+    if file_size > max_size:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(status_code=400, detail=f"File size exceeds {max_mb}MB limit")
+
+    if file_size == 0:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(status_code=400, detail="File is empty")
+
+    cursor = db.cursor()
+
+    try:
+        # Insert agreement record
+        cursor.execute(
+            "INSERT INTO agreements (user_id, file_name, file_path, file_type, file_size) VALUES (?, ?, ?, ?, ?)",
+            (current_user["id"], file.filename, file_path, ext, file_size)
+        )
+        db.commit()
+        agreement_id = cursor.lastrowid
+
+        # Build analysis dict from user-provided data
+        analysis = {}
+        for col in ANALYSIS_COLUMNS:
+            if col == "upload_type":
+                analysis[col] = "manual"
+            elif col in ("payment_plans", "consulting_visits", "services"):
+                val = data.get(col, "[]")
+                if isinstance(val, list):
+                    val = json.dumps(val)
+                analysis[col] = val
+            else:
+                analysis[col] = data.get(col)
+
+        # Validate and normalize payment plans
+        from backend.ai_service import _validate_payment_plans, _sort_plans_by_due_date
+        try:
+            pp = json.loads(analysis.get("payment_plans", "[]"))
+            if isinstance(pp, list):
+                pp = _validate_payment_plans(pp)
+                pp = _sort_plans_by_due_date(pp)
+                analysis["payment_plans"] = json.dumps(pp)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # Insert analysis
+        columns = ["agreement_id", "raw_text"] + ANALYSIS_COLUMNS
+        placeholders = ", ".join(["?"] * len(columns))
+        col_names = ", ".join(columns)
+
+        values = [agreement_id, ""]
+        for col in ANALYSIS_COLUMNS:
+            values.append(analysis.get(col))
+
+        cursor.execute(
+            f"INSERT INTO agreement_analysis ({col_names}) VALUES ({placeholders})",
+            values
+        )
+        db.commit()
+
+        # Update agreement status based on dates
+        end_date = data.get("expiry_date") or data.get("consulting_end_date")
+        if end_date:
+            try:
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+                if end_dt < datetime.now():
+                    cursor.execute("UPDATE agreements SET status = 'expired' WHERE id = ?", (agreement_id,))
+                else:
+                    cursor.execute("UPDATE agreements SET status = 'active' WHERE id = ?", (agreement_id,))
+                db.commit()
+            except ValueError:
+                pass
+
+        # Generate payment records
+        _generate_payments_from_plans(cursor, db, agreement_id, analysis)
+
+        # Generate notifications
+        _generate_notifications(cursor, db, current_user["id"], agreement_id, analysis)
+
+        return {
+            "message": "Agreement uploaded successfully (manual entry)",
+            "agreement_id": agreement_id
+        }
+
+    except HTTPException:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise
+    except Exception as e:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
 
 
 def _generate_payments_from_plans(cursor, db, agreement_id, analysis):

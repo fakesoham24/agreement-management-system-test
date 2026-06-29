@@ -126,7 +126,7 @@
 
     <!-- Upload Modal -->
     <div class="modal-overlay" id="upload-modal">
-        <div class="modal" style="max-width:700px">
+        <div class="modal" style="max-width:850px">
             <h3 class="modal-title">Upload Agreement</h3>
             <div class="modal-body">
                 <div class="upload-options-grid">
@@ -169,6 +169,19 @@
                             Upload
                         </button>
                     </div>
+                    <!-- Manual Entry -->
+                    <div class="upload-option-card">
+                        <div class="upload-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </div>
+                        <h4>Manual Entry</h4>
+                        <p>Fill all agreement details manually</p>
+                        <span class="size-limit">File required, no AI</span>
+                        <button class="upload-option-btn" onclick="openManualUpload()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Manual
+                        </button>
+                    </div>
                 </div>
                 <div id="upload-progress" style="margin-top:16px;display:none">
                     <div style="display:flex;align-items:center;gap:8px">
@@ -203,6 +216,211 @@
             <p class="error-popup-message" id="error-popup-message"></p>
             <div class="error-popup-actions">
                 <button class="btn btn-primary" onclick="closeErrorPopup()">OK, Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Upload Full Screen Overlay -->
+    <div class="manual-upload-overlay" id="manual-upload-modal">
+        <div class="manual-upload-header">
+            <h2>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Manual Agreement Entry
+            </h2>
+            <button class="manual-upload-close" onclick="cancelManualUpload()" title="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="manual-upload-body">
+
+            <!-- Section: File Upload -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                    Upload Agreement File <span class="required">*</span>
+                </div>
+                <div class="manual-file-zone" id="manual-file-zone" onclick="document.getElementById('manual-file-input').click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p id="manual-file-text">Click to select PDF or DOCX file</p>
+                    <p class="file-hint">PDF or Word Document — Max 100 MB</p>
+                </div>
+                <input type="file" id="manual-file-input" accept=".pdf,.docx" style="display:none" onchange="onManualFileSelect(this)">
+            </div>
+
+            <!-- Section: Agreement Overview -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></div>
+                    Agreement Overview
+                </div>
+                <div class="manual-form-grid">
+                    <div class="form-group"><label>Company Name <span class="required">*</span></label><input type="text" class="form-input" id="m-company-name" placeholder="Enter company name"></div>
+                    <div class="form-group"><label>Agreement Title</label><input type="text" class="form-input" id="m-agreement-title" placeholder="Agreement title"></div>
+                    <div class="form-group"><label>Contact Person</label><input type="text" class="form-input" id="m-contact-person" placeholder="Primary contact"></div>
+                    <div class="form-group"><label>Agreement Date</label><input type="date" class="form-input" id="m-agreement-date"></div>
+                    <div class="form-group"><label>Effective Date</label><input type="date" class="form-input" id="m-effective-date"></div>
+                    <div class="form-group"><label>Expiry Date</label><input type="date" class="form-input" id="m-expiry-date"></div>
+                    <div class="form-group"><label>Priority Level</label>
+                        <select class="form-input" id="m-priority-level"><option value="Casual">Casual</option><option value="High">High</option></select>
+                    </div>
+                    <div class="form-group"><label>Auto Renewal</label>
+                        <select class="form-input" id="m-auto-renewal"><option value="No">No</option><option value="Yes">Yes</option></select>
+                    </div>
+                    <div class="form-group"><label>Currency</label>
+                        <select class="form-input" id="m-currency"><option value="₹">₹ Indian Rupee</option><option value="$">$ US Dollar</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Company Information -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/></svg></div>
+                    Company Information
+                </div>
+                <div class="manual-form-grid">
+                    <div class="form-group"><label>Email</label><input type="email" class="form-input" id="m-email" placeholder="company@example.com"></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" class="form-input" id="m-phone" placeholder="Phone number"></div>
+                    <div class="form-group"><label>Alternate Contact</label><input type="tel" class="form-input" id="m-alt-contact" placeholder="Alternate phone"></div>
+                </div>
+            </div>
+
+            <!-- Section: Timeline Dates -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                    Timeline Dates
+                </div>
+                <div class="manual-form-grid">
+                    <div class="form-group"><label>Consulting Start Date <span class="required">*</span></label><input type="date" class="form-input" id="m-start-date"></div>
+                    <div class="form-group"><label>Consulting End Date <span class="required">*</span></label><input type="date" class="form-input" id="m-end-date"></div>
+                    <div class="form-group"><label>Active Date</label><input type="date" class="form-input" id="m-active-date"></div>
+                    <div class="form-group"><label>Renewal Due Date</label><input type="date" class="form-input" id="m-renewal-due-date"></div>
+                </div>
+            </div>
+
+            <!-- Section: Payment Structure -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                    Payment Structure <span class="required">*</span>
+                </div>
+                <div style="overflow-x:auto">
+                    <table class="manual-dynamic-table" id="m-payment-table">
+                        <thead>
+                            <tr>
+                                <th>Plan Name</th>
+                                <th>Amount <span class="required">*</span></th>
+                                <th>GST (18%)</th>
+                                <th>TDS (10%)</th>
+                                <th>Net</th>
+                                <th>Due Date <span class="required">*</span></th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="m-payment-tbody"></tbody>
+                    </table>
+                </div>
+                <button class="btn-add-row" onclick="addManualPaymentRow()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Payment Plan
+                </button>
+            </div>
+
+            <!-- Section: Note -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></div>
+                    Note <span style="font-weight:400;font-size:0.82rem;color:var(--color-text-muted);margin-left:4px">(Optional — explain payment structure)</span>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                    <textarea class="form-input" id="m-note" rows="3" placeholder="Explain any special payment structures, odd schedules, or other notes..." style="resize:vertical;min-height:80px"></textarea>
+                </div>
+            </div>
+
+            <!-- Section: Consulting Visit Schedule -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+                    Consulting Visit Schedule <span class="required">*</span>
+                </div>
+                <table class="manual-dynamic-table" id="m-visit-table">
+                    <thead>
+                        <tr>
+                            <th>Consulting Team / Role <span class="required">*</span></th>
+                            <th>Total Number of Visits <span class="required">*</span></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="m-visit-tbody"></tbody>
+                </table>
+                <button class="btn-add-row" onclick="addManualVisitRow()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Visit Entry
+                </button>
+            </div>
+
+            <!-- Section: Services Provided -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+                    Services Provided <span class="required">*</span>
+                </div>
+                <table class="manual-dynamic-table" id="m-service-table">
+                    <thead>
+                        <tr>
+                            <th>Service Name <span class="required">*</span></th>
+                            <th>Description</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="m-service-tbody"></tbody>
+                </table>
+                <button class="btn-add-row" onclick="addManualServiceRow()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Service
+                </button>
+            </div>
+
+            <!-- Section: Legal Clauses -->
+            <div class="manual-section">
+                <div class="manual-section-title">
+                    <div class="section-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    Legal Clauses
+                </div>
+                <div class="manual-form-grid">
+                    <div class="form-group"><label>NDA Included</label><select class="form-input" id="m-nda"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
+                    <div class="form-group"><label>Non-Solicitation</label><select class="form-input" id="m-non-solicitation"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
+                    <div class="form-group"><label>Non-Compete</label><select class="form-input" id="m-non-compete"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
+                    <div class="form-group"><label>Confidentiality Clause</label><select class="form-input" id="m-confidentiality"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
+                    <div class="form-group"><label>Data Protection Clause</label><select class="form-input" id="m-data-protection"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
+                    <div class="form-group"><label>Arbitration Clause</label><input type="text" class="form-input" id="m-arbitration" placeholder="e.g. Included, Not Mentioned"></div>
+                    <div class="form-group"><label>Jurisdiction</label><input type="text" class="form-input" id="m-jurisdiction" placeholder="e.g. Ahmedabad, Gujarat"></div>
+                </div>
+            </div>
+
+        </div>
+        <div class="manual-upload-footer">
+            <button class="btn btn-secondary" onclick="cancelManualUpload()">Cancel</button>
+            <button class="btn btn-primary" id="manual-submit-btn" onclick="submitManualUpload()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Agreement
+            </button>
+        </div>
+    </div>
+
+    <!-- Cancel Warning Dialog -->
+    <div class="cancel-warning-overlay" id="cancel-warning-modal">
+        <div class="cancel-warning-modal">
+            <div class="cancel-warning-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3>Cancel Template?</h3>
+            <p>Cancel the template means do not make template. Are you sure you want to cancel?</p>
+            <div class="cancel-warning-actions">
+                <button class="btn btn-secondary" onclick="closeCancelWarning()">Go Back</button>
+                <button class="btn btn-primary" style="background:var(--color-danger);border-color:var(--color-danger)" onclick="confirmCancelManual()">Yes, Cancel</button>
             </div>
         </div>
     </div>
@@ -450,6 +668,321 @@
             });
 
             input.click();
+        }
+
+        // ========================================
+        // Manual Upload — Full Screen Form
+        // ========================================
+        let manualFile = null;
+
+        function openManualUpload() {
+            closeUploadModal();
+            manualFile = null;
+            // Reset form fields
+            document.querySelectorAll('#manual-upload-modal .form-input').forEach(el => {
+                if (el.tagName === 'SELECT') {
+                    el.selectedIndex = 0;
+                } else {
+                    el.value = '';
+                }
+            });
+            // Reset file zone
+            const zone = document.getElementById('manual-file-zone');
+            zone.classList.remove('has-file');
+            zone.style.borderColor = '';
+            document.getElementById('manual-file-text').innerHTML = 'Click to select PDF or DOCX file';
+            document.getElementById('manual-file-input').value = '';
+            // Clear dynamic tables and add 1 default row each
+            document.getElementById('m-payment-tbody').innerHTML = '';
+            document.getElementById('m-visit-tbody').innerHTML = '';
+            document.getElementById('m-service-tbody').innerHTML = '';
+            addManualPaymentRow();
+            addManualVisitRow();
+            addManualServiceRow();
+            // Remove validation errors
+            document.querySelectorAll('#manual-upload-modal .input-error').forEach(el => el.classList.remove('input-error'));
+            // Open overlay
+            document.getElementById('manual-upload-modal').classList.add('open');
+            // Intercept back button
+            history.pushState({ manualUpload: true }, '');
+        }
+
+        function onManualFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['pdf', 'docx'].includes(ext)) {
+                showToast('Only PDF and DOCX files are allowed', 'warning');
+                input.value = '';
+                return;
+            }
+            if (file.size > 100 * 1024 * 1024) {
+                showToast('File exceeds 100MB limit', 'warning');
+                input.value = '';
+                return;
+            }
+            manualFile = file;
+            const zone = document.getElementById('manual-file-zone');
+            zone.classList.add('has-file');
+            zone.style.borderColor = '';
+            document.getElementById('manual-file-text').innerHTML = `<span class="file-name">${file.name}</span><br><span class="file-hint">${(file.size / 1024 / 1024).toFixed(2)} MB</span>`;
+        }
+
+        // Cancel flow with warning
+        function cancelManualUpload() {
+            document.getElementById('cancel-warning-modal').classList.add('open');
+        }
+
+        function closeCancelWarning() {
+            document.getElementById('cancel-warning-modal').classList.remove('open');
+        }
+
+        function confirmCancelManual() {
+            document.getElementById('cancel-warning-modal').classList.remove('open');
+            document.getElementById('manual-upload-modal').classList.remove('open');
+            manualFile = null;
+        }
+
+        // Back button interception
+        window.addEventListener('popstate', function(e) {
+            if (document.getElementById('manual-upload-modal').classList.contains('open')) {
+                e.preventDefault();
+                cancelManualUpload();
+            }
+        });
+
+        // Escape key interception
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('cancel-warning-modal').classList.contains('open')) {
+                    closeCancelWarning();
+                } else if (document.getElementById('manual-upload-modal').classList.contains('open')) {
+                    cancelManualUpload();
+                }
+            }
+        });
+
+        // Dynamic Payment Plan Rows
+        function addManualPaymentRow() {
+            const tbody = document.getElementById('m-payment-tbody');
+            const idx = tbody.children.length;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-input" placeholder="e.g. Q1 Payment" data-field="plan"></td>
+                <td><input type="number" class="form-input" placeholder="0" min="0" step="0.01" data-field="amount" onchange="calcPaymentRow(this)"></td>
+                <td><input type="number" class="form-input" placeholder="0" data-field="gst" readonly style="background:var(--color-bg)"></td>
+                <td><input type="number" class="form-input" placeholder="0" data-field="tds" readonly style="background:var(--color-bg)"></td>
+                <td><input type="number" class="form-input" placeholder="0" data-field="net" readonly style="background:var(--color-bg);font-weight:600"></td>
+                <td><input type="date" class="form-input" data-field="due_date"></td>
+                <td><select class="form-input" data-field="status"><option value="Pending">Pending</option><option value="Paid">Paid</option></select></td>
+                <td><button class="btn-remove-row" onclick="this.closest('tr').remove()" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function calcPaymentRow(amountInput) {
+            const tr = amountInput.closest('tr');
+            const amount = parseFloat(amountInput.value) || 0;
+            const gst = Math.round(amount * 18 / 100 * 100) / 100;
+            const tds = Math.round(amount * 10 / 100 * 100) / 100;
+            const net = Math.round((amount + gst - tds) * 100) / 100;
+            tr.querySelector('[data-field="gst"]').value = gst || '';
+            tr.querySelector('[data-field="tds"]').value = tds || '';
+            tr.querySelector('[data-field="net"]').value = net || '';
+        }
+
+        // Dynamic Visit Rows
+        function addManualVisitRow() {
+            const tbody = document.getElementById('m-visit-tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-input" placeholder="e.g. Senior Consultant" data-field="role"></td>
+                <td><input type="text" class="form-input" placeholder="e.g. 12" data-field="total_visits"></td>
+                <td><button class="btn-remove-row" onclick="this.closest('tr').remove()" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // Dynamic Service Rows
+        function addManualServiceRow() {
+            const tbody = document.getElementById('m-service-tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-input" placeholder="e.g. Tax Compliance" data-field="service_name"></td>
+                <td><input type="text" class="form-input" placeholder="Brief description" data-field="description"></td>
+                <td><button class="btn-remove-row" onclick="this.closest('tr').remove()" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // Submit Manual Upload
+        async function submitManualUpload() {
+            // Clear previous validation errors
+            document.querySelectorAll('#manual-upload-modal .input-error').forEach(el => el.classList.remove('input-error'));
+
+            const missing = [];
+
+            // File validation
+            if (!manualFile) {
+                missing.push('Agreement File');
+                document.getElementById('manual-file-zone').style.borderColor = 'var(--color-danger)';
+            } else {
+                document.getElementById('manual-file-zone').style.borderColor = '';
+            }
+
+            // Company name
+            const companyName = document.getElementById('m-company-name').value.trim();
+            if (!companyName) {
+                missing.push('Company Name');
+                document.getElementById('m-company-name').classList.add('input-error');
+            }
+
+            // Start/End dates
+            const startDate = document.getElementById('m-start-date').value;
+            const endDate = document.getElementById('m-end-date').value;
+            if (!startDate) {
+                missing.push('Consulting Start Date');
+                document.getElementById('m-start-date').classList.add('input-error');
+            }
+            if (!endDate) {
+                missing.push('Consulting End Date');
+                document.getElementById('m-end-date').classList.add('input-error');
+            }
+            if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+                missing.push('Consulting End Date must be after Start Date');
+                document.getElementById('m-end-date').classList.add('input-error');
+            }
+
+            // Payment plans
+            const paymentRows = document.querySelectorAll('#m-payment-tbody tr');
+            const paymentPlans = [];
+            let hasValidPayment = false;
+            paymentRows.forEach(tr => {
+                const plan = tr.querySelector('[data-field="plan"]').value.trim();
+                const amountInput = tr.querySelector('[data-field="amount"]');
+                const amount = parseFloat(amountInput.value) || 0;
+                const gst = parseFloat(tr.querySelector('[data-field="gst"]').value) || 0;
+                const tds = parseFloat(tr.querySelector('[data-field="tds"]').value) || 0;
+                const net = parseFloat(tr.querySelector('[data-field="net"]').value) || 0;
+                const dueDateInput = tr.querySelector('[data-field="due_date"]');
+                const due_date = dueDateInput.value;
+                const status = tr.querySelector('[data-field="status"]').value;
+
+                if (!amountInput.value.trim() || amount <= 0) {
+                    amountInput.classList.add('input-error');
+                }
+                if (!due_date) {
+                    dueDateInput.classList.add('input-error');
+                }
+
+                if (amount > 0 && due_date) hasValidPayment = true;
+                paymentPlans.push({ plan: plan || 'Payment', amount, gst, tds, net, due_date, status });
+            });
+            if (!hasValidPayment) {
+                missing.push('Payment Structure (at least 1 plan with Amount and Due Date)');
+            }
+
+            // Consulting visits
+            const visitRows = document.querySelectorAll('#m-visit-tbody tr');
+            const visits = [];
+            let hasValidVisit = false;
+            visitRows.forEach(tr => {
+                const roleInput = tr.querySelector('[data-field="role"]');
+                const role = roleInput.value.trim();
+                const visitsInput = tr.querySelector('[data-field="total_visits"]');
+                const total_visits = visitsInput.value.trim();
+
+                if (!role) {
+                    roleInput.classList.add('input-error');
+                }
+                if (!total_visits) {
+                    visitsInput.classList.add('input-error');
+                }
+
+                if (role && total_visits) hasValidVisit = true;
+                visits.push({ role, total_visits });
+            });
+            if (!hasValidVisit) {
+                missing.push('Consulting Visit Schedule (at least 1 entry)');
+            }
+
+            // Services
+            const serviceRows = document.querySelectorAll('#m-service-tbody tr');
+            const services = [];
+            let hasValidService = false;
+            serviceRows.forEach(tr => {
+                const serviceNameInput = tr.querySelector('[data-field="service_name"]');
+                const service_name = serviceNameInput.value.trim();
+                const description = tr.querySelector('[data-field="description"]').value.trim();
+
+                if (!service_name) {
+                    serviceNameInput.classList.add('input-error');
+                }
+
+                if (service_name) hasValidService = true;
+                services.push({ service_name, description });
+            });
+            if (!hasValidService) {
+                missing.push('Services Provided (at least 1 service)');
+            }
+
+            // Show errors if any
+            if (missing.length > 0) {
+                showErrorPopup('Validation Error', 'Please fill the following required fields:\n\n• ' + missing.join('\n• '));
+                return;
+            }
+
+            // Build analysis data
+            const analysisData = {
+                company_name: companyName,
+                agreement_title: document.getElementById('m-agreement-title').value.trim(),
+                contact_person: document.getElementById('m-contact-person').value.trim(),
+                agreement_date: document.getElementById('m-agreement-date').value,
+                effective_date: document.getElementById('m-effective-date').value,
+                expiry_date: document.getElementById('m-expiry-date').value,
+                priority_level: document.getElementById('m-priority-level').value,
+                auto_renewal: document.getElementById('m-auto-renewal').value,
+                currency: document.getElementById('m-currency').value,
+                consulting_start_date: startDate,
+                consulting_end_date: endDate,
+                email: document.getElementById('m-email').value.trim(),
+                phone: document.getElementById('m-phone').value.trim(),
+                alternate_contact: document.getElementById('m-alt-contact').value.trim(),
+                active_date: document.getElementById('m-active-date').value,
+                renewal_due_date: document.getElementById('m-renewal-due-date').value,
+                payment_plans: JSON.stringify(paymentPlans),
+                consulting_visits: JSON.stringify(visits),
+                services: JSON.stringify(services),
+                note: document.getElementById('m-note').value.trim(),
+                nda_included: document.getElementById('m-nda').value,
+                non_solicitation: document.getElementById('m-non-solicitation').value,
+                non_compete: document.getElementById('m-non-compete').value,
+                confidentiality_clause: document.getElementById('m-confidentiality').value,
+                data_protection_clause: document.getElementById('m-data-protection').value,
+                arbitration_clause: document.getElementById('m-arbitration').value.trim(),
+                jurisdiction: document.getElementById('m-jurisdiction').value.trim(),
+            };
+
+            // Disable submit button
+            const submitBtn = document.getElementById('manual-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;border-width:2px"></div> Uploading...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', manualFile);
+                formData.append('analysis_data', JSON.stringify(analysisData));
+                const data = await api.upload('/agreements/manual', formData);
+                showToast(data.message || 'Agreement uploaded successfully', 'success');
+                document.getElementById('manual-upload-modal').classList.remove('open');
+                manualFile = null;
+                loadAgreements();
+            } catch (err) {
+                showErrorPopup('Upload Failed', err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Agreement';
+            }
         }
 
         // Notifications

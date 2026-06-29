@@ -33,6 +33,8 @@ ALL_FIELDS = [
     "arbitration_clause", "jurisdiction",
     # Services
     "services",
+    # Manual Upload
+    "note",
 ]
 
 
