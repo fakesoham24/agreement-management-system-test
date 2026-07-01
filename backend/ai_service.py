@@ -17,12 +17,10 @@ ALL_FIELDS = [
     "company_name", "agreement_title", "contact_person",
     "agreement_date", "effective_date", "expiry_date", "priority_level",
     "auto_renewal", "currency",
-    # Dates (mapped)
-    "consulting_start_date", "consulting_end_date",
     # Company Information
     "email", "phone", "alternate_contact",
     # Timeline
-    "active_date", "renewal_due_date",
+    "renewal_due_date",
     # Payment Structure
     "payment_plans",
     # Consulting Visit Schedule
@@ -350,17 +348,14 @@ def analyze_agreement(text: str) -> dict:
   "agreement_title": "document title",
   "contact_person": "primary contact name",
   "agreement_date": "YYYY-MM-DD",
-  "effective_date": "YYYY-MM-DD",
-  "consulting_start_date": "YYYY-MM-DD",
-  "consulting_end_date": "YYYY-MM-DD",
-  "expiry_date": "YYYY-MM-DD",
+  "effective_date": "YYYY-MM-DD (this is the consulting start date — when consulting work begins)",
+  "expiry_date": "YYYY-MM-DD (this is the consulting end date — when the agreement expires)",
   "priority_level": "Casual|High",
   "auto_renewal": "Yes|No",
   "currency": "₹|$",
   "email": "contact email",
   "phone": "contact phone",
   "alternate_contact": "alt contact",
-  "active_date": "YYYY-MM-DD",
   "renewal_due_date": "YYYY-MM-DD",
   "payment_plans": [
     {{"plan":"name as in document","amount":0.00,"gst":0.00,"tds":0.00,"net":0.00,"due_date":"YYYY-MM-DD","status":"Paid|Pending"}}
@@ -379,6 +374,8 @@ def analyze_agreement(text: str) -> dict:
     {{"service_name":"name","description":"brief description"}}
   ]
 }}
+
+IMPORTANT: effective_date = consulting start date. expiry_date = consulting end date. Map any "consulting start date" or "commencement date" to effective_date. Map any "consulting end date" or "termination date" to expiry_date.
 
 Due date rules for payment_plans:
 - Monthly payments: consecutive months (1-month gaps). Quarterly: 3-month gaps (Q1→Q2→Q3→Q4). Variable/phase: use dates from document.
@@ -410,6 +407,13 @@ Agreement text:
         cleaned = {}
         for key in ALL_FIELDS:
             cleaned[key] = result.get(key)
+
+        # Auto-map legacy date fields from AI response
+        # If AI still returns consulting_start_date / consulting_end_date, copy into effective_date / expiry_date
+        if not cleaned.get("effective_date") and result.get("consulting_start_date"):
+            cleaned["effective_date"] = result["consulting_start_date"]
+        if not cleaned.get("expiry_date") and result.get("consulting_end_date"):
+            cleaned["expiry_date"] = result["consulting_end_date"]
 
         # Default currency
         if not cleaned["currency"] or cleaned["currency"] not in ("₹", "$"):
@@ -478,9 +482,7 @@ Agreement text:
         else:
             cleaned["services"] = "[]"
 
-        # Map expiry_date from consulting_end_date if not set
-        if not cleaned["expiry_date"] and cleaned.get("consulting_end_date"):
-            cleaned["expiry_date"] = cleaned["consulting_end_date"]
+        # expiry_date fallback is now handled by the auto-map above
 
         return cleaned
 

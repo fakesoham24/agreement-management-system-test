@@ -285,6 +285,23 @@ def init_db():
 
     conn.commit()
 
+    # One-time data migration: consolidate date fields
+    # Copy consulting_start_date → effective_date where effective_date is empty
+    cursor.execute("""
+        UPDATE agreement_analysis
+        SET effective_date = consulting_start_date
+        WHERE (effective_date IS NULL OR effective_date = '')
+          AND consulting_start_date IS NOT NULL AND consulting_start_date != ''
+    """)
+    # Copy consulting_end_date → expiry_date where expiry_date is empty
+    cursor.execute("""
+        UPDATE agreement_analysis
+        SET expiry_date = consulting_end_date
+        WHERE (expiry_date IS NULL OR expiry_date = '')
+          AND consulting_end_date IS NOT NULL AND consulting_end_date != ''
+    """)
+    conn.commit()
+
     # Create default admin if not exists
     from passlib.hash import bcrypt
     admin_exists = cursor.execute("SELECT id FROM users WHERE role='admin'").fetchone()

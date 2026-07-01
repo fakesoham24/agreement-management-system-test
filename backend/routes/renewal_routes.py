@@ -32,8 +32,8 @@ def list_renewals(
     if current_user["role"] == "admin":
         query = """
             SELECT a.id, a.status, a.renewal_status, a.renewal_increase_percent,
-                   aa.company_name, aa.consulting_start_date, aa.consulting_end_date,
-                   aa.expiry_date, aa.payment_plans, aa.currency, aa.contact_person
+                   aa.company_name, aa.effective_date, aa.expiry_date,
+                   aa.payment_plans, aa.currency, aa.contact_person
             FROM agreements a
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
             WHERE 1=1
@@ -42,8 +42,8 @@ def list_renewals(
     else:
         query = """
             SELECT a.id, a.status, a.renewal_status, a.renewal_increase_percent,
-                   aa.company_name, aa.consulting_start_date, aa.consulting_end_date,
-                   aa.expiry_date, aa.payment_plans, aa.currency, aa.contact_person
+                   aa.company_name, aa.effective_date, aa.expiry_date,
+                   aa.payment_plans, aa.currency, aa.contact_person
             FROM agreements a
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
             WHERE a.user_id = ?
@@ -57,7 +57,7 @@ def list_renewals(
         r = dict(row)
 
         # Determine end date
-        end_date_str = r.get("expiry_date") or r.get("consulting_end_date") or ""
+        end_date_str = r.get("expiry_date") or ""
         if not end_date_str:
             continue
 
@@ -114,7 +114,7 @@ def list_renewals(
             "renewal_increase": renewal_increase,
             "new_fee": new_fee,
             "agreement_status": r.get("status") or "active",
-            "start_date": r.get("consulting_start_date") or "",
+            "start_date": r.get("effective_date") or "",
             "end_date": end_date_str,
         })
 
@@ -177,8 +177,8 @@ def approve_renewal(
         raise HTTPException(status_code=400, detail="Invalid renewal start date format. Expected YYYY-MM-DD.")
 
     # Determine original date range to calculate duration
-    start_str = analysis.get("consulting_start_date") or ""
-    end_str = analysis.get("expiry_date") or analysis.get("consulting_end_date") or ""
+    start_str = analysis.get("effective_date") or ""
+    end_str = analysis.get("expiry_date") or ""
 
     if not start_str or not end_str:
         raise HTTPException(status_code=400, detail="Agreement start/end dates are required for renewal")
@@ -244,18 +244,14 @@ def approve_renewal(
     # Update agreement_analysis with new dates and plans
     cursor.execute("""
         UPDATE agreement_analysis SET
-            consulting_start_date = ?,
-            consulting_end_date = ?,
+            effective_date = ?,
             expiry_date = ?,
-            payment_plans = ?,
-            effective_date = ?
+            payment_plans = ?
         WHERE agreement_id = ?
     """, (
         new_start.strftime("%Y-%m-%d"),
         new_end.strftime("%Y-%m-%d"),
-        new_end.strftime("%Y-%m-%d"),
         json.dumps(new_plans),
-        new_start.strftime("%Y-%m-%d"),
         agreement_id
     ))
 

@@ -28,15 +28,11 @@ class AnalysisUpdate(BaseModel):
     priority_level: Optional[str] = None
     auto_renewal: Optional[str] = None
     currency: Optional[str] = None
-    # Dates
-    consulting_start_date: Optional[str] = None
-    consulting_end_date: Optional[str] = None
     # Company Information
     email: Optional[str] = None
     phone: Optional[str] = None
     alternate_contact: Optional[str] = None
     # Timeline
-    active_date: Optional[str] = None
     renewal_due_date: Optional[str] = None
     # Payment Structure
     payment_plans: Optional[str] = None
@@ -108,6 +104,9 @@ ANALYSIS_COLUMNS = [
     "note",
     "upload_type",
 ]
+# NOTE: consulting_start_date, consulting_end_date, active_date columns are kept in
+# ANALYSIS_COLUMNS for backward-compatible DB writes but are no longer user-facing.
+# The AI service and frontend now use effective_date and expiry_date exclusively.
 
 
 @router.post("/upload")
@@ -277,7 +276,7 @@ async def upload_agreement(
         db.commit()
 
         # Update agreement status based on dates
-        end_date = analysis.get("expiry_date") or analysis.get("consulting_end_date")
+        end_date = analysis.get("expiry_date")
         if end_date:
             try:
                 end_dt = datetime.strptime(end_date, "%Y-%m-%d")
@@ -340,20 +339,20 @@ async def manual_upload_agreement(
     missing = []
     if not (data.get("company_name") or "").strip():
         missing.append("Company Name")
-    if not (data.get("consulting_start_date") or "").strip():
-        missing.append("Consulting Start Date")
-    if not (data.get("consulting_end_date") or "").strip():
-        missing.append("Consulting End Date")
+    if not (data.get("effective_date") or "").strip():
+        missing.append("Effective Date (Consulting Start Date)")
+    if not (data.get("expiry_date") or "").strip():
+        missing.append("Expiry Date (Consulting End Date)")
 
     # Validate dates
-    start_date_str = (data.get("consulting_start_date") or "").strip()
-    end_date_str = (data.get("consulting_end_date") or "").strip()
+    start_date_str = (data.get("effective_date") or "").strip()
+    end_date_str = (data.get("expiry_date") or "").strip()
     if start_date_str and end_date_str:
         try:
             s_dt = datetime.strptime(start_date_str, "%Y-%m-%d")
             e_dt = datetime.strptime(end_date_str, "%Y-%m-%d")
             if e_dt <= s_dt:
-                missing.append("Consulting End Date must be after Start Date")
+                missing.append("Expiry Date must be after Effective Date")
         except ValueError:
             missing.append("Invalid date format (use YYYY-MM-DD)")
 
@@ -485,7 +484,7 @@ async def manual_upload_agreement(
         db.commit()
 
         # Update agreement status based on dates
-        end_date = data.get("expiry_date") or data.get("consulting_end_date")
+        end_date = data.get("expiry_date")
         if end_date:
             try:
                 end_dt = datetime.strptime(end_date, "%Y-%m-%d")
@@ -533,7 +532,7 @@ def _generate_payments_from_plans(cursor, db, agreement_id, analysis):
         return
 
     # Determine if agreement is already expired
-    end_date_str = analysis.get("expiry_date") or analysis.get("consulting_end_date")
+    end_date_str = analysis.get("expiry_date")
     is_expired = False
     if end_date_str:
         try:
@@ -582,8 +581,8 @@ def _generate_payments_legacy(cursor, db, agreement_id, analysis):
     """Legacy payment generation based on frequency (fallback)."""
     amount = analysis.get("payment_amount")
     frequency = analysis.get("payment_frequency")
-    start = analysis.get("consulting_start_date") or analysis.get("effective_date")
-    end = analysis.get("consulting_end_date") or analysis.get("expiry_date")
+    start = analysis.get("effective_date")
+    end = analysis.get("expiry_date")
 
     if not all([amount, frequency, start, end]):
         return
@@ -634,7 +633,7 @@ def _generate_payments_legacy(cursor, db, agreement_id, analysis):
 
 def _generate_notifications(cursor, db, user_id, agreement_id, analysis):
     """Generate notifications for upcoming events."""
-    end = analysis.get("expiry_date") or analysis.get("consulting_end_date")
+    end = analysis.get("expiry_date")
     company = analysis.get("company_name") or "Unknown"
 
     if end:
@@ -699,7 +698,7 @@ def list_agreements(
 
     if current_user["role"] == "admin":
         query = """
-            SELECT a.*, aa.company_name, aa.consulting_start_date, aa.consulting_end_date,
+            SELECT a.*, aa.company_name, aa.effective_date, aa.expiry_date,
                    aa.payment_type, aa.payment_amount, aa.payment_frequency,
                    aa.payment_plans, aa.renewal_due_date, aa.auto_renewal, aa.currency
             FROM agreements a
@@ -709,7 +708,7 @@ def list_agreements(
         params = []
     else:
         query = """
-            SELECT a.*, aa.company_name, aa.consulting_start_date, aa.consulting_end_date,
+            SELECT a.*, aa.company_name, aa.effective_date, aa.expiry_date,
                    aa.payment_type, aa.payment_amount, aa.payment_frequency,
                    aa.payment_plans, aa.renewal_due_date, aa.auto_renewal, aa.currency
             FROM agreements a
@@ -751,7 +750,7 @@ def _auto_expire_agreements(cursor, db, agreements_list):
         if a.get("status") == "expired":
             continue
 
-        end_date_str = a.get("consulting_end_date") or ""
+        end_date_str = a.get("expiry_date") or ""
         if not end_date_str:
             continue
 
@@ -868,7 +867,7 @@ def update_analysis(
     )
 
     # Update agreement status based on new end date
-    end_date = update_data.get("expiry_date") or update_data.get("consulting_end_date")
+    end_date = update_data.get("expiry_date")
     if end_date:
         try:
             end_dt = datetime.strptime(end_date, "%Y-%m-%d")

@@ -134,11 +134,11 @@
                                     <span class="detail-value" id="ov-created">—</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Effective Date</span>
+                                    <span class="detail-label">Effective Date (Consulting Start Date)</span>
                                     <span class="detail-value" id="ov-effective">—</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Expiry Date</span>
+                                    <span class="detail-label">Expiry Date (Consulting End Date)</span>
                                     <span class="detail-value" id="ov-expiry">—</span>
                                 </div>
                                 <div class="detail-row">
@@ -355,11 +355,11 @@
                                     <input type="date" class="form-input" id="edit-agreement-date">
                                 </div>
                                 <div class="form-group">
-                                    <label>Effective Date</label>
+                                    <label>Effective Date (Consulting Start Date)</label>
                                     <input type="date" class="form-input" id="edit-effective-date">
                                 </div>
                                 <div class="form-group">
-                                    <label>Expiry Date</label>
+                                    <label>Expiry Date (Consulting End Date)</label>
                                     <input type="date" class="form-input" id="edit-expiry-date">
                                 </div>
                                 <div class="form-group">
@@ -401,19 +401,6 @@
                             <!-- Timeline Dates -->
                             <div class="edit-section-title">Timeline Dates</div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                                <div class="form-group">
-                                    <label>Consulting Start Date</label>
-                                    <input type="date" class="form-input" id="edit-start-date">
-                                </div>
-                                <div class="form-group">
-                                    <label>Consulting End Date</label>
-                                    <input type="date" class="form-input" id="edit-end-date">
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Active Date</label>
-                                    <input type="date" class="form-input" id="edit-active-date">
-                                </div>
                                 <div class="form-group">
                                     <label>Renewal Due Date</label>
                                     <input type="date" class="form-input" id="edit-renewal-due-date">
@@ -645,7 +632,7 @@
                 badges.push(`<span class="badge-lg badge-pending"><span class="badge-dot"></span> Pending</span>`);
             }
 
-            const expiryDate = analysisData.expiry_date || analysisData.consulting_end_date;
+            const expiryDate = analysisData.expiry_date;
             if (expiryDate) {
                 const days = daysUntil(expiryDate);
                 if (days !== null && days > 0 && days <= 90) {
@@ -666,7 +653,7 @@
             el('ov-contact', analysisData.contact_person);
             el('ov-created', formatDate(analysisData.agreement_date || agreementData.uploaded_at));
             el('ov-effective', formatDate(analysisData.effective_date));
-            el('ov-expiry', formatDate(analysisData.expiry_date || analysisData.consulting_end_date));
+            el('ov-expiry', formatDate(analysisData.expiry_date));
             document.getElementById('ov-status').innerHTML = statusBadge(agreementData.status);
             el('ov-priority', analysisData.priority_level);
             el('ov-currency', getCurrency() === '₹' ? '₹ Indian Rupee (INR)' : '$ US Dollar (USD)');
@@ -689,9 +676,9 @@
         function renderTimeline() {
             const now = new Date();
             const events = [
-                { label: 'Active', date: analysisData.active_date || analysisData.effective_date || analysisData.consulting_start_date },
+                { label: 'Active', date: analysisData.effective_date },
                 { label: 'Renewal Due', date: analysisData.renewal_due_date },
-                { label: 'Expired', date: analysisData.expiry_date || analysisData.consulting_end_date },
+                { label: 'Expired', date: analysisData.expiry_date },
             ];
 
             // Determine status for each event
@@ -1002,10 +989,7 @@
                 setVal('edit-email', analysisData.email);
                 setVal('edit-phone', analysisData.phone);
                 setVal('edit-alt-contact', analysisData.alternate_contact);
-                setVal('edit-start-date', analysisData.consulting_start_date);
-                setVal('edit-end-date', analysisData.consulting_end_date);
 
-                setVal('edit-active-date', analysisData.active_date);
                 setVal('edit-renewal-due-date', analysisData.renewal_due_date);
                 setVal('edit-nda', analysisData.nda_included);
                 setVal('edit-non-solicitation', analysisData.non_solicitation);
@@ -1317,10 +1301,7 @@
                 email: getVal('edit-email'),
                 phone: getVal('edit-phone'),
                 alternate_contact: getVal('edit-alt-contact'),
-                consulting_start_date: getVal('edit-start-date'),
-                consulting_end_date: getVal('edit-end-date'),
 
-                active_date: getVal('edit-active-date'),
                 renewal_due_date: getVal('edit-renewal-due-date'),
                 nda_included: getVal('edit-nda'),
                 non_solicitation: getVal('edit-non-solicitation'),

@@ -258,8 +258,8 @@
                     <div class="form-group"><label>Agreement Title</label><input type="text" class="form-input" id="m-agreement-title" placeholder="Agreement title"></div>
                     <div class="form-group"><label>Contact Person</label><input type="text" class="form-input" id="m-contact-person" placeholder="Primary contact"></div>
                     <div class="form-group"><label>Agreement Date</label><input type="date" class="form-input" id="m-agreement-date"></div>
-                    <div class="form-group"><label>Effective Date</label><input type="date" class="form-input" id="m-effective-date"></div>
-                    <div class="form-group"><label>Expiry Date</label><input type="date" class="form-input" id="m-expiry-date"></div>
+                    <div class="form-group"><label>Effective Date (Consulting Start Date) <span class="required">*</span></label><input type="date" class="form-input" id="m-effective-date"></div>
+                    <div class="form-group"><label>Expiry Date (Consulting End Date) <span class="required">*</span></label><input type="date" class="form-input" id="m-expiry-date"></div>
                     <div class="form-group"><label>Priority Level</label>
                         <select class="form-input" id="m-priority-level"><option value="Casual">Casual</option><option value="High">High</option></select>
                     </div>
@@ -292,9 +292,6 @@
                     Timeline Dates
                 </div>
                 <div class="manual-form-grid">
-                    <div class="form-group"><label>Consulting Start Date <span class="required">*</span></label><input type="date" class="form-input" id="m-start-date"></div>
-                    <div class="form-group"><label>Consulting End Date <span class="required">*</span></label><input type="date" class="form-input" id="m-end-date"></div>
-                    <div class="form-group"><label>Active Date</label><input type="date" class="form-input" id="m-active-date"></div>
                     <div class="form-group"><label>Renewal Due Date</label><input type="date" class="form-input" id="m-renewal-due-date"></div>
                 </div>
             </div>
@@ -555,11 +552,11 @@
                     <div class="card-meta">
                         <div class="card-meta-item">
                             <span class="card-meta-label">Start Date</span>
-                            <span class="card-meta-value">${formatDate(a.consulting_start_date)}</span>
+                            <span class="card-meta-value">${formatDate(a.effective_date)}</span>
                         </div>
                         <div class="card-meta-item">
                             <span class="card-meta-label">End Date</span>
-                            <span class="card-meta-value">${formatDate(a.consulting_end_date)}</span>
+                            <span class="card-meta-value">${formatDate(a.expiry_date)}</span>
                         </div>
                         <div class="card-meta-item">
                             <span class="card-meta-label">Total Amount</span>
@@ -838,19 +835,19 @@
             }
 
             // Start/End dates
-            const startDate = document.getElementById('m-start-date').value;
-            const endDate = document.getElementById('m-end-date').value;
+            const startDate = document.getElementById('m-effective-date').value;
+            const endDate = document.getElementById('m-expiry-date').value;
             if (!startDate) {
-                missing.push('Consulting Start Date');
-                document.getElementById('m-start-date').classList.add('input-error');
+                missing.push('Effective Date (Consulting Start Date)');
+                document.getElementById('m-effective-date').classList.add('input-error');
             }
             if (!endDate) {
-                missing.push('Consulting End Date');
-                document.getElementById('m-end-date').classList.add('input-error');
+                missing.push('Expiry Date (Consulting End Date)');
+                document.getElementById('m-expiry-date').classList.add('input-error');
             }
             if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
-                missing.push('Consulting End Date must be after Start Date');
-                document.getElementById('m-end-date').classList.add('input-error');
+                missing.push('Expiry Date must be after Effective Date');
+                document.getElementById('m-expiry-date').classList.add('input-error');
             }
 
             // Payment plans
@@ -938,17 +935,14 @@
                 agreement_title: document.getElementById('m-agreement-title').value.trim(),
                 contact_person: document.getElementById('m-contact-person').value.trim(),
                 agreement_date: document.getElementById('m-agreement-date').value,
-                effective_date: document.getElementById('m-effective-date').value,
-                expiry_date: document.getElementById('m-expiry-date').value,
+                effective_date: startDate,
+                expiry_date: endDate,
                 priority_level: document.getElementById('m-priority-level').value,
                 auto_renewal: document.getElementById('m-auto-renewal').value,
                 currency: document.getElementById('m-currency').value,
-                consulting_start_date: startDate,
-                consulting_end_date: endDate,
                 email: document.getElementById('m-email').value.trim(),
                 phone: document.getElementById('m-phone').value.trim(),
                 alternate_contact: document.getElementById('m-alt-contact').value.trim(),
-                active_date: document.getElementById('m-active-date').value,
                 renewal_due_date: document.getElementById('m-renewal-due-date').value,
                 payment_plans: JSON.stringify(paymentPlans),
                 consulting_visits: JSON.stringify(visits),
