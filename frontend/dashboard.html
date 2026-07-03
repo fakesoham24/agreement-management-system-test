@@ -183,10 +183,19 @@
                         </button>
                     </div>
                 </div>
-                <div id="upload-progress" style="margin-top:16px;display:none">
-                    <div style="display:flex;align-items:center;gap:8px">
-                        <div class="loading-spinner"></div>
-                        <span id="upload-progress-text" style="font-size:0.85rem;color:var(--color-text-secondary)">Uploading and analyzing agreement...</span>
+                <div id="upload-progress" style="display:none">
+                    <div class="analysis-progress-container" id="analysis-progress-box">
+                        <div class="analysis-progress-header">
+                            <div class="loading-spinner" id="analysis-spinner"></div>
+                            <span class="analysis-progress-status" id="analysis-status-text">Uploading agreement...</span>
+                        </div>
+                        <div class="analysis-progress-bar-track">
+                            <div class="analysis-progress-bar-fill" id="analysis-bar-fill" style="width:0%"></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span class="analysis-progress-message" id="analysis-message">Preparing file...</span>
+                            <span class="analysis-progress-percent" id="analysis-percent">0%</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -445,6 +454,20 @@
         const MONTH_FULL_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
         async function loadPaymentSummary() {
+            // S27: Show skeleton immediately
+            const cardsContainer = document.getElementById('dashboard-payment-cards');
+            cardsContainer.innerHTML = `
+                <div class="skeleton-pay-grid">
+                    ${[0,1,2,3].map(() => `
+                        <div class="skeleton-pay-card">
+                            <div class="skeleton skeleton-icon"></div>
+                            <div class="skeleton skeleton-label"></div>
+                            <div class="skeleton skeleton-amount"></div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
             try {
                 const data = await api.get('/payments/summary');
                 const payments = data.payments || [];
@@ -483,17 +506,36 @@
                     `);
                 }
 
-                document.getElementById('dashboard-payment-cards').innerHTML = cards.join('');
+                cardsContainer.innerHTML = cards.join('');
             } catch (err) {
-                // Silent — cards just won't show
+                cardsContainer.innerHTML = '';
             }
         }
 
         // Load agreements
+        let agreementsLoaded = false;
         async function loadAgreements() {
+            const grid = document.getElementById('agreements-grid');
+
+            // S27: Show skeleton on first load only
+            if (!agreementsLoaded) {
+                grid.innerHTML = `<div class="skeleton-grid">
+                    ${[0,1,2,3,4,5].map(() => `
+                        <div class="skeleton-card">
+                            <div class="skeleton skeleton-title"></div>
+                            <div class="skeleton skeleton-badge"></div>
+                            <div class="skeleton-row"><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-value"></div></div>
+                            <div class="skeleton-row"><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-value"></div></div>
+                            <div class="skeleton-row"><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-value"></div></div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            }
+
             try {
                 const data = await api.get('/agreements/');
                 allAgreements = data.agreements || [];
+                agreementsLoaded = true;
                 renderAgreements();
             } catch (err) {
                 showToast(err.message, 'error');
@@ -636,12 +678,22 @@
                     return;
                 }
 
-                // Show progress
+                // S12: Show progress bar UI
                 const progressEl = document.getElementById('upload-progress');
-                const progressText = document.getElementById('upload-progress-text');
-                progressText.textContent = uploadType === 'scanned'
-                    ? 'Uploading and performing OCR analysis... This may take a moment.'
-                    : 'Uploading and analyzing agreement...';
+                const progressBox = document.getElementById('analysis-progress-box');
+                const barFill = document.getElementById('analysis-bar-fill');
+                const statusText = document.getElementById('analysis-status-text');
+                const messageText = document.getElementById('analysis-message');
+                const percentText = document.getElementById('analysis-percent');
+                const spinner = document.getElementById('analysis-spinner');
+
+                // Reset progress state
+                progressBox.className = 'analysis-progress-container';
+                barFill.style.width = '5%';
+                statusText.textContent = 'Uploading file...';
+                messageText.textContent = 'Sending file to server...';
+                percentText.textContent = '5%';
+                spinner.style.display = 'inline-block';
                 progressEl.style.display = 'block';
 
                 // Disable all upload buttons during upload
@@ -650,14 +702,51 @@
                 try {
                     const formData = new FormData();
                     formData.append('file', file);
+
+                    // Update progress: uploading
+                    barFill.style.width = '10%';
+                    percentText.textContent = '10%';
+                    statusText.textContent = uploadType === 'scanned'
+                        ? 'Uploading and performing OCR...' : 'Uploading agreement...';
+
                     const data = await api.upload(`/agreements/upload?upload_type=${uploadType}`, formData);
-                    showToast(data.message || 'Agreement uploaded and analyzed', 'success');
-                    closeUploadModal();
-                    loadAgreements();
+
+                    // S12: If backend returned 'processing', start polling
+                    if (data.status === 'processing' && data.agreement_id) {
+                        barFill.style.width = '30%';
+                        percentText.textContent = '30%';
+                        statusText.textContent = 'Agreement uploaded, analysis in progress...';
+                        messageText.textContent = 'AI is analyzing the agreement document...';
+
+                        // Poll for analysis status
+                        await pollAnalysisStatus(data.agreement_id, barFill, statusText, messageText, percentText, progressBox, spinner);
+                    } else {
+                        // Legacy direct response (shouldn't happen but handle gracefully)
+                        barFill.style.width = '100%';
+                        percentText.textContent = '100%';
+                        statusText.textContent = 'Analysis complete!';
+                        progressBox.classList.add('completed');
+                        spinner.style.display = 'none';
+                        showToast(data.message || 'Agreement uploaded and analyzed', 'success');
+                        setTimeout(() => {
+                            closeUploadModal();
+                            loadAgreements();
+                        }, 1000);
+                    }
+
                 } catch (err) {
-                    closeUploadModal();
-                    showErrorPopup('Upload Failed', err.message);
-                    progressEl.style.display = 'none';
+                    // Upload itself failed (network, validation, etc.)
+                    barFill.style.width = '100%';
+                    percentText.textContent = '';
+                    statusText.textContent = 'Upload Failed';
+                    messageText.textContent = err.message;
+                    progressBox.classList.add('failed');
+                    spinner.style.display = 'none';
+
+                    setTimeout(() => {
+                        closeUploadModal();
+                        showErrorPopup('Upload Failed', err.message);
+                    }, 2000);
                 } finally {
                     document.querySelectorAll('.upload-option-btn').forEach(b => b.disabled = false);
                     document.body.removeChild(input);
@@ -665,6 +754,70 @@
             });
 
             input.click();
+        }
+
+        // S12: Poll the analysis-status endpoint until completed or failed
+        async function pollAnalysisStatus(agreementId, barFill, statusText, messageText, percentText, progressBox, spinner) {
+            const POLL_INTERVAL = 1500; // 1.5 seconds
+            const MAX_POLLS = 120;      // Max ~3 minutes
+            let pollCount = 0;
+
+            return new Promise((resolve) => {
+                const interval = setInterval(async () => {
+                    pollCount++;
+
+                    try {
+                        const status = await api.get(`/agreements/${agreementId}/analysis-status`);
+
+                        // Update progress bar
+                        barFill.style.width = `${status.progress}%`;
+                        percentText.textContent = `${status.progress}%`;
+                        messageText.textContent = status.message || '';
+
+                        if (status.status === 'completed') {
+                            clearInterval(interval);
+                            statusText.textContent = 'Analysis complete!';
+                            progressBox.classList.add('completed');
+                            spinner.style.display = 'none';
+                            showToast('Agreement analyzed successfully!', 'success');
+                            setTimeout(() => {
+                                closeUploadModal();
+                                loadAgreements();
+                                loadPaymentSummary();
+                                loadNotifications();
+                            }, 1200);
+                            resolve();
+                        } else if (status.status === 'failed') {
+                            clearInterval(interval);
+                            statusText.textContent = 'Analysis Failed';
+                            progressBox.classList.add('failed');
+                            spinner.style.display = 'none';
+                            setTimeout(() => {
+                                closeUploadModal();
+                                showErrorPopup('Analysis Failed', status.message || 'An error occurred during analysis.');
+                            }, 2000);
+                            resolve();
+                        } else {
+                            // Still processing — update status text
+                            statusText.textContent = 'Analysis in progress...';
+                        }
+                    } catch (err) {
+                        // Network error during poll — keep trying
+                        if (pollCount >= MAX_POLLS) {
+                            clearInterval(interval);
+                            statusText.textContent = 'Timeout';
+                            messageText.textContent = 'Analysis is taking too long. Please check the agreement list.';
+                            progressBox.classList.add('failed');
+                            spinner.style.display = 'none';
+                            setTimeout(() => {
+                                closeUploadModal();
+                                loadAgreements();
+                            }, 2000);
+                            resolve();
+                        }
+                    }
+                }, POLL_INTERVAL);
+            });
         }
 
         // ========================================

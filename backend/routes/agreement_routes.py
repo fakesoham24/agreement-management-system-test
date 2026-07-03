@@ -3,8 +3,10 @@ import json
 import re
 import gc
 import shutil
+import logging
+import threading
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Form, status, BackgroundTasks
 from fastapi.responses import FileResponse as FastFileResponse
 from pydantic import BaseModel, validator
 from typing import Optional
@@ -14,7 +16,14 @@ from backend.config import UPLOAD_DIR, MAX_FILE_SIZE, MAX_SCANNED_FILE_SIZE, ALL
 from backend.file_utils import extract_text
 from backend.ai_service import analyze_agreement, validate_agreement_text
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/agreements", tags=["Agreements"])
+
+# S12: In-memory analysis status tracker for background AI processing
+# Structure: { agreement_id: { "status": "processing"|"completed"|"failed", "progress": 0-100, "message": "..." } }
+_analysis_status = {}
+_analysis_lock = threading.Lock()
 
 
 class AnalysisUpdate(BaseModel):
@@ -113,6 +122,7 @@ ANALYSIS_COLUMNS = [
 async def upload_agreement(
     file: UploadFile = File(...),
     upload_type: str = Query("standard", pattern="^(scanned|standard|docx)$"),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db)
 ):
@@ -182,6 +192,14 @@ async def upload_agreement(
         with open(file_path, "rb") as f:
             file_bytes = f.read()
 
+        # S12: Set initial progress — file uploaded
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 15,
+                "message": "File uploaded successfully. Extracting text..."
+            }
+
         # Extract text — use OCR for scanned PDFs
         is_scanned = (upload_type == "scanned")
         raw_text = ""
@@ -189,8 +207,7 @@ async def upload_agreement(
         try:
             raw_text = extract_text(file_bytes, ext, is_scanned=is_scanned)
         except Exception as extract_err:
-            import logging
-            logging.getLogger(__name__).warning(f"Text extraction failed for agreement {agreement_id}: {extract_err}")
+            logger.warning(f"Text extraction failed for agreement {agreement_id}: {extract_err}")
             extraction_warning = str(extract_err)
 
         # Free file bytes immediately after extraction to reclaim memory
@@ -199,6 +216,8 @@ async def upload_agreement(
 
         if not raw_text.strip():
             # No text extracted — reject the file, clean up
+            with _analysis_lock:
+                _analysis_status.pop(agreement_id, None)
             cursor.execute("DELETE FROM agreements WHERE id = ?", (agreement_id,))
             db.commit()
             if os.path.exists(file_path):
@@ -215,22 +234,113 @@ async def upload_agreement(
 
         validation = validate_agreement_text(raw_text)
         if not validation["valid"]:
+            with _analysis_lock:
+                _analysis_status.pop(agreement_id, None)
             cursor.execute("DELETE FROM agreements WHERE id = ?", (agreement_id,))
             db.commit()
             if os.path.exists(file_path):
                 os.remove(file_path)
             raise HTTPException(status_code=422, detail=validation["error"])
 
+        # S12: Text extracted successfully — update progress and launch background AI
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 30,
+                "message": "Text extracted. Starting AI analysis..."
+            }
+
+        # Launch AI analysis as a background task
+        background_tasks.add_task(
+            _background_analyze,
+            agreement_id=agreement_id,
+            raw_text=raw_text,
+            file_path=file_path,
+            user_id=current_user["id"]
+        )
+
+        return {
+            "message": "Agreement uploaded, analysis in progress...",
+            "agreement_id": agreement_id,
+            "status": "processing"
+        }
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        # Clean up file on failure
+        _aid = locals().get('agreement_id')
+        if _aid:
+            with _analysis_lock:
+                _analysis_status.pop(_aid, None)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        db.rollback()
+        error_msg = str(e)
+        if "GROQ_API_KEY" in error_msg:
+            raise HTTPException(status_code=500, detail="AI service not configured. Please set your GROQ_API_KEY.")
+        raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
+
+
+def _background_analyze(agreement_id: int, raw_text: str, file_path: str, user_id: int):
+    """
+    S12: Background worker — runs AI analysis, saves results, generates payments & notifications.
+    Uses a fresh DB connection since this runs outside the request lifecycle.
+    """
+    from backend.database import get_db_connection
+
+    db = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        # Update progress: AI analysis starting
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 40,
+                "message": "AI is analyzing the agreement..."
+            }
+
         # AI Analysis — deep extraction
         try:
             analysis = analyze_agreement(raw_text)
         except RuntimeError as ai_err:
-            # AI service error (e.g., rate limit) — clean up and report
+            # AI service error — clean up and mark failed
             cursor.execute("DELETE FROM agreements WHERE id = ?", (agreement_id,))
             db.commit()
             if os.path.exists(file_path):
                 os.remove(file_path)
-            raise HTTPException(status_code=429, detail=str(ai_err))
+            with _analysis_lock:
+                _analysis_status[agreement_id] = {
+                    "status": "failed",
+                    "progress": 100,
+                    "message": str(ai_err)
+                }
+            return
+
+        # Update progress: AI done
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 60,
+                "message": "AI analysis complete. Validating results..."
+            }
+
+        # S16: Post-AI date validation — auto-swap if effective_date > expiry_date
+        eff_date = analysis.get("effective_date")
+        exp_date = analysis.get("expiry_date")
+        if eff_date and exp_date:
+            try:
+                eff_dt = datetime.strptime(eff_date, "%Y-%m-%d")
+                exp_dt = datetime.strptime(exp_date, "%Y-%m-%d")
+                if eff_dt > exp_dt:
+                    # Swap the dates
+                    analysis["effective_date"], analysis["expiry_date"] = exp_date, eff_date
+                    logger.info(f"S16: Auto-swapped effective_date and expiry_date for agreement {agreement_id}")
+            except (ValueError, TypeError):
+                pass  # Non-date values — leave as-is
 
         # Post-AI validation — ensure 3 critical features were extracted
         plans_str = analysis.get("payment_plans", "[]")
@@ -255,10 +365,21 @@ async def upload_agreement(
             db.commit()
             if os.path.exists(file_path):
                 os.remove(file_path)
-            raise HTTPException(
-                status_code=422,
-                detail=f"The uploaded document is missing the following required sections: {', '.join(missing_features)}. A valid consulting agreement must contain Payment Structure, Consulting Visit Schedule, and Services Provided. Please upload a complete agreement document."
-            )
+            with _analysis_lock:
+                _analysis_status[agreement_id] = {
+                    "status": "failed",
+                    "progress": 100,
+                    "message": f"The uploaded document is missing the following required sections: {', '.join(missing_features)}. A valid consulting agreement must contain Payment Structure, Consulting Visit Schedule, and Services Provided. Please upload a complete agreement document."
+                }
+            return
+
+        # Update progress: saving analysis
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 75,
+                "message": "Saving analysis and generating payment records..."
+            }
 
         # Build INSERT with all columns
         columns = ["agreement_id", "raw_text"] + ANALYSIS_COLUMNS
@@ -288,32 +409,86 @@ async def upload_agreement(
             except ValueError:
                 pass
 
+        # Update progress: generating payments
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 85,
+                "message": "Generating payment schedule..."
+            }
+
         # Generate payment records from payment_plans
         _generate_payments_from_plans(cursor, db, agreement_id, analysis)
 
+        # Update progress: generating notifications
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "processing",
+                "progress": 92,
+                "message": "Creating notifications..."
+            }
+
         # Generate notifications
-        _generate_notifications(cursor, db, current_user["id"], agreement_id, analysis)
+        _generate_notifications(cursor, db, user_id, agreement_id, analysis)
 
-        return {
-            "message": "Agreement uploaded and analyzed successfully",
-            "agreement_id": agreement_id,
-            "analysis": analysis
-        }
+        # Done!
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "completed",
+                "progress": 100,
+                "message": "Agreement analyzed successfully!"
+            }
 
-    except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        raise
+        logger.info(f"Background analysis completed for agreement {agreement_id}")
+
     except Exception as e:
-        # Clean up file on failure
+        logger.error(f"Background analysis failed for agreement {agreement_id}: {e}")
+        # Clean up on unexpected error
+        try:
+            if db:
+                cursor = db.cursor()
+                cursor.execute("DELETE FROM agreements WHERE id = ?", (agreement_id,))
+                db.commit()
+        except Exception:
+            pass
         if os.path.exists(file_path):
             os.remove(file_path)
-        db.rollback()
-        error_msg = str(e)
-        if "GROQ_API_KEY" in error_msg:
-            raise HTTPException(status_code=500, detail="AI service not configured. Please set your GROQ_API_KEY.")
-        raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
+        with _analysis_lock:
+            _analysis_status[agreement_id] = {
+                "status": "failed",
+                "progress": 100,
+                "message": f"Processing error: {str(e)}"
+            }
+    finally:
+        if db:
+            db.close()
+
+
+# S12: Polling endpoint for analysis status
+@router.get("/{agreement_id}/analysis-status")
+def get_analysis_status(
+    agreement_id: int,
+    current_user: dict = Depends(get_current_user)
+):
+    """Check the background analysis status for an agreement."""
+    with _analysis_lock:
+        status_data = _analysis_status.get(agreement_id)
+
+    if not status_data:
+        # No in-memory status — check if analysis exists in DB (already completed before restart)
+        from backend.database import get_db_connection
+        db = get_db_connection()
+        try:
+            row = db.cursor().execute(
+                "SELECT id FROM agreement_analysis WHERE agreement_id = ?", (agreement_id,)
+            ).fetchone()
+            if row:
+                return {"status": "completed", "progress": 100, "message": "Analysis complete."}
+        finally:
+            db.close()
+        return {"status": "completed", "progress": 100, "message": "Analysis complete."}
+
+    return status_data
 
 
 @router.post("/manual")

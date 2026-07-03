@@ -180,6 +180,30 @@
 
         // Load all payments
         async function loadPayments() {
+            // S27: Show skeleton loading immediately
+            const summaryEl = document.getElementById('payments-summary');
+            const tbody = document.getElementById('payments-tbody');
+            summaryEl.innerHTML = `
+                <div class="skeleton-pay-card"><div class="skeleton skeleton-icon"></div><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-amount"></div></div>
+                <div class="skeleton-pay-card"><div class="skeleton skeleton-icon"></div><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-amount"></div></div>
+                <div class="skeleton-pay-card"><div class="skeleton skeleton-icon"></div><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-amount"></div></div>
+                <div class="skeleton-pay-card"><div class="skeleton skeleton-icon"></div><div class="skeleton skeleton-label"></div><div class="skeleton skeleton-amount"></div></div>
+            `;
+            tbody.innerHTML = [0,1,2,3,4,5].map(() => `
+                <tr>
+                    <td><div class="skeleton skeleton-text" style="width:80%"></div></td>
+                    <td><div class="skeleton skeleton-text short"></div></td>
+                    <td><div class="skeleton skeleton-text short"></div></td>
+                    <td><div class="skeleton skeleton-text medium"></div></td>
+                    <td><div class="skeleton skeleton-text short"></div></td>
+                    <td><div class="skeleton skeleton-text short"></div></td>
+                    <td><div class="skeleton skeleton-text medium"></div></td>
+                    <td><div class="skeleton skeleton-text medium"></div></td>
+                    <td><div class="skeleton skeleton-text short"></div></td>
+                    <td><div class="skeleton skeleton-text short"></div></td>
+                </tr>
+            `).join('');
+
             try {
                 const data = await api.get('/payments/summary');
                 allPayments = data.payments || [];

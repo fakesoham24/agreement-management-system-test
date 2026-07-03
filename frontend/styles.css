@@ -4174,3 +4174,258 @@ h4 {
         font-size: 0.78rem;
     }
 }
+
+/* ============================================
+   S12: Upload Analysis Progress Bar
+   ============================================ */
+.analysis-progress-container {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+}
+
+.analysis-progress-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.analysis-progress-header .loading-spinner {
+    flex-shrink: 0;
+}
+
+.analysis-progress-status {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.analysis-progress-bar-track {
+    width: 100%;
+    height: 8px;
+    background: var(--color-border-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.analysis-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-accent), #f0b429);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.analysis-progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    animation: progressShimmer 1.5s ease infinite;
+}
+
+@keyframes progressShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+.analysis-progress-percent {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: right;
+}
+
+.analysis-progress-message {
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+/* Progress complete state */
+.analysis-progress-container.completed .analysis-progress-bar-fill {
+    background: linear-gradient(90deg, var(--color-success), #34d399);
+}
+
+.analysis-progress-container.completed .analysis-progress-bar-fill::after {
+    animation: none;
+}
+
+.analysis-progress-container.completed .analysis-progress-status {
+    color: var(--color-success);
+}
+
+/* Progress failed state */
+.analysis-progress-container.failed .analysis-progress-bar-fill {
+    background: linear-gradient(90deg, var(--color-danger), #f87171);
+}
+
+.analysis-progress-container.failed .analysis-progress-bar-fill::after {
+    animation: none;
+}
+
+.analysis-progress-container.failed .analysis-progress-status {
+    color: var(--color-danger);
+}
+
+
+/* ============================================
+   S27: Skeleton Loading Animations
+   ============================================ */
+@keyframes skeletonShimmer {
+    0% {
+        background-position: -400px 0;
+    }
+    100% {
+        background-position: 400px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f1f3 25%,
+        #e2e5ea 37%,
+        #f0f1f3 63%
+    );
+    background-size: 800px 100%;
+    animation: skeletonShimmer 1.5s ease infinite;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+    height: 14px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.skeleton-text.short {
+    width: 40%;
+}
+
+.skeleton-text.medium {
+    width: 65%;
+}
+
+.skeleton-text.long {
+    width: 85%;
+}
+
+/* Skeleton card — matches .agreement-card dimensions */
+.skeleton-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    min-height: 170px;
+}
+
+.skeleton-card .skeleton-title {
+    height: 18px;
+    width: 70%;
+    margin-bottom: 12px;
+}
+
+.skeleton-card .skeleton-badge {
+    height: 22px;
+    width: 60px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.skeleton-card .skeleton-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.skeleton-card .skeleton-row .skeleton-label {
+    height: 12px;
+    width: 70px;
+}
+
+.skeleton-card .skeleton-row .skeleton-value {
+    height: 14px;
+    width: 100px;
+}
+
+/* Skeleton payment summary cards — matches .dashboard-pay-card */
+.skeleton-pay-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.skeleton-pay-card .skeleton-icon {
+    height: 32px;
+    width: 32px;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-pay-card .skeleton-label {
+    height: 12px;
+    width: 80%;
+}
+
+.skeleton-pay-card .skeleton-amount {
+    height: 20px;
+    width: 60%;
+}
+
+/* Skeleton table row — for payments and other tables */
+.skeleton-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border-light);
+    align-items: center;
+}
+
+.skeleton-table-row .skeleton-cell {
+    height: 14px;
+    border-radius: 4px;
+}
+
+/* Container for skeleton grids */
+.skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-md);
+}
+
+.skeleton-pay-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+@media (max-width: 1100px) {
+    .skeleton-pay-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .skeleton-pay-grid {
+        grid-template-columns: 1fr;
+    }
+}

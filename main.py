@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from backend.config import HOST, PORT, UPLOAD_DIR
+from fastapi.middleware.cors import CORSMiddleware
+from backend.config import HOST, PORT, UPLOAD_DIR, IS_DEFAULT_SECRET_KEY
 from backend.database import init_db
 from backend.routes.auth_routes import router as auth_router
 from backend.routes.agreement_routes import router as agreement_router
@@ -76,6 +77,15 @@ def migrate_payment_amounts():
 
 @asynccontextmanager
 async def lifespan(app):
+    # S1: Warn about insecure default SECRET_KEY at startup
+    if IS_DEFAULT_SECRET_KEY:
+        logger.warning(
+            "\n" + "=" * 60 +
+            "\n⚠️  SECURITY WARNING: Using default SECRET_KEY!" +
+            "\n   Anyone with access to the source code can forge JWT tokens." +
+            "\n   Set a strong SECRET_KEY in your .env file immediately." +
+            "\n" + "=" * 60
+        )
     init_db()
     migrate_payment_amounts()
     yield
@@ -87,6 +97,19 @@ app = FastAPI(
     description="AI-Powered Consulting Agreement Management",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# S4: CORS middleware — restrict cross-origin access
+_allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+_allowed_origins = [o.strip() for o in _allowed_origins if o.strip()]
+_allowed_origins += [f"http://localhost:{PORT}", f"http://127.0.0.1:{PORT}"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # Include API routes
