@@ -33,12 +33,12 @@ result1 = _assign_due_dates_from_plan_column(plans1, "2026-01-01")
 print("Test 1: Quarterly, agreement 2026-01-01")
 for p in result1:
     print(f"  {p['plan']}: {p['due_date']}")
-# Expected: Advance=2026-01-01 (as-is), Q1=2026-01-01 (start), Q2=Apr 1st Monday, Q3=Jul 1st Monday, Q4=Oct 1st Monday
+# Expected: Advance=2026-01-01 (as-is), Q1=2026-01-01 (start), Q2=Apr 1, Q3=Jul 1, Q4=Oct 1
 assert result1[0]["due_date"] == "2026-01-01"  # Advance kept as-is
 assert result1[1]["due_date"] == "2026-01-01"  # Q1 = start date
-assert result1[2]["due_date"] == "2026-04-06"  # April first Monday
-assert result1[3]["due_date"] == "2026-07-06"  # July first Monday
-assert result1[4]["due_date"] == "2026-10-05"  # October first Monday
+assert result1[2]["due_date"] == "2026-04-01"  # Q2 = Jan 1 + 3 months
+assert result1[3]["due_date"] == "2026-07-01"  # Q3 = Jan 1 + 6 months
+assert result1[4]["due_date"] == "2026-10-01"  # Q4 = Jan 1 + 9 months
 print("  PASSED!\n")
 
 # ================================================
@@ -56,13 +56,13 @@ result2 = _assign_due_dates_from_plan_column(plans2, "2026-01-01")
 print("Test 2: Monthly, agreement 2026-01-01")
 for p in result2:
     print(f"  {p['plan']}: {p['due_date']}")
-# Expected: Jan=2026-01-01 (start), Feb=first Monday, Mar=first Monday, etc.
+# Expected: Jan=2026-01-01 (start), Feb=Feb 1, Mar=Mar 1, etc.
 assert result2[0]["due_date"] == "2026-01-01"  # First month = start date
-assert result2[1]["due_date"] == "2026-02-02"  # Feb first Monday
-assert result2[2]["due_date"] == "2026-03-02"  # Mar first Monday
-assert result2[3]["due_date"] == "2026-04-06"  # Apr first Monday
-assert result2[4]["due_date"] == "2026-05-04"  # May first Monday
-assert result2[5]["due_date"] == "2026-06-01"  # Jun first Monday
+assert result2[1]["due_date"] == "2026-02-01"  # Jan 1 + 1 month
+assert result2[2]["due_date"] == "2026-03-01"  # Jan 1 + 2 months
+assert result2[3]["due_date"] == "2026-04-01"  # Jan 1 + 3 months
+assert result2[4]["due_date"] == "2026-05-01"  # Jan 1 + 4 months
+assert result2[5]["due_date"] == "2026-06-01"  # Jan 1 + 5 months
 print("  PASSED!\n")
 
 # ================================================
@@ -81,9 +81,9 @@ for p in result3:
     print(f"  {p['plan']}: due_date='{p['due_date']}'")
 # Expected: Q1-Q4 with proper dates, Variable Pay = empty
 assert result3[0]["due_date"] == "2026-01-01"  # Q1 = start
-assert result3[1]["due_date"] == "2026-04-06"  # Q2 = Apr first Monday
-assert result3[2]["due_date"] == "2026-07-06"  # Q3 = Jul first Monday
-assert result3[3]["due_date"] == "2026-10-05"  # Q4 = Oct first Monday
+assert result3[1]["due_date"] == "2026-04-01"  # Q2 = Jan 1 + 3 months
+assert result3[2]["due_date"] == "2026-07-01"  # Q3 = Jan 1 + 6 months
+assert result3[3]["due_date"] == "2026-10-01"  # Q4 = Jan 1 + 9 months
 assert result3[4]["due_date"] == ""             # Variable Pay = empty
 print("  PASSED!\n")
 
@@ -100,10 +100,10 @@ result4 = _assign_due_dates_from_plan_column(plans4, "2026-03-10")
 print("Test 4: Monthly + Variable, agreement 2026-03-10")
 for p in result4:
     print(f"  {p['plan']}: due_date='{p['due_date']}'")
-# Expected: Month 1=start, Month 2=Apr first Monday, Month 3=May first Monday, Variable=empty
+# Expected: Month 1=start, Month 2=Apr 10, Month 3=May 10, Variable=empty
 assert result4[0]["due_date"] == "2026-03-10"  # Month 1 = start date
-assert result4[1]["due_date"] == "2026-04-06"  # Month 2 = Apr first Monday
-assert result4[2]["due_date"] == "2026-05-04"  # Month 3 = May first Monday
+assert result4[1]["due_date"] == "2026-04-10"  # Month 2 = Mar 10 + 1 month
+assert result4[2]["due_date"] == "2026-05-10"  # Month 3 = Mar 10 + 2 months
 assert result4[3]["due_date"] == ""             # Variable = empty
 print("  PASSED!\n")
 
@@ -124,9 +124,9 @@ for p in result5:
 # Advance kept as-is (its original due date). Quarter 1 = start date
 assert result5[0]["due_date"] == "2026-01-15"  # Advance = original date as-is
 assert result5[1]["due_date"] == "2026-01-15"  # Quarter 1 = agreement start
-assert result5[2]["due_date"] == "2026-04-06"  # Quarter 2 = Apr first Monday
-assert result5[3]["due_date"] == "2026-07-06"  # Quarter 3 = Jul first Monday
-assert result5[4]["due_date"] == "2026-10-05"  # Quarter 4 = Oct first Monday
+assert result5[2]["due_date"] == "2026-04-15"  # Quarter 2 = Jan 15 + 3 months
+assert result5[3]["due_date"] == "2026-07-15"  # Quarter 3 = Jan 15 + 6 months
+assert result5[4]["due_date"] == "2026-10-15"  # Quarter 4 = Jan 15 + 9 months
 print("  PASSED!\n")
 
 # ================================================

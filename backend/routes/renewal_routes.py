@@ -236,7 +236,7 @@ def approve_renewal(
             "status": "Pending"
         })
 
-    # Re-apply first-Monday-of-month due date logic (same as upload time)
+    # Re-apply interval-based due date logic (same as upload time)
     new_start_str = new_start.strftime("%Y-%m-%d")
     new_plans = _assign_due_dates_from_plan_column(new_plans, new_start_str)
     new_plans = _sort_plans_by_due_date(new_plans)

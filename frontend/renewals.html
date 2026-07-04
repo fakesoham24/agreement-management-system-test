@@ -147,7 +147,7 @@
                     <label style="font-weight:600;margin-bottom:6px;display:block">Renewal Starting Date (Effective Date)</label>
                     <input type="date" class="form-input" id="renewal-start-date" style="font-size:0.95rem;padding:10px 12px">
                     <span style="font-size:0.78rem;color:var(--color-text-muted);margin-top:6px;display:block">
-                        Payment due dates will be calculated based on this date using the month's first Monday rule.
+                        Payment due dates will be calculated at regular intervals (monthly/quarterly) from this date.
                     </span>
                 </div>
                 <div id="renewal-date-preview" style="display:none;padding:12px;background:var(--color-surface-secondary);border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:8px">
@@ -360,7 +360,7 @@
                 const formatted = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 document.getElementById('renewal-date-preview-text').innerHTML = 
                     `<strong>Effective Date:</strong> ${formatted}<br>` +
-                    `<span style="font-size:0.78rem;color:var(--color-text-muted)">Due dates will be set to the first Monday of each payment month starting from this date.</span>`;
+                    `<span style="font-size:0.78rem;color:var(--color-text-muted)">Due dates will be set at regular intervals (monthly/quarterly) starting from this date.</span>`;
                 preview.style.display = 'block';
             } else {
                 approveBtn.disabled = true;

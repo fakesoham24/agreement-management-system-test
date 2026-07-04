@@ -225,7 +225,7 @@ def _assign_due_dates_from_plan_column(plans: list, agreement_date_str: str = No
     Reads the 'plan' field of each payment entry to determine the payment
     structure (quarterly, monthly, variable) and assigns due dates accordingly:
     - First recurring payment = agreement start date (kept as-is)
-    - Subsequent recurring payments = first Monday of the target month
+    - Subsequent recurring payments = same day-of-month at regular intervals
     - Variable pay = empty due date
     - Other (advance, etc.) = kept as-is
     """
@@ -256,14 +256,6 @@ def _assign_due_dates_from_plan_column(plans: list, agreement_date_str: str = No
     if not anchor_dt:
         return plans
 
-    # Helper: find first Monday of a given month
-    def first_monday_of_month(year, month):
-        dt = _dt(year, month, 1)
-        weekday = dt.weekday()  # 0=Monday
-        if weekday == 0:
-            return dt
-        days_ahead = (7 - weekday) % 7
-        return dt + _td(days=days_ahead)
 
     # Classify all plans
     classifications = [_classify_plan(p.get("plan", "")) for p in plans]
@@ -295,9 +287,7 @@ def _assign_due_dates_from_plan_column(plans: list, agreement_date_str: str = No
         else:
             # Subsequent payments: advance from anchor by seq * step_months
             target_dt = anchor_dt + relativedelta(months=seq * step_months)
-            # Snap to first Monday of target month
-            fm = first_monday_of_month(target_dt.year, target_dt.month)
-            plans[idx]["due_date"] = fm.strftime("%Y-%m-%d")
+            plans[idx]["due_date"] = target_dt.strftime("%Y-%m-%d")
 
     # Variable pay entries: set due_date to empty
     for i, cls in enumerate(classifications):
@@ -428,11 +418,11 @@ Agreement text:
             cleaned["auto_renewal"] = "No"
 
         # Handle payment_plans — ensure it's a valid JSON string
-        agreement_date_for_monday = cleaned.get("effective_date") or cleaned.get("agreement_date")
+        agreement_date_for_due_dates = cleaned.get("effective_date") or cleaned.get("agreement_date")
         plans = cleaned.get("payment_plans")
         if isinstance(plans, list):
             plans = _validate_payment_plans(plans)
-            plans = _assign_due_dates_from_plan_column(plans, agreement_date_for_monday)
+            plans = _assign_due_dates_from_plan_column(plans, agreement_date_for_due_dates)
             plans = _sort_plans_by_due_date(plans)
             cleaned["payment_plans"] = json.dumps(plans)
         elif isinstance(plans, str):
@@ -440,7 +430,7 @@ Agreement text:
                 parsed = json.loads(plans)
                 if isinstance(parsed, list):
                     parsed = _validate_payment_plans(parsed)
-                    parsed = _assign_due_dates_from_plan_column(parsed, agreement_date_for_monday)
+                    parsed = _assign_due_dates_from_plan_column(parsed, agreement_date_for_due_dates)
                     parsed = _sort_plans_by_due_date(parsed)
                     cleaned["payment_plans"] = json.dumps(parsed)
                 else:
