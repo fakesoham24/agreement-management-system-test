@@ -27,6 +27,9 @@ def get_db_connection():
 def init_db():
     """Initialize database tables."""
     os.makedirs(DATA_DIR, exist_ok=True)
+    db_dir = os.path.dirname(DATABASE_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(DATABASE_PATH)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")

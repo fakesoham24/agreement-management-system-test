@@ -16,7 +16,7 @@ _DEFAULT_SECRET_KEYS = ["ag-mgmt-secret-key-change-in-production-2024"]
 IS_DEFAULT_SECRET_KEY = SECRET_KEY in _DEFAULT_SECRET_KEYS
 
 # Database
-DATA_DIR = os.path.join(BASE_DIR, "data")
+DATA_DIR = os.getenv("DATA_DIR", os.path.join(BASE_DIR, "data"))
 DATABASE_PATH = os.getenv("DATABASE_PATH", os.path.join(DATA_DIR, "agreement_management.db"))
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATABASE_PATH}")
 

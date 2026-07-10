@@ -5,8 +5,8 @@ company selection, manual email sending, pro forma invoice generation, and viewi
 import json
 import os
 import uuid
-from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import datetime, timedelta, timezone
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from typing import Optional, List
@@ -48,6 +48,53 @@ def _inject_tracking_pixel(body: str, tracking_id: str, is_html: bool) -> str:
             f'<pre style="font-family:inherit;white-space:pre-wrap;">{body}</pre>'
             f'{pixel_tag}</body></html>'
         )
+
+
+def _is_automated_request(request: Request, sent_at_str: str) -> bool:
+    """Identify if the request for the tracking pixel is from an automated system
+    (e.g., spam filters, email scanners, pre-fetching bots) rather than a real client open.
+    Bypasses checks on localhost to support developer manual testing."""
+    # 1. Bypass all bot/timer checks if running locally (for ease of manual developer testing)
+    hostname = request.url.hostname or ""
+    if hostname in ("localhost", "127.0.0.1") or "localhost" in APP_URL or "127.0.0.1" in APP_URL:
+        return False
+
+    # 2. Check for prefetch headers (e.g. Purpose: prefetch)
+    purpose = request.headers.get("purpose", "").lower()
+    sec_purpose = request.headers.get("sec-purpose", "").lower()
+    if "prefetch" in purpose or "prefetch" in sec_purpose:
+        return True
+
+    # 3. Check User-Agent for known bots/scanners (excluding googleimageproxy)
+    user_agent = request.headers.get("user-agent", "").lower()
+    if not user_agent:
+        return True  # Empty User-Agent is suspicious and likely a bot/scanner
+
+    bot_keywords = [
+        "bot", "spider", "crawler", "monitor", "scan", "preview", "curl", "wget",
+        "python-requests", "aiohttp", "urllib", "scrapy", "go-http", "java", "apache",
+        "barracuda", "proofpoint", "mimecast", "microsoft office", "outlook-express",
+        "security", "avast", "mcafee", "norton", "kaspersky", "sophos", "fireeye", "paloalto"
+    ]
+    if any(kw in user_agent for kw in bot_keywords):
+        return True
+
+    # 4. Check time delta (ignore opens within 10 seconds of sending in production)
+    if sent_at_str:
+        try:
+            # Parse sent_at (SQLite CURRENT_TIMESTAMP is in UTC)
+            clean_str = sent_at_str.split(".")[0].replace("Z", "").strip()
+            clean_str = clean_str.replace("T", " ")
+            sent_at_dt = datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
+            now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+            time_diff = (now_utc - sent_at_dt).total_seconds()
+            if time_diff < 10:
+                return True
+        except Exception:
+            pass
+
+    return False
+
 
 router = APIRouter(prefix="/api/email", tags=["Email"])
 
@@ -636,24 +683,26 @@ def send_test_email(
 @router.get("/track/{tracking_id}.png")
 def track_email_open(
     tracking_id: str,
+    request: Request,
     db=Depends(get_db),
 ):
     """Public endpoint — called by email clients when loading images.
     Records the first open time and returns a 1x1 transparent PNG."""
     cursor = db.cursor()
     log_entry = cursor.execute(
-        "SELECT id, opened_at FROM email_log WHERE tracking_id = ?",
+        "SELECT id, opened_at, sent_at FROM email_log WHERE tracking_id = ?",
         (tracking_id,)
     ).fetchone()
 
     if log_entry:
         entry = dict(log_entry)
         if not entry.get("opened_at"):
-            cursor.execute(
-                "UPDATE email_log SET opened_at = ? WHERE id = ?",
-                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), entry["id"])
-            )
-            db.commit()
+            if not _is_automated_request(request, entry.get("sent_at")):
+                cursor.execute(
+                    "UPDATE email_log SET opened_at = ? WHERE id = ?",
+                    (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), entry["id"])
+                )
+                db.commit()
 
     return Response(
         content=_TRACKING_PIXEL,
