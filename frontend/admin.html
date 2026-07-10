@@ -103,7 +103,8 @@
                 <!-- Tabs -->
                 <div class="filter-tabs" id="admin-tabs" style="margin-bottom:24px">
                     <button class="filter-tab active" data-tab="users" onclick="switchTab('users')">Users</button>
-                    <button class="filter-tab" data-tab="consultants" onclick="switchTab('consultants')">Consultants</button>
+                    <button class="filter-tab" data-tab="consultants"
+                        onclick="switchTab('consultants')">Consultants</button>
                     <button class="filter-tab" data-tab="email" onclick="switchTab('email')">Email Settings</button>
                 </div>
 
@@ -144,9 +145,16 @@
                 <!-- Consultants Tab -->
                 <div id="tab-consultants" style="display:none">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-                        <h3 style="font-size:1rem;font-weight:600;color:var(--color-text-primary)">Consultant Persons</h3>
+                        <h3 style="font-size:1rem;font-weight:600;color:var(--color-text-primary)">Consultant Persons
+                        </h3>
                         <button class="btn btn-primary btn-sm" onclick="openAddConsultantModal()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width:15px;height:15px">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                            </svg>
                             Add Consultant
                         </button>
                     </div>
@@ -167,9 +175,16 @@
                         </table>
                     </div>
                     <div id="consultants-empty" style="display:none;text-align:center;padding:48px 24px">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:0.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-                        <p style="color:var(--color-text-muted);font-size:0.9rem;font-weight:500">No consultants added yet</p>
-                        <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px">Add consultant persons to assign them to agreements</p>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5"
+                            style="width:48px;height:48px;margin-bottom:12px;opacity:0.5">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        </svg>
+                        <p style="color:var(--color-text-muted);font-size:0.9rem;font-weight:500">No consultants added
+                            yet</p>
+                        <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px">Add consultant persons
+                            to assign them to agreements</p>
                     </div>
                 </div>
 
@@ -226,13 +241,37 @@
                                     id="company-count-label"></span>
                             </div>
 
-                            <!-- Select All + Send Bar -->
+                            <!-- Search Bar -->
+                            <div class="email-search-bar" id="client-search-bar" style="display:none">
+                                <div class="email-search-field">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px;opacity:0.5">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="M21 21l-4.35-4.35" />
+                                    </svg>
+                                    <input type="text" class="form-input" id="client-search-name"
+                                        placeholder="Search by company name..." oninput="filterClientCompanies()">
+                                </div>
+                                <div class="email-search-field">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px;opacity:0.5">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                                        <path d="M16 2v4M8 2v4M3 10h18" />
+                                    </svg>
+                                    <input type="date" class="form-input" id="client-search-date"
+                                        onchange="filterClientCompanies()">
+                                </div>
+                                <button class="btn btn-sm btn-secondary" onclick="clearClientSearch()"
+                                    title="Clear search">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:14px;height:14px">
+                                        <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Send Bar (Select All removed — bypasses proforma popup) -->
                             <div class="company-action-bar" id="company-action-bar" style="display:none">
-                                <label class="company-select-all-label">
-                                    <input type="checkbox" id="select-all-companies" onchange="toggleSelectAll()"
-                                        class="company-checkbox">
-                                    <span>Select All</span>
-                                </label>
                                 <div style="display:flex;align-items:center;gap:12px">
                                     <span class="company-selected-count" id="selected-count">0 selected</span>
                                     <button class="btn btn-primary btn-sm" id="send-emails-btn"
@@ -255,7 +294,7 @@
                                             <th style="width:40px"></th>
                                             <th>Company Name</th>
                                             <th>Payment Due Date</th>
-                                            <th>Net Amount</th>
+                                            <th>Amount</th>
                                             <th>Email</th>
                                             <th style="width:90px">More Info</th>
                                         </tr>
@@ -316,12 +355,14 @@
                                             <th>Company</th>
                                             <th>Subject</th>
                                             <th>Status</th>
+                                            <th style="width:70px;text-align:center">Email Status</th>
+                                            <th style="width:60px">Preview</th>
                                             <th style="width:40px"></th>
                                         </tr>
                                     </thead>
                                     <tbody id="email-log-tbody">
                                         <tr>
-                                            <td colspan="6"
+                                            <td colspan="8"
                                                 style="text-align:center;color:var(--color-text-muted);padding:24px">No
                                                 emails sent yet</td>
                                         </tr>
@@ -351,15 +392,49 @@
                                     id="consultant-company-count-label"></span>
                             </div>
 
-                            <!-- Select All + Send Bar -->
+                            <!-- Consultant Search Bar -->
+                            <div class="email-search-bar" id="consultant-search-bar" style="display:none">
+                                <div class="email-search-field">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px;opacity:0.5">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="M21 21l-4.35-4.35" />
+                                    </svg>
+                                    <input type="text" class="form-input" id="consultant-search-name"
+                                        placeholder="Search by company name..." oninput="filterConsultantCompanies()">
+                                </div>
+                                <div class="email-search-field">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px;opacity:0.5">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                                        <path d="M16 2v4M8 2v4M3 10h18" />
+                                    </svg>
+                                    <input type="date" class="form-input" id="consultant-search-date"
+                                        onchange="filterConsultantCompanies()">
+                                </div>
+                                <div class="email-search-field">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px;opacity:0.5">
+                                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    <input type="text" class="form-input" id="consultant-search-consultant"
+                                        placeholder="Search by consultant..." oninput="filterConsultantCompanies()">
+                                </div>
+                                <button class="btn btn-sm btn-secondary" onclick="clearConsultantSearch()"
+                                    title="Clear search">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:14px;height:14px">
+                                        <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Send Bar (Select All removed — bypasses proforma popup) -->
                             <div class="company-action-bar" id="consultant-company-action-bar" style="display:none">
-                                <label class="company-select-all-label">
-                                    <input type="checkbox" id="select-all-consultant-companies" onchange="toggleConsultantSelectAll()"
-                                        class="company-checkbox">
-                                    <span>Select All</span>
-                                </label>
                                 <div style="display:flex;align-items:center;gap:12px">
-                                    <span class="company-selected-count" id="consultant-selected-count">0 selected</span>
+                                    <span class="company-selected-count" id="consultant-selected-count">0
+                                        selected</span>
                                     <button class="btn btn-primary btn-sm" id="send-consultant-emails-btn"
                                         onclick="sendSelectedConsultantEmails()" disabled>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -374,13 +449,14 @@
 
                             <!-- Consultant Company Table -->
                             <div style="overflow-x:auto">
-                                <table class="company-select-table" id="consultant-company-select-table" style="display:none">
+                                <table class="company-select-table" id="consultant-company-select-table"
+                                    style="display:none">
                                     <thead>
                                         <tr>
                                             <th style="width:40px"></th>
                                             <th>Company Name</th>
                                             <th>Payment Due Date</th>
-                                            <th>Net Amount</th>
+                                            <th>Amount</th>
                                             <th>Assigned Consultants</th>
                                             <th style="width:90px">More Info</th>
                                         </tr>
@@ -408,6 +484,53 @@
                                     with assigned consultants and upcoming payments</p>
                                 <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px">Agreements with
                                     assigned consultants and pending payments due within 60 days will appear here</p>
+                            </div>
+                        </div>
+
+                        <!-- Consultant Email Logs -->
+                        <div class="email-settings-section" style="margin-top:24px">
+                            <div class="section-title"
+                                style="display:flex;align-items:center;justify-content:space-between">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        style="width:18px;height:18px">
+                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                        <path d="M14 2v6h6" />
+                                        <path d="M16 13H8M16 17H8" />
+                                    </svg>
+                                    Consultant Email Send History
+                                </div>
+                                <button class="btn btn-sm btn-danger" id="clear-all-consultant-logs-btn"
+                                    onclick="clearAllConsultantEmailLogs()" style="font-size:0.75rem;padding:4px 10px">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:12px;height:12px">
+                                        <path
+                                            d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg>
+                                    Clear All
+                                </button>
+                            </div>
+                            <div style="overflow-x:auto">
+                                <table class="email-log-table" id="consultant-email-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Consultant</th>
+                                            <th>Company</th>
+                                            <th>Subject</th>
+                                            <th>Status</th>
+                                            <th style="width:70px;text-align:center">Email Status</th>
+                                            <th style="width:40px"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="consultant-email-log-tbody">
+                                        <tr>
+                                            <td colspan="7"
+                                                style="text-align:center;color:var(--color-text-muted);padding:24px">No
+                                                consultant emails sent yet</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -609,36 +732,55 @@
                         <!-- Consultant Reminder Email Template -->
                         <div class="email-settings-section">
                             <div class="section-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    style="width:18px;height:18px">
+                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                                </svg>
                                 Consultant Reminder Email Template
 
                             </div>
 
                             <div class="form-group">
                                 <label>Subject line (supports {{variables}})</label>
-                                <input type="text" class="form-input" id="consultant-email-subject" placeholder="Payment Reminder — {{company_name}} (Internal)">
+                                <input type="text" class="form-input" id="consultant-email-subject"
+                                    placeholder="Payment Reminder — {{company_name}} (Internal)">
                             </div>
 
                             <div class="template-type-toggle">
-                                <button class="template-type-btn active" data-ctype="text" onclick="switchConsultantTemplateType('text')">Visual</button>
-                                <button class="template-type-btn" data-ctype="html" onclick="switchConsultantTemplateType('html')">HTML</button>
+                                <button class="template-type-btn active" data-ctype="text"
+                                    onclick="switchConsultantTemplateType('text')">Visual</button>
+                                <button class="template-type-btn" data-ctype="html"
+                                    onclick="switchConsultantTemplateType('html')">HTML</button>
                             </div>
 
                             <div id="consultant-template-text-wrapper" class="rich-text-editor-wrapper">
                                 <div class="editor-toolbar" id="consultant-editor-toolbar">
-                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('bold')" title="Bold"><b>B</b></button>
-                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('italic')" title="Italic"><i>I</i></button>
-                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('underline')" title="Underline"><u>U</u></button>
+                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('bold')"
+                                        title="Bold"><b>B</b></button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execConsultantCmd('italic')" title="Italic"><i>I</i></button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execConsultantCmd('underline')" title="Underline"><u>U</u></button>
                                     <div class="editor-toolbar-separator"></div>
-                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('insertUnorderedList')" title="Bullet List">•</button>
-                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('insertOrderedList')" title="Numbered List">1.</button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execConsultantCmd('insertUnorderedList')"
+                                        title="Bullet List">•</button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execConsultantCmd('insertOrderedList')"
+                                        title="Numbered List">1.</button>
                                     <div class="editor-toolbar-separator"></div>
-                                    <button type="button" class="editor-toolbar-btn" onclick="execConsultantCmd('removeFormat')" title="Clear Formatting">✘</button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execConsultantCmd('removeFormat')" title="Clear Formatting">✘</button>
                                 </div>
-                                <div class="rich-text-editor" id="consultant-template-text" contenteditable="true" data-placeholder="Enter your consultant reminder template here... Use {{variables}} for dynamic content."></div>
+                                <div class="rich-text-editor" id="consultant-template-text" contenteditable="true"
+                                    data-placeholder="Enter your consultant reminder template here... Use {{variables}} for dynamic content.">
+                                </div>
                             </div>
 
-                            <textarea class="template-editor" id="consultant-template-html" placeholder="Paste your HTML template here..." style="display:none"></textarea>
+                            <textarea class="template-editor" id="consultant-template-html"
+                                placeholder="Paste your HTML template here..." style="display:none"></textarea>
 
                             <div class="template-variables">
                                 <h4>Available Variables</h4>
@@ -656,7 +798,12 @@
 
                             <div class="email-actions" style="margin-top:16px">
                                 <button class="btn btn-primary" onclick="saveConsultantTemplate()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px">
+                                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                        <polyline points="17 21 17 13 7 13 7 21" />
+                                        <polyline points="7 3 7 8 15 8" />
+                                    </svg>
                                     Save Consultant Email Template
                                 </button>
                             </div>
@@ -813,10 +960,12 @@
         <div class="modal">
             <h3 class="modal-title">Add Consultant</h3>
             <div class="modal-body">
-                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem">Add a new consultant person who can be assigned to agreements.</p>
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem">Add a new consultant
+                    person who can be assigned to agreements.</p>
                 <div class="form-group">
                     <label>Full Name <span style="color:var(--color-danger)">*</span></label>
-                    <input type="text" class="form-input" id="add-consultant-name" placeholder="Enter full name" required>
+                    <input type="text" class="form-input" id="add-consultant-name" placeholder="Enter full name"
+                        required>
                     <span class="field-error" id="add-consultant-name-error"></span>
                 </div>
                 <div class="form-group">
@@ -835,13 +984,15 @@
                 </div>
                 <div class="form-group">
                     <label>Email Address <span style="color:var(--color-danger)">*</span></label>
-                    <input type="email" class="form-input" id="add-consultant-email" placeholder="consultant@example.com" required>
+                    <input type="email" class="form-input" id="add-consultant-email"
+                        placeholder="consultant@example.com" required>
                     <span class="field-error" id="add-consultant-email-error"></span>
                 </div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeAddConsultantModal()">Cancel</button>
-                <button class="btn btn-primary" id="add-consultant-btn" onclick="submitAddConsultant()">Add Consultant</button>
+                <button class="btn btn-primary" id="add-consultant-btn" onclick="submitAddConsultant()">Add
+                    Consultant</button>
             </div>
         </div>
     </div>
@@ -870,13 +1021,213 @@
                 </div>
                 <div class="form-group">
                     <label>Email Address <span style="color:var(--color-danger)">*</span></label>
-                    <input type="email" class="form-input" id="edit-consultant-email" placeholder="consultant@example.com">
+                    <input type="email" class="form-input" id="edit-consultant-email"
+                        placeholder="consultant@example.com">
                     <span class="field-error" id="edit-consultant-email-error"></span>
                 </div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeEditConsultantModal()">Cancel</button>
-                <button class="btn btn-primary" id="edit-consultant-btn" onclick="submitEditConsultant()">Save Changes</button>
+                <button class="btn btn-primary" id="edit-consultant-btn" onclick="submitEditConsultant()">Save
+                    Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro Forma Invoice Form Modal (Non-dismissible) -->
+    <div class="modal-overlay proforma-modal-overlay" id="proforma-form-modal">
+        <div class="modal proforma-modal">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:8px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="width:20px;height:20px;color:var(--color-accent)">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+                Generate Pro Forma Invoice
+                <span id="proforma-buyer-label"
+                    style="font-weight:400;font-size:0.8rem;color:var(--color-text-muted);margin-left:auto"></span>
+            </h3>
+            <div class="modal-body" style="max-height:65vh;overflow-y:auto">
+                <input type="hidden" id="proforma-agreement-id">
+                <input type="hidden" id="proforma-payment-id">
+
+                <div class="proforma-form-grid">
+                    <!-- Row 1: Invoice No + Date -->
+                    <div class="form-group">
+                        <label>Invoice No <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-invoice-no" placeholder="e.g. 26-27/0001">
+                    </div>
+                    <div class="form-group">
+                        <label>Date <span style="color:var(--color-danger)">*</span></label>
+                        <input type="date" class="form-input" id="proforma-date">
+                    </div>
+
+                    <!-- Row 2: Mode of Payment + Reference No -->
+                    <div class="form-group">
+                        <label>Mode of Payment <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-mode-of-payment" value="ADVANCE">
+                    </div>
+                    <div class="form-group">
+                        <label>Reference No <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-reference-no"
+                            placeholder="Enter reference number">
+                    </div>
+
+                    <!-- Row 3: Reference Date + Sales Person -->
+                    <div class="form-group">
+                        <label>Reference Date <span style="color:var(--color-danger)">*</span></label>
+                        <input type="date" class="form-input" id="proforma-reference-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Sales Person (Other Reference) <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-sales-person"
+                            placeholder="Enter sales person name">
+                    </div>
+
+                    <!-- Row 4: Buyer Name (read-only) + Buyer GSTIN -->
+                    <div class="form-group">
+                        <label>Buyer Name (Client) <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-buyer-name" readonly
+                            style="background:var(--color-surface-elevated);cursor:not-allowed">
+                    </div>
+                    <div class="form-group">
+                        <label>Buyer GSTIN <span
+                                style="font-weight:400;font-size:0.72rem;color:var(--color-text-muted)">(15 chars,
+                                alphanumeric, uppercase)</span></label>
+                        <input type="text" class="form-input" id="proforma-buyer-gstin"
+                            placeholder="e.g. 24XXXXX1234X1XX" maxlength="15"
+                            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');validateGSTIN()"
+                            onblur="validateGSTIN()">
+                        <span class="field-error" id="proforma-gstin-error"
+                            style="font-size:0.75rem;color:var(--color-danger);margin-top:2px;display:block"></span>
+                    </div>
+
+                    <!-- Row 5: State + Tax Type (auto) -->
+                    <div class="form-group">
+                        <label>State <span style="color:var(--color-danger)">*</span></label>
+                        <select class="form-input" id="proforma-state" onchange="onProformaStateChange()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tax Type (Auto)</label>
+                        <input type="text" class="form-input" id="proforma-tax-type" readonly
+                            style="background:var(--color-surface-elevated);cursor:not-allowed;font-weight:600"
+                            value="Intrastate">
+                    </div>
+
+                    <!-- Row 6: City (searchable) + Area -->
+                    <div class="form-group" style="position:relative">
+                        <label>City <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-city-search"
+                            placeholder="Type to search city..." autocomplete="off" oninput="filterProformaCities()"
+                            onfocus="showCityDropdown()">
+                        <div class="proforma-city-dropdown" id="proforma-city-dropdown" style="display:none"></div>
+                        <input type="hidden" id="proforma-city-value">
+                    </div>
+                    <div class="form-group">
+                        <label>Area</label>
+                        <input type="text" class="form-input" id="proforma-area" placeholder="e.g. Navrangpura">
+                    </div>
+
+                    <!-- Row 7: Description + HSN/SAC -->
+                    <div class="form-group" style="position:relative">
+                        <label>Description (Service) <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-description"
+                            placeholder="Type or select description..." autocomplete="off"
+                            oninput="filterProformaDescriptions()" onfocus="showDescriptionDropdown()"
+                            value="Professional Fees - Time">
+                        <div class="proforma-city-dropdown" id="proforma-description-dropdown" style="display:none"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>HSN/SAC <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-hsn-sac" value="998311">
+                    </div>
+
+                    <!-- Row 8: Sub Note (full width) -->
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Sub Note</label>
+                        <input type="text" class="form-input" id="proforma-sub-note"
+                            placeholder="Optional sub note for the invoice">
+                    </div>
+
+                    <!-- Row 9: GST Rate + Quantity + Quantity Unit + Rate -->
+                    <div class="form-group">
+                        <label>GST Rate (%) <span style="color:var(--color-danger)">*</span></label>
+                        <input type="number" class="form-input" id="proforma-gst-rate" value="18" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity <span style="color:var(--color-danger)">*</span></label>
+                        <input type="number" class="form-input" id="proforma-quantity" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity Unit <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="proforma-quantity-unit" value="Time">
+                    </div>
+                    <div class="form-group">
+                        <label>Rate (Amount) <span style="color:var(--color-danger)">*</span></label>
+                        <input type="number" class="form-input" id="proforma-rate" step="0.01" min="0"
+                            placeholder="Auto-filled from payment">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="cancelProforma()">Cancel</button>
+                <button class="btn btn-primary" id="proforma-generate-btn" onclick="generateProforma()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:15px;height:15px">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    Generate Pro Forma Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro Forma Invoice PDF Preview Modal -->    
+    <div class="modal-overlay proforma-modal-overlay" id="proforma-preview-modal">
+        <div class="modal proforma-preview-container">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:8px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="width:20px;height:20px;color:var(--color-success)">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Pro Forma Invoice Preview
+                <span id="proforma-preview-label"
+                    style="font-weight:400;font-size:0.8rem;color:var(--color-text-muted);margin-left:auto"></span>
+            </h3>
+            <div class="proforma-pdf-frame-wrapper">
+                <iframe id="proforma-pdf-iframe" style="width:100%;height:385px;border:none;border-radius:8px"></iframe>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="proforma-edit-btn" onclick="editProforma()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:15px;height:15px">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Edit & Regenerate
+                </button>
+                <button class="btn btn-secondary" id="proforma-download-btn" onclick="downloadProforma()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:15px;height:15px">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download PDF
+                </button>
+                <button class="btn btn-primary" id="proforma-confirm-btn" onclick="confirmProforma()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:15px;height:15px">
+                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    Confirm Invoice
+                </button>
             </div>
         </div>
     </div>
@@ -1290,6 +1641,7 @@
                 loadEmailLogs();
             } else if (tab === 'consultant-send') {
                 loadConsultantCompanies();
+                loadConsultantEmailLogs();
             } else if (tab === 'credentials') {
                 loadEmailSettings();
             }
@@ -1354,6 +1706,7 @@
                 document.getElementById('company-count-label').textContent = `${totalPayments} ${totalPayments === 1 ? 'payment' : 'payments'} across ${companyCount} ${companyCount === 1 ? 'company' : 'companies'}`;
                 actionBar.style.display = 'flex';
                 table.style.display = 'table';
+                document.getElementById('client-search-bar').style.display = 'flex';
                 renderCompanyList();
             } catch (err) {
                 loading.style.display = 'none';
@@ -1366,6 +1719,10 @@
         function renderCompanyList() {
             const tbody = document.getElementById('company-select-tbody');
             const now = new Date();
+
+            // Apply search filters
+            const searchName = (document.getElementById('client-search-name').value || '').trim().toLowerCase();
+            const searchDate = document.getElementById('client-search-date').value || '';
 
             // Flatten companies into individual payment rows
             const flatRows = [];
@@ -1380,7 +1737,9 @@
                         companyIndex: companyIndex,
                         payment_id: p.payment_id,
                         due_date: p.due_date,
-                        net_amount: p.net_amount || p.amount || 0,
+                        amount: p.amount || 0,
+                        proforma_status: p.proforma_status,
+                        proforma_id: p.proforma_id,
                     });
                 });
             });
@@ -1388,7 +1747,14 @@
             // Sort all payment rows by due_date ascending
             flatRows.sort((a, b) => (a.due_date || '').localeCompare(b.due_date || ''));
 
-            tbody.innerHTML = flatRows.map(row => {
+            // Filter
+            const filtered = flatRows.filter(row => {
+                if (searchName && !(row.company_name || '').toLowerCase().includes(searchName)) return false;
+                if (searchDate && row.due_date !== searchDate) return false;
+                return true;
+            });
+
+            tbody.innerHTML = filtered.map(row => {
                 const isSelected = selectedCompanies.has(row.payment_id);
                 const dueDate = new Date(row.due_date);
                 const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
@@ -1406,6 +1772,17 @@
                     dueDateBadge = `<span class="company-due-badge normal">${daysLeft}d left</span>`;
                 }
 
+                // Proforma badge
+                let proformaBadge = '';
+                if (row.proforma_status === 'confirmed') {
+                    proformaBadge = `<div style="margin-top:4px;display:flex;align-items:center;gap:4px">
+                        <span class="badge badge-active" style="font-size:0.7rem;cursor:pointer" onclick="event.stopPropagation();previewProformaInline(${row.proforma_id})">✅ Pro Forma Invoice</span>
+                        <button class="btn-ghost btn-icon" onclick="event.stopPropagation();deleteConfirmedProforma(${row.proforma_id})" title="Delete this Pro Forma Invoice" style="padding:2px;color:var(--color-text-muted);opacity:0.6;transition:opacity 0.15s,color 0.15s" onmouseenter="this.style.opacity='1';this.style.color='var(--color-danger)'" onmouseleave="this.style.opacity='0.6';this.style.color='var(--color-text-muted)'">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>`;
+                }
+
                 return `
                     <tr class="${isSelected ? 'company-row-selected' : ''} ${dueDateClass}" data-pid="${row.payment_id}" data-aid="${row.agreement_id}">
                         <td>
@@ -1415,13 +1792,14 @@
                         <td>
                             <div style="font-weight:600;color:var(--color-text-primary)">${row.company_name || 'Unknown'}</div>
                             <div style="font-size:0.75rem;color:var(--color-text-muted)">${row.agreement_title || ''}</div>
+                            ${proformaBadge}
                         </td>
                         <td>
                             <div>${formatDate(row.due_date)}</div>
                             ${dueDateBadge}
                         </td>
                         <td>
-                            <strong>${row.currency}${row.net_amount ? row.net_amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</strong>
+                            <strong>${row.currency}${row.amount ? row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</strong>
                         </td>
                         <td>
                             <input type="email" class="form-input company-email-input" data-aid="${row.agreement_id}"
@@ -1442,54 +1820,55 @@
         }
 
         function toggleCompanySelect(paymentId) {
-            if (selectedCompanies.has(paymentId)) {
-                selectedCompanies.delete(paymentId);
-            } else {
-                selectedCompanies.add(paymentId);
+            let agreementId = null;
+            let companyName = '';
+            let amount = 0;
+
+            for (const company of companiesList) {
+                const pmt = (company.payments || []).find(p => p.payment_id === paymentId);
+                if (pmt) {
+                    agreementId = company.agreement_id;
+                    companyName = company.company_name;
+                    amount = pmt.amount || 0;
+                    break;
+                }
             }
-            updateSelectionUI();
-            // Update only the single row for this payment
-            const isSelected = selectedCompanies.has(paymentId);
-            const row = document.querySelector(`tr[data-pid="${paymentId}"]`);
-            if (row) {
-                row.classList.toggle('company-row-selected', isSelected);
-                const cb = row.querySelector('.company-checkbox');
-                if (cb) cb.checked = isSelected;
+
+            if (selectedCompanies.has(paymentId)) {
+                // Unchecking — just remove
+                selectedCompanies.delete(paymentId);
+                updateSelectionUI();
+                const row = document.querySelector(`tr[data-pid="${paymentId}"]`);
+                if (row) {
+                    row.classList.remove('company-row-selected');
+                    const cb = row.querySelector('.company-checkbox');
+                    if (cb) cb.checked = false;
+                }
+            } else {
+                // Checking — open proforma form
+                selectedCompanies.add(paymentId);
+                updateSelectionUI();
+                const row = document.querySelector(`tr[data-pid="${paymentId}"]`);
+                if (row) {
+                    row.classList.add('company-row-selected');
+                    const cb = row.querySelector('.company-checkbox');
+                    if (cb) cb.checked = true;
+                }
+                // Open proforma modal for this payment (handle async errors)
+                openProformaModal(paymentId, agreementId, companyName, amount).catch(err => {
+                    console.error('Error opening proforma modal:', err);
+                    showToast('Failed to open proforma form: ' + (err.message || err), 'error');
+                });
             }
         }
 
-        function toggleSelectAll() {
-            const selectAllCb = document.getElementById('select-all-companies');
-            if (selectAllCb.checked) {
-                companiesList.forEach(c => {
-                    (c.payments || []).forEach(p => selectedCompanies.add(p.payment_id));
-                });
-            } else {
-                selectedCompanies.clear();
-            }
-            // Update all checkboxes
-            document.querySelectorAll('.company-checkbox:not(#select-all-companies)').forEach(cb => {
-                cb.checked = selectAllCb.checked;
-            });
-            // Update row highlights
-            document.querySelectorAll('#company-select-tbody tr').forEach(row => {
-                row.classList.toggle('company-row-selected', selectAllCb.checked);
-            });
-            updateSelectionUI();
-        }
+        // toggleSelectAll removed — Select All bypasses proforma popup
+        function toggleSelectAll() { /* no-op — Select All button removed */ }
 
         function updateSelectionUI() {
             const count = selectedCompanies.size;
             document.getElementById('selected-count').textContent = `${count} selected`;
             document.getElementById('send-emails-btn').disabled = count === 0;
-
-            // Update select-all checkbox state
-            const selectAllCb = document.getElementById('select-all-companies');
-            const totalPayments = companiesList.reduce((sum, c) => sum + (c.payments || []).length, 0);
-            if (totalPayments > 0) {
-                selectAllCb.checked = count === totalPayments;
-                selectAllCb.indeterminate = count > 0 && count < totalPayments;
-            }
         }
 
         function updateCompanyEmail(companyIndex, newEmail, agreementId) {
@@ -1616,6 +1995,7 @@
                 document.getElementById('consultant-company-count-label').textContent = `${totalPayments} ${totalPayments === 1 ? 'payment' : 'payments'} across ${companyCount} ${companyCount === 1 ? 'company' : 'companies'}`;
                 actionBar.style.display = 'flex';
                 table.style.display = 'table';
+                document.getElementById('consultant-search-bar').style.display = 'flex';
                 renderConsultantCompanyList();
             } catch (err) {
                 loading.style.display = 'none';
@@ -1628,6 +2008,11 @@
         function renderConsultantCompanyList() {
             const tbody = document.getElementById('consultant-company-select-tbody');
             const now = new Date();
+
+            // Apply search filters
+            const searchName = (document.getElementById('consultant-search-name').value || '').trim().toLowerCase();
+            const searchDate = document.getElementById('consultant-search-date').value || '';
+            const searchConsultant = (document.getElementById('consultant-search-consultant').value || '').trim().toLowerCase();
 
             // Flatten companies into individual payment rows
             const flatRows = [];
@@ -1642,7 +2027,7 @@
                         companyIndex: companyIndex,
                         payment_id: p.payment_id,
                         due_date: p.due_date,
-                        net_amount: p.net_amount || p.amount || 0,
+                        amount: p.amount || 0,
                     });
                 });
             });
@@ -1650,7 +2035,15 @@
             // Sort all payment rows by due_date ascending
             flatRows.sort((a, b) => (a.due_date || '').localeCompare(b.due_date || ''));
 
-            tbody.innerHTML = flatRows.map(row => {
+            // Filter
+            const filtered = flatRows.filter(row => {
+                if (searchName && !(row.company_name || '').toLowerCase().includes(searchName)) return false;
+                if (searchDate && row.due_date !== searchDate) return false;
+                if (searchConsultant && !row.consultants.some(c => (c.name || '').toLowerCase().includes(searchConsultant))) return false;
+                return true;
+            });
+
+            tbody.innerHTML = filtered.map(row => {
                 const isSelected = selectedConsultantPayments.has(row.payment_id);
                 const dueDate = new Date(row.due_date);
                 const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
@@ -1688,7 +2081,7 @@
                             ${dueDateBadge}
                         </td>
                         <td>
-                            <strong>${row.currency}${row.net_amount ? row.net_amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</strong>
+                            <strong>${row.currency}${row.amount ? row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</strong>
                         </td>
                         <td>
                             <div style="display:flex;flex-wrap:wrap;gap:2px">${consultantNames || '<span style="color:var(--color-text-muted)">None</span>'}</div>
@@ -1722,35 +2115,13 @@
             }
         }
 
-        function toggleConsultantSelectAll() {
-            const selectAllCb = document.getElementById('select-all-consultant-companies');
-            if (selectAllCb.checked) {
-                consultantCompaniesList.forEach(c => {
-                    (c.payments || []).forEach(p => selectedConsultantPayments.add(p.payment_id));
-                });
-            } else {
-                selectedConsultantPayments.clear();
-            }
-            document.querySelectorAll('.consultant-cb').forEach(cb => {
-                cb.checked = selectAllCb.checked;
-            });
-            document.querySelectorAll('#consultant-company-select-tbody tr').forEach(row => {
-                row.classList.toggle('company-row-selected', selectAllCb.checked);
-            });
-            updateConsultantSelectionUI();
-        }
+        // toggleConsultantSelectAll removed — Select All bypasses proforma popup
+        function toggleConsultantSelectAll() { /* no-op — Select All button removed */ }
 
         function updateConsultantSelectionUI() {
             const count = selectedConsultantPayments.size;
             document.getElementById('consultant-selected-count').textContent = `${count} selected`;
             document.getElementById('send-consultant-emails-btn').disabled = count === 0;
-
-            const selectAllCb = document.getElementById('select-all-consultant-companies');
-            const totalPayments = consultantCompaniesList.reduce((sum, c) => sum + (c.payments || []).length, 0);
-            if (totalPayments > 0) {
-                selectAllCb.checked = count === totalPayments;
-                selectAllCb.indeterminate = count > 0 && count < totalPayments;
-            }
         }
 
         async function sendSelectedConsultantEmails() {
@@ -1810,6 +2181,7 @@
                 // Reload
                 selectedConsultantPayments.clear();
                 await loadConsultantCompanies();
+                loadConsultantEmailLogs();
             } catch (err) {
                 showToast(err.message || 'Failed to send consultant emails', 'error');
             } finally {
@@ -1981,7 +2353,7 @@
         }
 
         // ========================
-        // Email Logs
+        // Email Logs (Client)
         // ========================
         async function loadEmailLogs() {
             try {
@@ -1991,7 +2363,7 @@
                 const clearBtn = document.getElementById('clear-all-logs-btn');
 
                 if (logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-text-muted);padding:24px">No emails sent yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--color-text-muted);padding:24px">No emails sent yet</td></tr>';
                     clearBtn.style.display = 'none';
                     return;
                 }
@@ -2001,10 +2373,16 @@
                 tbody.innerHTML = logs.map(l => `
                     <tr>
                         <td>${formatDate(l.sent_at)}</td>
-                        <td>${l.recipient_email || '—'}</td>
-                        <td>${l.company_name || '—'}</td>
-                        <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.subject || '—'}</td>
+                        <td>${l.recipient_email || '\u2014'}</td>
+                        <td>${l.company_name || '\u2014'}</td>
+                        <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.subject || '\u2014'}</td>
                         <td><span class="badge ${l.status === 'sent' ? 'badge-active' : 'badge-expired'}">${l.status}</span></td>
+                        <td style="text-align:center">
+                            ${l.status === 'sent' ? `<span class="email-status-dot ${l.email_opened ? 'opened' : 'pending'}" title="${l.email_opened ? 'Opened' : 'Pending'}"></span>` : '\u2014'}
+                        </td>
+                        <td style="text-align:center">
+                            ${l.proforma_invoice_path ? `<button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();previewEmailLogProforma(${l.id})" title="Preview sent Pro Forma Invoice" style="padding:3px 8px;font-size:0.72rem">Preview</button>` : (l.proforma_deleted ? `<span style="font-size:0.72rem;color:var(--color-danger);font-weight:500;opacity:0.8">Deleted</span>` : '\u2014')}
+                        </td>
                         <td style="text-align:center">
                             <button class="btn-ghost btn-icon" onclick="event.stopPropagation(); deleteEmailLog(${l.id})" title="Delete this entry" style="padding:4px;color:var(--color-text-muted);opacity:0.6;transition:opacity 0.15s" onmouseenter="this.style.opacity='1';this.style.color='var(--color-danger)'" onmouseleave="this.style.opacity='0.6';this.style.color='var(--color-text-muted)'">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -2020,13 +2398,13 @@
         async function clearAllEmailLogs() {
             const confirmed = await showConfirm(
                 'Clear Email History',
-                'Are you sure you want to delete all email send history? This action cannot be undone.'
+                'Are you sure you want to delete all client email send history? This action cannot be undone.'
             );
             if (!confirmed) return;
 
             try {
                 await api.delete('/email/logs');
-                showToast('All email history cleared', 'success');
+                showToast('All client email history cleared', 'success');
                 loadEmailLogs();
             } catch (err) {
                 showToast(err.message || 'Failed to clear email history', 'error');
@@ -2037,6 +2415,71 @@
             try {
                 await api.delete(`/email/logs/${logId}`);
                 loadEmailLogs();
+            } catch (err) {
+                showToast(err.message || 'Failed to delete entry', 'error');
+            }
+        }
+
+        // ========================
+        // Consultant Email Logs
+        // ========================
+        async function loadConsultantEmailLogs() {
+            try {
+                const data = await api.get('/email/consultant-logs');
+                const logs = data.logs || [];
+                const tbody = document.getElementById('consultant-email-log-tbody');
+                const clearBtn = document.getElementById('clear-all-consultant-logs-btn');
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--color-text-muted);padding:24px">No consultant emails sent yet</td></tr>';
+                    clearBtn.style.display = 'none';
+                    return;
+                }
+
+                clearBtn.style.display = '';
+
+                tbody.innerHTML = logs.map(l => `
+                    <tr>
+                        <td>${formatDate(l.sent_at)}</td>
+                        <td>${l.consultant_name || '\u2014'}</td>
+                        <td>${l.company_name || '\u2014'}</td>
+                        <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.subject || '\u2014'}</td>
+                        <td><span class="badge ${l.status === 'sent' ? 'badge-active' : 'badge-expired'}">${l.status}</span></td>
+                        <td style="text-align:center">
+                            ${l.status === 'sent' ? `<span class="email-status-dot ${l.email_opened ? 'opened' : 'pending'}" title="${l.email_opened ? 'Opened' : 'Pending'}"></span>` : '\u2014'}
+                        </td>
+                        <td style="text-align:center">
+                            <button class="btn-ghost btn-icon" onclick="event.stopPropagation(); deleteConsultantEmailLog(${l.id})" title="Delete this entry" style="padding:4px;color:var(--color-text-muted);opacity:0.6;transition:opacity 0.15s" onmouseenter="this.style.opacity='1';this.style.color='var(--color-danger)'" onmouseleave="this.style.opacity='0.6';this.style.color='var(--color-text-muted)'">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                // Silent
+            }
+        }
+
+        async function clearAllConsultantEmailLogs() {
+            const confirmed = await showConfirm(
+                'Clear Consultant Email History',
+                'Are you sure you want to delete all consultant email send history? This action cannot be undone.'
+            );
+            if (!confirmed) return;
+
+            try {
+                await api.delete('/email/consultant-logs');
+                showToast('All consultant email history cleared', 'success');
+                loadConsultantEmailLogs();
+            } catch (err) {
+                showToast(err.message || 'Failed to clear consultant email history', 'error');
+            }
+        }
+
+        async function deleteConsultantEmailLog(logId) {
+            try {
+                await api.delete(`/email/consultant-logs/${logId}`);
+                loadConsultantEmailLogs();
             } catch (err) {
                 showToast(err.message || 'Failed to delete entry', 'error');
             }
@@ -2295,6 +2738,639 @@
             } catch (err) {
                 showToast(err.message, 'error');
             }
+        }
+
+        // (escapeAttr is already defined above at line ~1162)
+
+        // ========================
+        // Search / Filter Functions
+        // ========================
+        function filterClientCompanies() { renderCompanyList(); }
+        function clearClientSearch() {
+            document.getElementById('client-search-name').value = '';
+            document.getElementById('client-search-date').value = '';
+            renderCompanyList();
+        }
+        function filterConsultantCompanies() { renderConsultantCompanyList(); }
+        function clearConsultantSearch() {
+            document.getElementById('consultant-search-name').value = '';
+            document.getElementById('consultant-search-date').value = '';
+            document.getElementById('consultant-search-consultant').value = '';
+            renderConsultantCompanyList();
+        }
+
+        // ========================
+        // Pro Forma Invoice — State & City Data
+        // ========================
+        const INDIAN_STATES = [
+            { code: "01", name: "Jammu & Kashmir" },
+            { code: "02", name: "Himachal Pradesh" },
+            { code: "03", name: "Punjab" },
+            { code: "04", name: "Chandigarh" },
+            { code: "05", name: "Uttarakhand" },
+            { code: "06", name: "Haryana" },
+            { code: "07", name: "Delhi" },
+            { code: "08", name: "Rajasthan" },
+            { code: "09", name: "Uttar Pradesh" },
+            { code: "10", name: "Bihar" },
+            { code: "11", name: "Sikkim" },
+            { code: "12", name: "Arunachal Pradesh" },
+            { code: "13", name: "Nagaland" },
+            { code: "14", name: "Manipur" },
+            { code: "15", name: "Mizoram" },
+            { code: "16", name: "Tripura" },
+            { code: "17", name: "Meghalaya" },
+            { code: "18", name: "Assam" },
+            { code: "19", name: "West Bengal" },
+            { code: "20", name: "Jharkhand" },
+            { code: "21", name: "Odisha" },
+            { code: "22", name: "Chhattisgarh" },
+            { code: "23", name: "Madhya Pradesh" },
+            { code: "24", name: "Gujarat" },
+            { code: "25", name: "Daman & Diu" },
+            { code: "26", name: "Dadra & Nagar Haveli" },
+            { code: "27", name: "Maharashtra" },
+            { code: "29", name: "Karnataka" },
+            { code: "30", name: "Goa" },
+            { code: "32", name: "Kerala" },
+            { code: "33", name: "Tamil Nadu" },
+            { code: "34", name: "Puducherry" },
+            { code: "36", name: "Telangana" },
+            { code: "37", name: "Andhra Pradesh" },
+        ];
+
+        const STATE_CITIES = {
+            "24": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Anand", "Navsari", "Morbi", "Mehsana", "Bharuch", "Vapi", "Gandhidham"],
+            "27": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur", "Kolhapur", "Amravati", "Navi Mumbai", "Vasai-Virar", "Sangli", "Malegaon", "Jalgaon", "Akola"],
+            "07": ["New Delhi", "Dwarka", "Rohini", "Saket", "Connaught Place", "Karol Bagh", "Lajpat Nagar", "Nehru Place", "Pitampura", "Janakpuri"],
+            "29": ["Bengaluru", "Mysuru", "Hubli", "Mangalore", "Belgaum", "Davangere", "Bellary", "Shimoga", "Tumkur", "Raichur", "Bidar", "Hospet", "Udupi", "Kolar"],
+            "33": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Erode", "Vellore", "Thoothukudi", "Dindigul", "Thanjavur", "Tiruppur", "Nagercoil"],
+            "36": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet", "Siddipet", "Miryalaguda"],
+            "32": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", "Palakkad", "Alappuzha", "Kannur", "Kottayam", "Malappuram"],
+            "08": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Bhilwara", "Alwar", "Sikar", "Bharatpur", "Pali", "Sri Ganganagar", "Tonk"],
+            "09": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Meerut", "Prayagraj", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi"],
+            "19": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Bardhaman", "Malda", "Baharampur", "Habra", "Kharagpur", "Shantipur", "Dankuni", "Dhulian"],
+            "03": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Pathankot", "Hoshiarpur", "Batala", "Moga"],
+            "06": ["Faridabad", "Gurgaon", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula"],
+            "23": ["Bhopal", "Indore", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Murwara", "Singrauli"],
+            "10": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar"],
+            "37": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kakinada", "Kadapa", "Anantapur"],
+            "22": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon", "Jagdalpur", "Ambikapur", "Chirmiri", "Dhamtari"],
+            "21": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada", "Jharsuguda"],
+            "20": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Phusro", "Medininagar"],
+            "18": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Karimganj", "Hailakandi", "Diphu"],
+            "30": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Bicholim", "Curchorem", "Sanquelim", "Cuncolim", "Quepem"],
+            "05": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Kotdwar", "Pithoragarh", "Srinagar"],
+            "02": ["Shimla", "Manali", "Dharamshala", "Solan", "Mandi", "Kangra", "Palampur", "Baddi", "Nahan", "Hamirpur"],
+            "01": ["Srinagar", "Jammu", "Anantnag", "Baramulla", "Udhampur", "Sopore", "Kathua", "Rajouri", "Poonch", "Kupwara"],
+            "11": ["Gangtok", "Namchi", "Mangan", "Gyalshing", "Rangpo", "Singtam", "Jorethang"],
+            "04": ["Chandigarh"],
+            "25": ["Daman", "Diu", "Nani Daman", "Moti Daman"],
+            "26": ["Silvassa", "Dadra", "Naroli", "Amli"],
+            "34": ["Puducherry", "Karaikal", "Mahe", "Yanam"],
+            "12": ["Itanagar", "Naharlagun", "Pasighat", "Tawang", "Ziro"],
+            "13": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha"],
+            "14": ["Imphal", "Thoubal", "Bishnupur", "Churachandpur", "Kakching"],
+            "15": ["Aizawl", "Lunglei", "Champhai", "Serchhip", "Kolasib"],
+            "16": ["Agartala", "Udaipur", "Dharmanagar", "Kailashahar", "Ambassa"],
+            "17": ["Shillong", "Tura", "Jowai", "Nongstoin", "Williamnagar"],
+        };
+
+        // ========================
+        // Pro Forma Invoice — Modal Logic
+        // ========================
+        let currentProformaInvoiceId = null;
+        let currentProformaFormData = null;
+        let currentPreviewLogId = null;
+
+        function populateStateDropdown() {
+            const sel = document.getElementById('proforma-state');
+            sel.innerHTML = INDIAN_STATES.map(s =>
+                `<option value="${s.code}" ${s.code === '24' ? 'selected' : ''}>${s.name} (${s.code})</option>`
+            ).join('');
+        }
+
+        function onProformaStateChange() {
+            const sel = document.getElementById('proforma-state');
+            const code = sel.value;
+            // Auto-set tax type
+            const taxField = document.getElementById('proforma-tax-type');
+            taxField.value = code === '24' ? 'Intrastate' : 'Interstate';
+
+            // Update city dropdown
+            document.getElementById('proforma-city-search').value = '';
+            document.getElementById('proforma-city-value').value = '';
+            document.getElementById('proforma-city-dropdown').style.display = 'none';
+        }
+
+        function showCityDropdown() {
+            filterProformaCities();
+            document.getElementById('proforma-city-dropdown').style.display = 'block';
+        }
+
+        function filterProformaCities() {
+            const stateCode = document.getElementById('proforma-state').value;
+            const search = (document.getElementById('proforma-city-search').value || '').trim().toLowerCase();
+            const cities = STATE_CITIES[stateCode] || [];
+            const filtered = search ? cities.filter(c => c.toLowerCase().includes(search)) : cities;
+            const dd = document.getElementById('proforma-city-dropdown');
+
+            if (filtered.length === 0) {
+                dd.innerHTML = '<div class="proforma-city-option" style="color:var(--color-text-muted)">No cities found</div>';
+            } else {
+                dd.innerHTML = filtered.map(c =>
+                    `<div class="proforma-city-option" onclick="selectProformaCity('${escapeAttr(c)}')">${c}</div>`
+                ).join('');
+            }
+            dd.style.display = 'block';
+        }
+
+        function selectProformaCity(city) {
+            document.getElementById('proforma-city-search').value = city;
+            document.getElementById('proforma-city-value').value = city;
+            document.getElementById('proforma-city-dropdown').style.display = 'none';
+        }
+
+        // Close city and description dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            const cityDd = document.getElementById('proforma-city-dropdown');
+            const cityInput = document.getElementById('proforma-city-search');
+            if (cityDd && cityInput && !cityDd.contains(e.target) && e.target !== cityInput) {
+                cityDd.style.display = 'none';
+            }
+            const descDd = document.getElementById('proforma-description-dropdown');
+            const descInput = document.getElementById('proforma-description');
+            if (descDd && descInput && !descDd.contains(e.target) && e.target !== descInput) {
+                descDd.style.display = 'none';
+            }
+        });
+
+        // ========================
+        // Description Dropdown (searchable with free text input)
+        // ========================
+        const DESCRIPTION_SUGGESTIONS = [
+            "Professional Fees - Time",
+            "Professional Fees - Monthly Consulting",
+            "Professional Fees - Quarterly Consulting",
+            "Professional Fees - Annual Consulting",
+            "Professional Fees - Advisory Services",
+            "Professional Fees - Project Based",
+            "Professional Fees - Retainer",
+            "Consulting Services",
+            "Legal Advisory Services",
+            "Tax Consulting Services",
+            "Audit & Assurance Services",
+            "Compliance Services",
+            "Accounting Services",
+            "Business Advisory Services",
+            "Financial Planning Services",
+            "Management Consulting",
+        ];
+
+        function showDescriptionDropdown() {
+            filterProformaDescriptions();
+            document.getElementById('proforma-description-dropdown').style.display = 'block';
+        }
+
+        function filterProformaDescriptions() {
+            const search = (document.getElementById('proforma-description').value || '').trim().toLowerCase();
+            const filtered = search ? DESCRIPTION_SUGGESTIONS.filter(d => d.toLowerCase().includes(search)) : DESCRIPTION_SUGGESTIONS;
+            const dd = document.getElementById('proforma-description-dropdown');
+
+            if (filtered.length === 0) {
+                dd.innerHTML = '<div class="proforma-city-option" style="color:var(--color-text-muted)">No suggestions — your custom text will be used</div>';
+            } else {
+                dd.innerHTML = filtered.map(d =>
+                    `<div class="proforma-city-option" onclick="selectProformaDescription('${escapeAttr(d)}')">${d}</div>`
+                ).join('');
+            }
+            dd.style.display = 'block';
+        }
+
+        function selectProformaDescription(desc) {
+            document.getElementById('proforma-description').value = desc;
+            document.getElementById('proforma-description-dropdown').style.display = 'none';
+        }
+
+        async function openProformaModal(paymentId, agreementId, companyName, amount) {
+            // Check if already confirmed
+            const company = companiesList.find(c => c.agreement_id === agreementId);
+            if (company) {
+                const pmt = (company.payments || []).find(p => p.payment_id === paymentId);
+                if (pmt && pmt.proforma_status === 'confirmed') {
+                    // Already confirmed, no need to open form
+                    return;
+                }
+            }
+
+            populateStateDropdown();
+            document.getElementById('proforma-agreement-id').value = agreementId;
+            document.getElementById('proforma-payment-id').value = paymentId;
+            document.getElementById('proforma-buyer-name').value = companyName || 'Unknown';
+            document.getElementById('proforma-buyer-label').textContent = `for ${companyName || 'Unknown'}`;
+            document.getElementById('proforma-rate').value = amount || 0;
+            document.getElementById('proforma-date').valueAsDate = new Date();
+
+            // Reset other fields to defaults
+            document.getElementById('proforma-mode-of-payment').value = 'ADVANCE';
+            document.getElementById('proforma-reference-no').value = '';
+            document.getElementById('proforma-reference-date').value = '';  // Required field, must be filled by user
+            document.getElementById('proforma-sales-person').value = '';
+            document.getElementById('proforma-buyer-gstin').value = '';
+            document.getElementById('proforma-city-search').value = '';
+            document.getElementById('proforma-city-value').value = '';
+            document.getElementById('proforma-area').value = '';
+            document.getElementById('proforma-description').value = 'Professional Fees - Time';
+            document.getElementById('proforma-sub-note').value = '';
+            document.getElementById('proforma-hsn-sac').value = '998311';
+            document.getElementById('proforma-gst-rate').value = 18;
+            document.getElementById('proforma-quantity').value = 1;
+            document.getElementById('proforma-quantity-unit').value = 'Time';
+
+            // Set state to Gujarat default
+            document.getElementById('proforma-state').value = '24';
+            onProformaStateChange();
+
+            // Show the modal FIRST before any async operations
+            document.getElementById('proforma-form-modal').classList.add('open');
+
+            currentProformaInvoiceId = null;
+            currentProformaFormData = null;
+
+            // Fetch next invoice number (non-blocking)
+            try {
+                const res = await api.get('/email/proforma/next-invoice-no');
+                document.getElementById('proforma-invoice-no').value = res.invoice_no || '';
+            } catch (e) {
+                console.warn('Could not fetch next invoice no:', e);
+                document.getElementById('proforma-invoice-no').value = '';
+            }
+        }
+
+        function cancelProforma() {
+            // Create a custom styled cancel warning popup instead of native confirm()
+            const overlay = document.createElement('div');
+            overlay.className = 'cancel-warning-overlay open';
+            overlay.style.zIndex = '10002';
+            overlay.innerHTML = `
+                <div class="cancel-warning-modal">
+                    <div class="cancel-warning-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <path d="M12 9v4M12 17h.01"/>
+                        </svg>
+                    </div>
+                    <h3>Cancel Invoice Generation?</h3>
+                    <p>Are you sure you want to cancel? All entered data will be discarded and the invoice will not be generated.</p>
+                    <div class="cancel-warning-actions">
+                        <button class="btn btn-secondary" id="cancel-warn-stay">Cancel</button>
+                        <button class="btn btn-danger" id="cancel-warn-ok">OK</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // "Cancel" button — stay on the form (continue filling)
+            overlay.querySelector('#cancel-warn-stay').onclick = () => {
+                overlay.remove();
+            };
+
+            // "OK" button — discard and close the proforma form
+            overlay.querySelector('#cancel-warn-ok').onclick = async () => {
+                overlay.remove();
+                // Delete any in-progress draft invoice from the database (fixes cancel loophole)
+                if (currentProformaInvoiceId) {
+                    try {
+                        await api.delete(`/email/proforma/${currentProformaInvoiceId}`);
+                    } catch (e) {
+                        console.warn('Failed to delete draft proforma:', e);
+                    }
+                    currentProformaInvoiceId = null;
+                    currentProformaFormData = null;
+                }
+                document.getElementById('proforma-form-modal').classList.remove('open');
+                // Uncheck the payment that was being configured
+                const pid = parseInt(document.getElementById('proforma-payment-id').value);
+                if (pid) {
+                    selectedCompanies.delete(pid);
+                    updateSelectionUI();
+                    const row = document.querySelector(`tr[data-pid="${pid}"]`);
+                    if (row) {
+                        row.classList.remove('company-row-selected');
+                        const cb = row.querySelector('.company-checkbox');
+                        if (cb) cb.checked = false;
+                    }
+                }
+            };
+
+            // Close on overlay click
+            overlay.onclick = (e) => {
+                if (e.target === overlay) overlay.remove();
+            };
+        }
+
+        function collectProformaFormData() {
+            const stateCode = document.getElementById('proforma-state').value;
+            const stateObj = INDIAN_STATES.find(s => s.code === stateCode);
+            return {
+                agreement_id: parseInt(document.getElementById('proforma-agreement-id').value),
+                payment_id: parseInt(document.getElementById('proforma-payment-id').value),
+                invoice_no: document.getElementById('proforma-invoice-no').value.trim(),
+                date: document.getElementById('proforma-date').value,
+                mode_of_payment: document.getElementById('proforma-mode-of-payment').value.trim(),
+                reference_no: document.getElementById('proforma-reference-no').value.trim(),
+                reference_date: document.getElementById('proforma-reference-date').value.trim() || '-',
+                sales_person: document.getElementById('proforma-sales-person').value.trim(),
+                buyer_name: document.getElementById('proforma-buyer-name').value.trim(),
+                state_code: stateCode,
+                state_name: stateObj ? stateObj.name : 'Gujarat',
+                city: document.getElementById('proforma-city-value').value || document.getElementById('proforma-city-search').value.trim(),
+                area: document.getElementById('proforma-area').value.trim(),
+                buyer_gstin: document.getElementById('proforma-buyer-gstin').value.trim(),
+                description: document.getElementById('proforma-description').value.trim(),
+                sub_note: document.getElementById('proforma-sub-note').value.trim(),
+                hsn_sac: document.getElementById('proforma-hsn-sac').value.trim(),
+                gst_rate: parseFloat(document.getElementById('proforma-gst-rate').value) || 18,
+                quantity: parseFloat(document.getElementById('proforma-quantity').value) || 1,
+                quantity_unit: document.getElementById('proforma-quantity-unit').value.trim(),
+                rate: parseFloat(document.getElementById('proforma-rate').value) || 0,
+            };
+        }
+
+        async function generateProforma() {
+            const formData = collectProformaFormData();
+
+            // Validate required fields — collect all missing fields for a single warning popup
+            const missingFields = [];
+            if (!formData.invoice_no) missingFields.push('Invoice No');
+            if (!formData.date) missingFields.push('Date');
+            if (!formData.mode_of_payment) missingFields.push('Mode of Payment');
+            if (!formData.reference_no) missingFields.push('Reference No');
+            if (!formData.reference_date || formData.reference_date === '-') missingFields.push('Reference Date');
+            if (!formData.sales_person) missingFields.push('Sales Person');
+            if (!formData.buyer_name) missingFields.push('Buyer Name');
+            if (!formData.state_code) missingFields.push('State');
+            if (!formData.city) missingFields.push('City');
+            if (!formData.description) missingFields.push('Description (Service)');
+            if (!formData.hsn_sac) missingFields.push('HSN/SAC');
+            if (!formData.gst_rate && formData.gst_rate !== 0) missingFields.push('GST Rate');
+            if (!formData.quantity) missingFields.push('Quantity');
+            if (!formData.quantity_unit) missingFields.push('Quantity Unit');
+            if (formData.rate <= 0) missingFields.push('Rate (must be greater than 0)');
+
+            // GSTIN validation (optional field, but if filled, must be valid)
+            if (formData.buyer_gstin) {
+                const gstin = formData.buyer_gstin;
+                if (gstin.length !== 15) {
+                    missingFields.push('Buyer GSTIN (must be exactly 15 characters)');
+                } else if (!/^[A-Z0-9]+$/.test(gstin)) {
+                    missingFields.push('Buyer GSTIN (only uppercase letters and numbers allowed)');
+                } else if (!/[A-Z]/.test(gstin) || !/[0-9]/.test(gstin)) {
+                    missingFields.push('Buyer GSTIN (must contain both letters and numbers)');
+                }
+            }
+
+            if (missingFields.length > 0) {
+                // Show a warning popup listing all missing fields
+                const fieldsList = missingFields.map(f => `<li style="margin-bottom:4px">${f}</li>`).join('');
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay open';
+                overlay.style.zIndex = '10001';
+                overlay.innerHTML = `
+                    <div class="modal" style="max-width:420px">
+                        <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;color:var(--color-warning)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                <path d="M12 9v4M12 17h.01"/>
+                            </svg>
+                            Missing Required Fields
+                        </h3>
+                        <div class="modal-body" style="font-size:0.9rem;color:var(--color-text-secondary)">
+                            <p style="margin-bottom:8px">Please fill in the following required fields before generating the invoice:</p>
+                            <ul style="padding-left:20px;margin:0;list-style:disc;color:var(--color-text-primary);font-weight:500">${fieldsList}</ul>
+                        </div>
+                        <div class="modal-actions">
+                            <button class="btn btn-primary" id="proforma-warn-ok-btn">OK</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                overlay.querySelector('#proforma-warn-ok-btn').onclick = () => overlay.remove();
+                overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+                return;
+            }
+
+            const btn = document.getElementById('proforma-generate-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;margin:0 8px 0 0"></div>Generating...';
+
+            // Apply fallbacks for API (after validation has ensured they are filled)
+            if (!formData.reference_no) formData.reference_no = '-';
+            if (!formData.sales_person) formData.sales_person = '-';
+
+            try {
+                let result;
+                if (currentProformaInvoiceId) {
+                    // Regenerate
+                    result = await api.put(`/email/proforma/${currentProformaInvoiceId}/regenerate`, formData);
+                } else {
+                    // Generate new
+                    result = await api.post('/email/proforma/generate', formData);
+                }
+                currentProformaInvoiceId = result.invoice_id;
+                currentProformaFormData = formData;
+
+                // Show preview
+                document.getElementById('proforma-form-modal').classList.remove('open');
+                showProformaPreview(result.invoice_id, result.invoice_no);
+            } catch (err) {
+                showToast(err.message || 'Failed to generate Pro Forma Invoice', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generate Pro Forma Invoice`;
+            }
+        }
+
+        function showProformaPreview(invoiceId, invoiceNo) {
+            currentPreviewLogId = null;
+            const token = Auth.getToken();
+            const iframe = document.getElementById('proforma-pdf-iframe');
+            iframe.src = `/api/email/proforma/${invoiceId}/preview?token=${encodeURIComponent(token)}`;
+            document.getElementById('proforma-preview-label').textContent = invoiceNo || '';
+            document.getElementById('proforma-preview-modal').classList.add('open');
+        }
+
+        function editProforma() {
+            document.getElementById('proforma-preview-modal').classList.remove('open');
+            // Populate state dropdown first so the select has options
+            populateStateDropdown();
+            // Re-populate form with saved data
+            if (currentProformaFormData) {
+                const fd = currentProformaFormData;
+                document.getElementById('proforma-invoice-no').value = fd.invoice_no || '';
+                document.getElementById('proforma-date').value = fd.date || '';
+                document.getElementById('proforma-mode-of-payment').value = fd.mode_of_payment || 'ADVANCE';
+                document.getElementById('proforma-reference-no').value = fd.reference_no === '-' ? '' : fd.reference_no;
+                document.getElementById('proforma-reference-date').value = fd.reference_date === '-' ? '' : fd.reference_date;
+                document.getElementById('proforma-sales-person').value = fd.sales_person === '-' ? '' : fd.sales_person;
+                document.getElementById('proforma-buyer-name').value = fd.buyer_name || '';
+                document.getElementById('proforma-buyer-label').textContent = fd.buyer_name ? `for ${fd.buyer_name}` : '';
+                document.getElementById('proforma-buyer-gstin').value = fd.buyer_gstin || '';
+                document.getElementById('proforma-state').value = fd.state_code || '24';
+                onProformaStateChange();
+                document.getElementById('proforma-city-search').value = fd.city || '';
+                document.getElementById('proforma-city-value').value = fd.city || '';
+                document.getElementById('proforma-area').value = fd.area || '';
+                document.getElementById('proforma-description').value = fd.description || '';
+                document.getElementById('proforma-sub-note').value = fd.sub_note || '';
+                document.getElementById('proforma-hsn-sac').value = fd.hsn_sac || '';
+                document.getElementById('proforma-gst-rate').value = fd.gst_rate || 18;
+                document.getElementById('proforma-quantity').value = fd.quantity || 1;
+                document.getElementById('proforma-quantity-unit').value = fd.quantity_unit || 'Time';
+                document.getElementById('proforma-rate').value = fd.rate || 0;
+            }
+            document.getElementById('proforma-form-modal').classList.add('open');
+        }
+
+        async function confirmProforma() {
+            if (!currentProformaInvoiceId) return;
+
+            const btn = document.getElementById('proforma-confirm-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;margin:0 8px 0 0"></div>Confirming...';
+
+            try {
+                await api.put(`/email/proforma/${currentProformaInvoiceId}/confirm`);
+                showToast('Pro Forma Invoice confirmed successfully!', 'success');
+                document.getElementById('proforma-preview-modal').classList.remove('open');
+                // Refresh companies list to show updated proforma status
+                await loadCompanies();
+            } catch (err) {
+                showToast(err.message || 'Failed to confirm invoice', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirm Invoice`;
+            }
+        }
+
+        function previewProformaInline(invoiceId) {
+            currentProformaInvoiceId = invoiceId;
+            currentPreviewLogId = null;
+            const token = Auth.getToken();
+            const iframe = document.getElementById('proforma-pdf-iframe');
+            iframe.src = `/api/email/proforma/${invoiceId}/preview?token=${encodeURIComponent(token)}`;
+            document.getElementById('proforma-preview-label').textContent = 'Confirmed';
+            // Confirmed invoices: view-only — no Edit button, only Download + Close
+            document.getElementById('proforma-edit-btn').style.display = 'none';
+            document.getElementById('proforma-download-btn').style.display = '';
+            document.getElementById('proforma-confirm-btn').textContent = 'Close';
+            document.getElementById('proforma-confirm-btn').onclick = () => {
+                document.getElementById('proforma-preview-modal').classList.remove('open');
+                // Restore buttons for next use
+                document.getElementById('proforma-edit-btn').style.display = '';
+                document.getElementById('proforma-confirm-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirm Invoice`;
+                document.getElementById('proforma-confirm-btn').onclick = confirmProforma;
+            };
+            document.getElementById('proforma-preview-modal').classList.add('open');
+        }
+
+        function downloadProforma() {
+            const token = Auth.getToken();
+            let url;
+            if (currentPreviewLogId) {
+                url = `/api/email/proforma/log-preview/${currentPreviewLogId}?token=${encodeURIComponent(token)}`;
+            } else if (currentProformaInvoiceId) {
+                url = `/api/email/proforma/${currentProformaInvoiceId}/preview?token=${encodeURIComponent(token)}`;
+            } else {
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ProForma_Invoice.pdf`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        async function deleteConfirmedProforma(invoiceId) {
+            const confirmed = await showConfirm(
+                'Delete Pro Forma Invoice',
+                'Are you sure you want to delete this Pro Forma Invoice? This action cannot be undone. You will be able to generate a new one afterwards.'
+            );
+            if (!confirmed) return;
+
+            try {
+                await api.delete(`/email/proforma/${invoiceId}`);
+                showToast('Pro Forma Invoice deleted successfully', 'success');
+                await loadCompanies();
+            } catch (err) {
+                showToast(err.message || 'Failed to delete Pro Forma Invoice', 'error');
+            }
+        }
+
+        // ========================
+        // Preview from Email History (view-only — no Edit, no Confirm)
+        // ========================
+        function previewEmailLogProforma(logId) {
+            currentProformaInvoiceId = null; // Not a real proforma ID, it's a log ID
+            currentPreviewLogId = logId;
+            const token = Auth.getToken();
+            const iframe = document.getElementById('proforma-pdf-iframe');
+            iframe.src = `/api/email/proforma/log-preview/${logId}?token=${encodeURIComponent(token)}`;
+            document.getElementById('proforma-preview-label').textContent = 'Sent Invoice';
+            // Hide edit button — sent invoices must not be edited
+            document.getElementById('proforma-edit-btn').style.display = 'none';
+            document.getElementById('proforma-download-btn').style.display = '';
+            // Replace confirm button with Close
+            document.getElementById('proforma-confirm-btn').textContent = 'Close';
+            document.getElementById('proforma-confirm-btn').onclick = () => {
+                document.getElementById('proforma-preview-modal').classList.remove('open');
+                // Restore buttons
+                document.getElementById('proforma-edit-btn').style.display = '';
+                document.getElementById('proforma-confirm-btn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Confirm Invoice`;
+                document.getElementById('proforma-confirm-btn').onclick = confirmProforma;
+            };
+            document.getElementById('proforma-preview-modal').classList.add('open');
+        }
+
+        // previewDraftProforma removed — drafts are no longer shown in the company list
+
+        // ========================
+        // GSTIN Real-time Validation
+        // ========================
+        function validateGSTIN() {
+            const input = document.getElementById('proforma-buyer-gstin');
+            const errorEl = document.getElementById('proforma-gstin-error');
+            const val = input.value.trim();
+
+            if (!val) {
+                errorEl.textContent = '';
+                return true;
+            }
+
+            if (val.length !== 15) {
+                errorEl.textContent = `Must be exactly 15 characters (currently ${val.length})`;
+                return false;
+            }
+
+            if (!/^[A-Z0-9]+$/.test(val)) {
+                errorEl.textContent = 'Only uppercase letters (A-Z) and numbers (0-9) allowed';
+                return false;
+            }
+
+            if (!/[A-Z]/.test(val)) {
+                errorEl.textContent = 'Must contain at least one letter (not all numbers)';
+                return false;
+            }
+
+            if (!/[0-9]/.test(val)) {
+                errorEl.textContent = 'Must contain at least one number (not all letters)';
+                return false;
+            }
+
+            errorEl.textContent = '';
+            return true;
         }
 
         // Mobile sidebar

@@ -27,6 +27,7 @@ GROQ_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 # File Upload
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", os.path.join(DATA_DIR, "uploads"))
+PROFORMA_DIR = os.path.join(DATA_DIR, "proforma_invoices")
 MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB (standard PDF / DOCX)
 MAX_SCANNED_FILE_SIZE = 100 * 1024 * 1024  # 100MB (scanned PDF with OCR)
 ALLOWED_EXTENSIONS = {".pdf", ".docx"}
@@ -37,6 +38,17 @@ PORT = int(os.getenv("PORT", 8000))
 
 # Email System
 EMAIL_REMINDER_DAYS = 7  # Reference value for payment reminder window
+
+# Public-facing application URL (used for email tracking pixels)
+# Auto-detects: explicit APP_URL > Railway's RAILWAY_PUBLIC_DOMAIN > local HOST:PORT
+_app_url_env = os.getenv("APP_URL", "").rstrip("/")
+_railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+if _app_url_env:
+    APP_URL = _app_url_env
+elif _railway_domain:
+    APP_URL = f"https://{_railway_domain}"
+else:
+    APP_URL = f"http://{HOST}:{PORT}"
 
 # Encryption key for sensitive credentials (derived from SECRET_KEY)
 import hashlib

@@ -162,6 +162,7 @@ function showConfirm(title, message) {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay open';
+        overlay.style.zIndex = '10003';
         overlay.innerHTML = `
             <div class="modal">
                 <h3 class="modal-title">${title}</h3>
@@ -199,7 +200,10 @@ function formatDate(dateStr) {
     try {
         const d = new Date(dateStr);
         if (isNaN(d.getTime())) return dateStr;
-        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = d.toLocaleString('en-US', { month: 'long' });
+        const year = String(d.getFullYear()).slice(-2);
+        return `${day}-${month}-${year}`;
     } catch {
         return dateStr;
     }

@@ -84,6 +84,22 @@ def get_payments_summary(
 
         payments.append(payment)
 
+    # For admin users: enrich payments with email open tracking status
+    is_admin = current_user["role"] == "admin"
+    if is_admin:
+        for p in payments:
+            latest_log = cursor.execute("""
+                SELECT opened_at FROM email_log
+                WHERE payment_id = ? AND email_type = 'client' AND status = 'sent'
+                ORDER BY sent_at DESC LIMIT 1
+            """, (p["payment_id"],)).fetchone()
+            if latest_log:
+                p["email_sent"] = True
+                p["email_opened"] = dict(latest_log).get("opened_at") is not None
+            else:
+                p["email_sent"] = False
+                p["email_opened"] = False
+
     # Collect available years from payment due dates
     years = set()
     for p in payments:

@@ -38,5 +38,8 @@ openpyxl>=3.1.0
 # ── Background Scheduler ──
 APScheduler>=3.10.0
 
+# ── PDF Invoice Generation ──
+reportlab>=4.0.0
+
 # ── Templating (used internally by FastAPI) ──
 jinja2==3.1.4

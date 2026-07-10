@@ -124,6 +124,7 @@
                                     <th>Net</th>
                                     <th>Due Date</th>
                                     <th>Status</th>
+                                    <th class="email-col-header" style="display:none;width:50px;text-align:center">Email</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -175,6 +176,8 @@
             if (user.role === 'admin') {
                 document.getElementById('admin-nav-section').style.display = 'block';
                 document.getElementById('export-excel-btn').style.display = '';
+                // Show email status column for admin
+                document.querySelectorAll('.email-col-header').forEach(el => el.style.display = '');
             }
         }
 
@@ -391,8 +394,18 @@
                     ? `<span class="badge badge-paid">Paid</span>`
                     : `<span class="badge badge-pending">Pending</span>`;
 
+                // Email open tracking status (admin-only column)
+                let emailHtml = '';
+                if (user.role === 'admin') {
+                    if (p.email_sent) {
+                        emailHtml = `<td style="text-align:center"><span class="email-status-dot sm ${p.email_opened ? 'opened' : 'pending'}" title="${p.email_opened ? 'Opened' : 'Pending'}"></span></td>`;
+                    } else {
+                        emailHtml = `<td style="text-align:center;color:var(--color-text-muted)">\u2014</td>`;
+                    }
+                }
+
                 const actionHtml = isPaid
-                    ? `<span style="color:var(--color-text-muted);font-size:0.78rem">—</span>`
+                    ? `<span style="color:var(--color-text-muted);font-size:0.78rem">\u2014</span>`
                     : `<button class="btn-mark-paid" onclick="markPaymentPaid(${p.payment_id}, event)">Mark Paid</button>`;
 
                 // Company name cell: clickable for admin/regular users, plain text for HR users
@@ -404,19 +417,21 @@
                     <tr>
                         ${companyTd}
                         <td>AG-${String(p.agreement_id).padStart(4, '0')}</td>
-                        <td>${p.plan_name || '—'}</td>
+                        <td>${p.plan_name || '\u2014'}</td>
                         <td>${formatCurrency(amount, currency)}</td>
                         <td>${formatCurrency(gst, currency)}</td>
                         <td>${formatCurrency(tds, currency)}</td>
                         <td><strong>${formatCurrency(net, currency)}</strong></td>
                         <td>${formatDate(p.due_date)}</td>
                         <td>${statusHtml}</td>
+                        ${emailHtml}
                         <td>${actionHtml}</td>
                     </tr>
                 `;
             }).join('');
 
             const currency = (filtered.length > 0 && filtered[0].currency) || '₹';
+            const extraCols = user.role === 'admin' ? 1 : 0;
             const totalRow = `
                 <tr class="total-row">
                     <td class="plan-name" colspan="3">Total — ${viewMode === 'year' ? selectedYear : MONTH_FULL[selectedMonth] + ' ' + selectedYear}</td>
@@ -426,6 +441,7 @@
                     <td>${formatCurrency(totalNet, currency)}</td>
                     <td>—</td>
                     <td>—</td>
+                    ${extraCols ? '<td>—</td>' : ''}
                     <td>—</td>
                 </tr>
             `;

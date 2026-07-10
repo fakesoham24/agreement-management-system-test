@@ -664,6 +664,44 @@ h4 {
     background: var(--color-bg);
 }
 
+/* Email Status Dot — open tracking indicator */
+.email-status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    cursor: default;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.email-status-dot:hover {
+    transform: scale(1.3);
+}
+
+.email-status-dot.opened {
+    background-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.email-status-dot.opened:hover {
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.25);
+}
+
+.email-status-dot.pending {
+    background-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.email-status-dot.pending:hover {
+    box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.25);
+}
+
+/* Smaller variant for payments table */
+.email-status-dot.sm {
+    width: 8px;
+    height: 8px;
+}
+
 .email-actions {
     display: flex;
     gap: var(--space-sm);
@@ -4427,5 +4465,218 @@ h4 {
 @media (max-width: 600px) {
     .skeleton-pay-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   Email Search Bars
+   ============================================ */
+.email-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.email-search-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 180px;
+}
+
+.email-search-field .form-input {
+    flex: 1;
+    padding: 7px 12px;
+    font-size: 0.82rem;
+}
+
+/* ============================================
+   Pro Forma Invoice Modal
+   ============================================ */
+.proforma-modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+}
+
+.proforma-modal {
+    width: 100%;
+    max-width: 780px;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    animation: proformaSlideIn 0.25s ease-out;
+}
+
+@keyframes proformaSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.proforma-modal .modal-title {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.proforma-modal .modal-body {
+    padding: 20px 24px;
+}
+
+.proforma-modal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg);
+}
+
+/* Form Grid */
+.proforma-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.proforma-form-grid .form-group {
+    margin-bottom: 0;
+}
+
+.proforma-form-grid .form-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.proforma-form-grid .form-input {
+    padding: 8px 12px;
+    font-size: 0.84rem;
+}
+
+/* City Searchable Dropdown */
+.proforma-city-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    margin-top: 2px;
+}
+
+.proforma-city-option {
+    padding: 8px 14px;
+    font-size: 0.84rem;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.proforma-city-option:hover {
+    background: var(--color-accent-light);
+    color: var(--color-accent-hover);
+}
+
+/* Pro Forma Preview Modal */
+.proforma-preview-container {
+    width: 100%;
+    max-width: 850px;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    animation: proformaSlideIn 0.25s ease-out;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.proforma-preview-container .modal-title {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.proforma-preview-container .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg);
+    flex-shrink: 0;
+}
+
+.proforma-pdf-frame-wrapper {
+    flex: 1;
+    min-height: 400px;
+    padding: 16px;
+    background: #f0f0f0;
+    overflow: hidden;
+}
+
+/* Color overrides for elevated surface */
+.proforma-form-grid .form-input[readonly] {
+    color: var(--color-text-muted);
+}
+
+/* ============================================
+   Responsive — Pro Forma Modal
+   ============================================ */
+@media (max-width: 768px) {
+    .proforma-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .proforma-modal,
+    .proforma-preview-container {
+        max-width: 100%;
+        max-height: 95vh;
+        border-radius: var(--radius-lg);
+    }
+
+    .proforma-pdf-frame-wrapper {
+        min-height: 250px;
+    }
+
+    .email-search-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .email-search-field {
+        min-width: 100%;
     }
 }

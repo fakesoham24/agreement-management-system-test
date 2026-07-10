@@ -1063,6 +1063,13 @@ def update_analysis(
                     "UPDATE agreement_analysis SET payment_plans = ? WHERE agreement_id = ?",
                     (json.dumps(new_plans), agreement_id)
                 )
+                # Preserve email logs: detach them from old payment IDs before deletion
+                # so the ON DELETE CASCADE doesn't wipe email history.
+                # Email history should only be removed after 30 days or by manual admin action.
+                cursor.execute(
+                    "UPDATE email_log SET payment_id = NULL WHERE agreement_id = ?",
+                    (agreement_id,)
+                )
                 # Delete existing payment records for this agreement
                 cursor.execute("DELETE FROM payments WHERE agreement_id = ?", (agreement_id,))
                 # Recreate from updated plans

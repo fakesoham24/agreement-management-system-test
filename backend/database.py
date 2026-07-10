@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from backend.config import DATABASE_PATH, DATA_DIR
+from backend.config import DATABASE_PATH, DATA_DIR, PROFORMA_DIR
 
 
 def get_db():
@@ -133,14 +133,13 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS email_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            payment_id INTEGER NOT NULL,
+            payment_id INTEGER,
             agreement_id INTEGER NOT NULL,
             recipient_email TEXT NOT NULL,
             subject TEXT,
             status TEXT DEFAULT 'sent',
             error_message TEXT,
             sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE,
             FOREIGN KEY (agreement_id) REFERENCES agreements(id) ON DELETE CASCADE
         )
     """)
@@ -272,6 +271,97 @@ def init_db():
         cursor.execute("ALTER TABLE email_log ADD COLUMN email_type TEXT DEFAULT 'client'")
     except Exception:
         pass  # Column already exists
+
+    # ── Pro Forma Invoices table ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS proforma_invoices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            agreement_id INTEGER NOT NULL,
+            payment_id INTEGER NOT NULL,
+            invoice_no TEXT,
+            file_path TEXT NOT NULL,
+            form_data TEXT,
+            status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'confirmed')),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agreement_id) REFERENCES agreements(id) ON DELETE CASCADE,
+            FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
+        )
+    """)
+
+    # Migrate email_log — add proforma_invoice_path to track attached PDF
+    try:
+        cursor.execute("ALTER TABLE email_log ADD COLUMN proforma_invoice_path TEXT")
+    except Exception:
+        pass  # Column already exists
+
+    # Migrate email_log — remove NOT NULL on payment_id and remove ON DELETE CASCADE
+    # on payment_id foreign key. This preserves email history when payments are
+    # recreated (e.g., when due dates are changed). Email logs should only be
+    # removed after 30 days or by manual admin deletion.
+    try:
+        # Check if migration is needed by inspecting the table schema
+        table_info = cursor.execute("PRAGMA table_info(email_log)").fetchall()
+        payment_id_col = next((col for col in table_info if col[1] == 'payment_id'), None)
+        if payment_id_col and payment_id_col[3] == 1:  # col[3] = notnull flag
+            # payment_id is still NOT NULL — need to migrate
+            cursor.execute("PRAGMA foreign_keys=OFF")
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS email_log_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    payment_id INTEGER,
+                    agreement_id INTEGER NOT NULL,
+                    recipient_email TEXT NOT NULL,
+                    subject TEXT,
+                    status TEXT DEFAULT 'sent',
+                    error_message TEXT,
+                    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    email_type TEXT DEFAULT 'client',
+                    proforma_invoice_path TEXT,
+                    FOREIGN KEY (agreement_id) REFERENCES agreements(id) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("""
+                INSERT INTO email_log_new (id, payment_id, agreement_id, recipient_email, subject, status, error_message, sent_at, email_type, proforma_invoice_path)
+                SELECT id, payment_id, agreement_id, recipient_email, subject, status, error_message, sent_at, email_type, proforma_invoice_path
+                FROM email_log
+            """)
+            cursor.execute("DROP TABLE email_log")
+            cursor.execute("ALTER TABLE email_log_new RENAME TO email_log")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            conn.commit()
+    except Exception:
+        pass  # Migration already done or table doesn't exist yet
+
+    # Migrate email_log — add tracking_id and opened_at for email open tracking
+    email_tracking_cols = [
+        ("tracking_id", "TEXT"),        # UUID used in tracking pixel URL
+        ("opened_at", "TIMESTAMP"),     # When the email was first opened (NULL = pending)
+    ]
+    for col_name, col_type in email_tracking_cols:
+        try:
+            cursor.execute(f"ALTER TABLE email_log ADD COLUMN {col_name} {col_type}")
+        except Exception:
+            pass  # Column already exists
+
+    # Index on tracking_id for fast pixel lookup
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_email_log_tracking_id ON email_log(tracking_id)")
+
+    # Create proforma invoices directory
+    os.makedirs(PROFORMA_DIR, exist_ok=True)
+
+    # Cleanup: delete all draft (unconfirmed) proforma invoices and their PDF files
+    # Drafts are temporary and should not persist between server restarts
+    draft_invoices = cursor.execute(
+        "SELECT id, file_path FROM proforma_invoices WHERE status = 'draft'"
+    ).fetchall()
+    for draft in draft_invoices:
+        d_path = draft[1]  # file_path
+        if d_path and os.path.exists(d_path):
+            try:
+                os.remove(d_path)
+            except OSError:
+                pass
+    cursor.execute("DELETE FROM proforma_invoices WHERE status = 'draft'")
 
     conn.commit()
 

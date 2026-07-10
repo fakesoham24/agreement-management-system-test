@@ -79,17 +79,23 @@ def send_email(
     body: str,
     cc: str = None,
     is_html: bool = False,
-    access_token: str = None
+    access_token: str = None,
+    attachments: list = None,
 ) -> dict:
     """Send an email via Gmail REST API using OAuth2 access token.
     Uses HTTPS (port 443) instead of SMTP (port 587) to avoid
-    Railway's outbound SMTP port restrictions."""
+    Railway's outbound SMTP port restrictions.
+
+    attachments: optional list of dicts {"filename": str, "filepath": str}
+    """
     if not access_token:
         raise ValueError("Access token is required")
 
     import base64 as b64
+    from email.mime.application import MIMEApplication
 
-    msg = MIMEMultipart("alternative")
+    # Use 'mixed' when we have attachments so both body + files are included
+    msg = MIMEMultipart("mixed")
     msg["From"] = sender
     msg["To"] = to
     msg["Subject"] = subject
@@ -97,8 +103,26 @@ def send_email(
     if cc:
         msg["Cc"] = cc
 
+    # Body part (wrapped in its own alternative container)
+    body_part = MIMEMultipart("alternative")
     content_type = "html" if is_html else "plain"
-    msg.attach(MIMEText(body, content_type, "utf-8"))
+    body_part.attach(MIMEText(body, content_type, "utf-8"))
+    msg.attach(body_part)
+
+    # Attach files
+    if attachments:
+        import os
+        for att in attachments:
+            filepath = att.get("filepath", "")
+            filename = att.get("filename", os.path.basename(filepath))
+            if filepath and os.path.exists(filepath):
+                try:
+                    with open(filepath, "rb") as f:
+                        part = MIMEApplication(f.read(), Name=filename)
+                    part["Content-Disposition"] = f'attachment; filename="{filename}"'
+                    msg.attach(part)
+                except Exception as e:
+                    logger.error(f"Failed to attach file {filepath}: {e}")
 
     try:
         # Base64url-encode the entire MIME message
