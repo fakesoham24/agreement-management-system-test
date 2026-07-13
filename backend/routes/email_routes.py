@@ -53,27 +53,45 @@ def _inject_tracking_pixel(body: str, tracking_id: str, is_html: bool) -> str:
 def _is_automated_request(request: Request, sent_at_str: str) -> bool:
     """Identify if the request for the tracking pixel is from an automated system
     (e.g., spam filters, email scanners, pre-fetching bots) rather than a real client open.
-    Bypasses checks on localhost to support developer manual testing.
-    We are lenient to ensure legitimate email clients (e.g. Outlook, mobile devices, preview panes)
-    register opens correctly without false negatives."""
+    Bypasses checks on localhost to support developer manual testing."""
     # 1. Bypass all bot/timer checks if running locally (for ease of manual developer testing)
     hostname = request.url.hostname or ""
     if hostname in ("localhost", "127.0.0.1") or "localhost" in APP_URL or "127.0.0.1" in APP_URL:
         return False
 
-    # 2. Check User-Agent for known bots/scanners (excluding googleimageproxy and legitimate mail clients)
+    # 2. Check for prefetch headers (e.g. Purpose: prefetch)
+    purpose = request.headers.get("purpose", "").lower()
+    sec_purpose = request.headers.get("sec-purpose", "").lower()
+    if "prefetch" in purpose or "prefetch" in sec_purpose:
+        return True
+
+    # 3. Check User-Agent for known bots/scanners (excluding googleimageproxy)
     user_agent = request.headers.get("user-agent", "").lower()
     if not user_agent:
-        return False  # Do not block empty user-agents as some legitimate clients/proxies might not send them
+        return True  # Empty User-Agent is suspicious and likely a bot/scanner
 
     bot_keywords = [
-        "bot", "spider", "crawler", "monitor", "scan", "curl", "wget",
+        "bot", "spider", "crawler", "monitor", "scan", "preview", "curl", "wget",
         "python-requests", "aiohttp", "urllib", "scrapy", "go-http", "java", "apache",
-        "barracuda", "proofpoint", "mimecast",
+        "barracuda", "proofpoint", "mimecast", "microsoft office", "outlook-express",
         "security", "avast", "mcafee", "norton", "kaspersky", "sophos", "fireeye", "paloalto"
     ]
     if any(kw in user_agent for kw in bot_keywords):
         return True
+
+    # 4. Check time delta (ignore opens within 10 seconds of sending in production)
+    if sent_at_str:
+        try:
+            # Parse sent_at (SQLite CURRENT_TIMESTAMP is in UTC)
+            clean_str = sent_at_str.split(".")[0].replace("Z", "").strip()
+            clean_str = clean_str.replace("T", " ")
+            sent_at_dt = datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
+            now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+            time_diff = (now_utc - sent_at_dt).total_seconds()
+            if time_diff < 10:
+                return True
+        except Exception:
+            pass
 
     return False
 
