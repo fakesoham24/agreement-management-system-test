@@ -435,15 +435,6 @@
                                 <div style="display:flex;align-items:center;gap:12px">
                                     <span class="company-selected-count" id="consultant-selected-count">0
                                         selected</span>
-                                    <button class="btn btn-primary btn-sm" id="send-consultant-emails-btn"
-                                        onclick="sendSelectedConsultantEmails()" disabled>
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            style="width:15px;height:15px">
-                                            <path d="M22 2L11 13" />
-                                            <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-                                        </svg>
-                                        Send Consultant Email
-                                    </button>
                                 </div>
                             </div>
 
@@ -1232,6 +1223,42 @@
         </div>
     </div>
 
+    <!-- Consultant Email Preference Modal -->
+    <div class="modal-overlay" id="consultant-preference-modal">
+        <div class="modal" style="max-width: 500px;">
+            <h3 class="modal-title">Select Consultants</h3>
+            <div class="modal-body">
+                <p style="margin-bottom: 12px; font-size: 0.88rem; color: var(--color-text-secondary);">
+                    Select which consultants should receive the payment reminder email for <strong id="pref-company-name" style="color: var(--color-text-primary);"></strong>.
+                </p>
+                <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 16px;">
+                    Payment: <span id="pref-payment-details"></span>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;">
+                        <input type="checkbox" id="pref-select-all-btn" onchange="togglePrefSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-accent);">
+                        <span>Select All Attached Consultants</span>
+                    </label>
+                </div>
+                
+                <div id="pref-consultant-list" class="pref-consultant-list" style="max-height: 240px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 8px;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeConsultantPreferenceModal()">Cancel</button>
+                <button class="btn btn-primary" id="pref-send-btn" onclick="submitConsultantPreferenceSend()" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px; margin-right: 4px; display: inline-block; vertical-align: middle;">
+                        <path d="M22 2L11 13" />
+                        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+                    </svg>
+                    Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/app.js"></script>
     <script>
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
@@ -1626,6 +1653,7 @@
         let htmlTemplate = '';
         let companiesList = [];
         let selectedCompanies = new Set();
+        let unconfirmedAgreementEmails = new Set();
 
         function switchEmailSubTab(tab) {
             currentEmailSubTab = tab;
@@ -1802,9 +1830,32 @@
                             <strong>${row.currency}${row.amount ? row.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</strong>
                         </td>
                         <td>
-                            <input type="email" class="form-input company-email-input" data-aid="${row.agreement_id}"
-                                value="${row.email || ''}" placeholder="Enter email address"
-                                onchange="updateCompanyEmail(${row.companyIndex}, this.value, ${row.agreement_id})">
+                            ${(() => {
+                                const isConfirmed = (row.email && row.email.trim() !== '') && !unconfirmedAgreementEmails.has(row.agreement_id);
+                                if (isConfirmed) {
+                                    return `
+                                        <div class="company-email-container confirmed" data-aid="${row.agreement_id}" style="display:flex;align-items:center;gap:8px;">
+                                            <input type="email" class="form-input company-email-input" value="${row.email || ''}" disabled readonly style="flex:1;background:var(--color-bg);border-color:var(--color-border);color:var(--color-text-secondary);cursor:default;">
+                                            <button class="btn btn-sm btn-danger email-action-btn remove-btn" onclick="handleRemoveEmail(${row.companyIndex}, ${row.agreement_id})" title="Remove or change email" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:6px;flex-shrink:0;background:var(--color-danger-light);color:var(--color-danger);border:1px solid rgba(220,38,38,0.2);cursor:pointer;transition:all 0.2s;" onmouseenter="this.style.background='var(--color-danger)';this.style.color='white';" onmouseleave="this.style.background='var(--color-danger-light)';this.style.color='var(--color-danger)';">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+                                    `;
+                                } else {
+                                    const isVal = isValidEmail(row.email || '');
+                                    return `
+                                        <div class="company-email-container unconfirmed" data-aid="${row.agreement_id}" style="display:flex;align-items:center;gap:8px;">
+                                            <input type="email" class="form-input company-email-input" placeholder="Enter email address" value="${row.email || ''}" 
+                                                oninput="validateInlineEmailInput(this, ${row.agreement_id})"
+                                                onkeydown="if(event.key === 'Enter') handleConfirmEmail(${row.companyIndex}, ${row.agreement_id})"
+                                                style="flex:1;">
+                                            <button class="btn btn-sm btn-success email-action-btn confirm-btn" id="confirm-btn-${row.agreement_id}" onclick="handleConfirmEmail(${row.companyIndex}, ${row.agreement_id})" title="Confirm email" ${isVal ? '' : 'disabled'} style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:6px;flex-shrink:0;background:${isVal ? 'var(--color-success-light)' : 'var(--color-bg)'};color:${isVal ? 'var(--color-success)' : 'var(--color-text-muted)'};border:1px solid ${isVal ? 'rgba(5,150,105,0.2)' : 'var(--color-border)'};cursor:${isVal ? 'pointer' : 'not-allowed'};transition:all 0.2s;" ${isVal ? `onmouseenter="this.style.background='var(--color-success)';this.style.color='white';" onmouseleave="this.style.background='var(--color-success-light)';this.style.color='var(--color-success)';"` : ''}>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:12px;height:12px"><polyline points="20 6 9 17 4 12"/></svg>
+                                            </button>
+                                        </div>
+                                    `;
+                                }
+                            })()}
                         </td>
                         <td>
                             <a href="/agreement/${row.agreement_id}" class="btn btn-sm btn-secondary company-more-info-btn" title="View Agreement">
@@ -1879,6 +1930,86 @@
             document.querySelectorAll(`input.company-email-input[data-aid="${agreementId}"]`).forEach(input => {
                 input.value = newEmail.trim();
             });
+        }
+
+        function isValidEmail(email) {
+            const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return pattern.test(email);
+        }
+
+        function validateInlineEmailInput(inputEl, agreementId) {
+            const value = inputEl.value.trim();
+            const isVal = isValidEmail(value);
+            
+            // Sync current input value in memory while typing so if they confirm it uses it
+            const inputs = document.querySelectorAll(`.company-email-container[data-aid="${agreementId}"] .company-email-input`);
+            inputs.forEach(input => {
+                if (input !== inputEl) input.value = inputEl.value;
+            });
+
+            // Update confirm buttons state in DOM
+            const confirmBtns = document.querySelectorAll(`[id="confirm-btn-${agreementId}"]`);
+            confirmBtns.forEach(btn => {
+                btn.disabled = !isVal;
+                if (isVal) {
+                    btn.style.background = 'var(--color-success-light)';
+                    btn.style.color = 'var(--color-success)';
+                    btn.style.border = '1px solid rgba(5,150,105,0.2)';
+                    btn.style.cursor = 'pointer';
+                    btn.onmouseenter = function() {
+                        this.style.background = 'var(--color-success)';
+                        this.style.color = 'white';
+                    };
+                    btn.onmouseleave = function() {
+                        this.style.background = 'var(--color-success-light)';
+                        this.style.color = 'var(--color-success)';
+                    };
+                } else {
+                    btn.style.background = 'var(--color-bg)';
+                    btn.style.color = 'var(--color-text-muted)';
+                    btn.style.border = '1px solid var(--color-border)';
+                    btn.style.cursor = 'not-allowed';
+                    btn.onmouseenter = null;
+                    btn.onmouseleave = null;
+                }
+            });
+        }
+
+        async function handleConfirmEmail(companyIndex, agreementId) {
+            const input = document.querySelector(`.company-email-container[data-aid="${agreementId}"] .company-email-input`);
+            if (!input) return;
+            const newEmail = input.value.trim();
+            if (!isValidEmail(newEmail)) {
+                showToast('Please enter a valid email address', 'warning');
+                return;
+            }
+
+            updateCompanyEmail(companyIndex, newEmail, agreementId);
+            unconfirmedAgreementEmails.delete(agreementId);
+
+            try {
+                await api.put(`/agreements/${agreementId}/analysis`, { email: newEmail });
+                showToast('Email address updated successfully', 'success');
+            } catch (err) {
+                console.error('Failed to sync email to database:', err);
+                showToast('Email updated locally, but failed to save to server', 'warning');
+            }
+
+            renderCompanyList();
+        }
+
+        async function handleRemoveEmail(companyIndex, agreementId) {
+            unconfirmedAgreementEmails.add(agreementId);
+            updateCompanyEmail(companyIndex, '', agreementId);
+
+            try {
+                await api.put(`/agreements/${agreementId}/analysis`, { email: '' });
+                showToast('Email address removed', 'info');
+            } catch (err) {
+                console.error('Failed to clear email in database:', err);
+            }
+
+            renderCompanyList();
         }
 
         // ========================
@@ -2099,21 +2230,205 @@
             updateConsultantSelectionUI();
         }
 
+        let currentPopupPaymentRow = null;
+
+        function getDesignationRank(designation) {
+            const d = (designation || '').toLowerCase();
+            if (d.includes('project manager')) return 1;
+            if (d.includes('lead')) return 2;
+            if (d.includes('lean')) return 3;
+            return 4;
+        }
+
         function toggleConsultantSelect(paymentId) {
-            if (selectedConsultantPayments.has(paymentId)) {
-                selectedConsultantPayments.delete(paymentId);
-            } else {
-                selectedConsultantPayments.add(paymentId);
-            }
-            updateConsultantSelectionUI();
             const isSelected = selectedConsultantPayments.has(paymentId);
-            const row = document.querySelector(`tr[data-cpid="${paymentId}"]`);
-            if (row) {
-                row.classList.toggle('company-row-selected', isSelected);
-                const cb = row.querySelector('.consultant-cb');
-                if (cb) cb.checked = isSelected;
+            if (isSelected) {
+                selectedConsultantPayments.delete(paymentId);
+                updateConsultantSelectionUI();
+                const row = document.querySelector(`tr[data-cpid="${paymentId}"]`);
+                if (row) {
+                    row.classList.remove('company-row-selected');
+                    const cb = row.querySelector('.consultant-cb');
+                    if (cb) cb.checked = false;
+                }
+            } else {
+                openConsultantPreferencePopup(paymentId);
             }
         }
+
+        function openConsultantPreferencePopup(paymentId) {
+            let flatRow = null;
+            for (const c of consultantCompaniesList) {
+                const pmt = (c.payments || []).find(p => p.payment_id === paymentId);
+                if (pmt) {
+                    flatRow = {
+                        agreement_id: c.agreement_id,
+                        company_name: c.company_name,
+                        agreement_title: c.agreement_title,
+                        currency: c.currency || '₹',
+                        consultants: c.consultants || [],
+                        payment_id: pmt.payment_id,
+                        due_date: pmt.due_date,
+                        amount: pmt.amount || 0,
+                    };
+                    break;
+                }
+            }
+
+            if (!flatRow) return;
+
+            currentPopupPaymentRow = flatRow;
+
+            selectedConsultantPayments.add(paymentId);
+            updateConsultantSelectionUI();
+            const row = document.querySelector(`tr[data-cpid="${paymentId}"]`);
+            if (row) {
+                row.classList.add('company-row-selected');
+                const cb = row.querySelector('.consultant-cb');
+                if (cb) cb.checked = true;
+            }
+
+            const sortedConsultants = [...flatRow.consultants].sort((a, b) => {
+                const rankA = getDesignationRank(a.designation);
+                const rankB = getDesignationRank(b.designation);
+                if (rankA !== rankB) return rankA - rankB;
+                return (a.name || '').localeCompare(b.name || '');
+            });
+
+            const modal = document.getElementById('consultant-preference-modal');
+            const companyNameSpan = document.getElementById('pref-company-name');
+            const paymentDetailsSpan = document.getElementById('pref-payment-details');
+            const listContainer = document.getElementById('pref-consultant-list');
+            const sendBtn = document.getElementById('pref-send-btn');
+            const selectAllBtn = document.getElementById('pref-select-all-btn');
+
+            companyNameSpan.textContent = flatRow.company_name;
+            paymentDetailsSpan.textContent = `${formatDate(flatRow.due_date)} - ${flatRow.currency}${flatRow.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+            if (sortedConsultants.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center;color:var(--color-text-muted);padding:16px;font-size:0.85rem">No consultants assigned to this company.</div>';
+            } else {
+                listContainer.innerHTML = sortedConsultants.map(c => {
+                    return `
+                        <label class="pref-consultant-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--color-border-light); cursor: pointer; transition: background 0.15s;" onmouseenter="this.style.background='var(--color-bg)'" onmouseleave="this.style.background='transparent'">
+                            <input type="checkbox" class="pref-consultant-checkbox" data-cid="${c.id}" onchange="updatePrefSendBtnState()" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-accent);">
+                            <div class="pref-consultant-info" style="flex: 1;">
+                                <div class="pref-consultant-name" style="font-weight: 500; color: var(--color-text-primary); font-size: 0.88rem;">${c.name}</div>
+                                <div class="pref-consultant-role" style="font-size: 0.75rem; color: var(--color-text-muted);">${c.designation || 'Consultant'}</div>
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+            }
+
+            selectAllBtn.checked = false;
+            sendBtn.disabled = true;
+
+            modal.classList.add('open');
+        }
+
+        function togglePrefSelectAll(masterCb) {
+            const checkboxes = document.querySelectorAll('#pref-consultant-list .pref-consultant-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = masterCb.checked;
+            });
+            updatePrefSendBtnState();
+        }
+
+        function updatePrefSendBtnState() {
+            const checkboxes = document.querySelectorAll('#pref-consultant-list .pref-consultant-checkbox');
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            const sendBtn = document.getElementById('pref-send-btn');
+            sendBtn.disabled = (checkedCount === 0);
+
+            const masterCb = document.getElementById('pref-select-all-btn');
+            if (masterCb) {
+                masterCb.checked = (checkedCount === checkboxes.length && checkboxes.length > 0);
+            }
+        }
+
+        function closeConsultantPreferenceModal() {
+            const modal = document.getElementById('consultant-preference-modal');
+            modal.classList.remove('open');
+            
+            if (currentPopupPaymentRow) {
+                const paymentId = currentPopupPaymentRow.payment_id;
+                const row = document.querySelector(`tr[data-cpid="${paymentId}"]`);
+                if (row) {
+                    row.classList.remove('company-row-selected');
+                    const cb = row.querySelector('.consultant-cb');
+                    if (cb) cb.checked = false;
+                }
+                selectedConsultantPayments.delete(paymentId);
+                updateConsultantSelectionUI();
+            }
+            currentPopupPaymentRow = null;
+        }
+
+        async function submitConsultantPreferenceSend() {
+            if (!currentPopupPaymentRow) return;
+
+            const checkboxes = document.querySelectorAll('#pref-consultant-list .pref-consultant-checkbox');
+            const selectedConsultantIds = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => parseInt(cb.dataset.cid, 10));
+
+            if (selectedConsultantIds.length === 0) {
+                showToast('Please select at least one consultant', 'warning');
+                return;
+            }
+
+            const paymentId = currentPopupPaymentRow.payment_id;
+            const agreementId = currentPopupPaymentRow.agreement_id;
+
+            const sendBtn = document.getElementById('pref-send-btn');
+            const originalHtml = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block"></div> Sending...';
+
+            try {
+                const payload = {
+                    companies: [
+                        {
+                            agreement_id: agreementId,
+                            payment_ids: [paymentId],
+                            consultant_ids: selectedConsultantIds
+                        }
+                    ]
+                };
+
+                const result = await api.post('/email/consultant-send', payload);
+                const stats = result.stats;
+
+                if (stats.sent > 0 && stats.failed === 0) {
+                    showToast(`Successfully sent email to ${stats.sent} selected consultant${stats.sent === 1 ? '' : 's'}`, 'success');
+                } else if (stats.sent > 0 && stats.failed > 0) {
+                    showToast(`Sent ${stats.sent}, Failed ${stats.failed}. Check errors below.`, 'warning');
+                } else {
+                    showToast(`Failed to send email: ${stats.errors.join('; ')}`, 'error');
+                }
+
+                const modal = document.getElementById('consultant-preference-modal');
+                modal.classList.remove('open');
+                currentPopupPaymentRow = null;
+
+                selectedConsultantPayments.clear();
+                await loadConsultantCompanies();
+                loadConsultantEmailLogs();
+
+            } catch (err) {
+                showToast(err.message || 'Failed to send consultant email', 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = originalHtml;
+            }
+        }
+
+        // Add modal backdrop outside click listener
+        document.getElementById('consultant-preference-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'consultant-preference-modal') closeConsultantPreferenceModal();
+        });
 
         // toggleConsultantSelectAll removed — Select All bypasses proforma popup
         function toggleConsultantSelectAll() { /* no-op — Select All button removed */ }
@@ -2121,7 +2436,8 @@
         function updateConsultantSelectionUI() {
             const count = selectedConsultantPayments.size;
             document.getElementById('consultant-selected-count').textContent = `${count} selected`;
-            document.getElementById('send-consultant-emails-btn').disabled = count === 0;
+            const mainSendBtn = document.getElementById('send-consultant-emails-btn');
+            if (mainSendBtn) mainSendBtn.disabled = count === 0;
         }
 
         async function sendSelectedConsultantEmails() {
@@ -3379,6 +3695,15 @@
             document.getElementById('sidebar-backdrop').classList.toggle('open');
         }
         document.getElementById('sidebar-backdrop').addEventListener('click', toggleSidebar);
+
+        // Clear selection state on pageshow (back button / reload cache resiliency)
+        window.addEventListener('pageshow', (event) => {
+            selectedCompanies.clear();
+            selectedConsultantPayments.clear();
+            unconfirmedAgreementEmails.clear();
+            updateSelectionUI();
+            updateConsultantSelectionUI();
+        });
 
         // Init
         initUI();

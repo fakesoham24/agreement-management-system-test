@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from backend.auth import require_admin, get_current_user, decode_token
 from backend.database import get_db
@@ -1009,6 +1009,15 @@ def update_consultant_template(
 class ConsultantCompanyEmail(BaseModel):
     agreement_id: int
     payment_ids: List[int] = []
+    consultant_ids: List[int]
+
+    @field_validator("consultant_ids")
+    @classmethod
+    def validate_consultant_ids(cls, v):
+        if not v or len(v) == 0:
+            raise ValueError("At least one consultant must be selected")
+        return v
+
 
 
 class ConsultantSendEmailRequest(BaseModel):
@@ -1088,7 +1097,7 @@ def get_consultant_companies_for_email(
     agreements_to_remove = []
     for aid, company in companies_map.items():
         consultants = cursor.execute("""
-            SELECT c.id, c.name, c.email
+            SELECT c.id, c.name, c.email, c.designation
             FROM agreement_consultants ac
             JOIN consultants c ON ac.consultant_id = c.id
             WHERE ac.agreement_id = ? AND c.is_active = 1
@@ -1099,7 +1108,7 @@ def get_consultant_companies_for_email(
             continue
 
         company["consultants"] = [
-            {"id": dict(c)["id"], "name": dict(c)["name"], "email": dict(c)["email"]}
+            {"id": dict(c)["id"], "name": dict(c)["name"], "email": dict(c)["email"], "designation": dict(c)["designation"]}
             for c in consultants
         ]
 
@@ -1242,12 +1251,21 @@ def send_emails_to_consultants(
         }
 
         # Get assigned consultants for this agreement
-        consultants = cursor.execute("""
-            SELECT c.id, c.name, c.email
-            FROM agreement_consultants ac
-            JOIN consultants c ON ac.consultant_id = c.id
-            WHERE ac.agreement_id = ? AND c.is_active = 1
-        """, (agreement_id,)).fetchall()
+        if company.consultant_ids:
+            placeholders = ",".join(["?"] * len(company.consultant_ids))
+            consultants = cursor.execute(f"""
+                SELECT c.id, c.name, c.email
+                FROM agreement_consultants ac
+                JOIN consultants c ON ac.consultant_id = c.id
+                WHERE ac.agreement_id = ? AND c.is_active = 1 AND c.id IN ({placeholders})
+            """, [agreement_id] + company.consultant_ids).fetchall()
+        else:
+            consultants = cursor.execute("""
+                SELECT c.id, c.name, c.email
+                FROM agreement_consultants ac
+                JOIN consultants c ON ac.consultant_id = c.id
+                WHERE ac.agreement_id = ? AND c.is_active = 1
+            """, (agreement_id,)).fetchall()
 
         if not consultants:
             stats["failed"] += 1
