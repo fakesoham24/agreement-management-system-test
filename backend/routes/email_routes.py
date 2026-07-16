@@ -6,7 +6,7 @@ import json
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, field_validator
 from typing import Optional, List
@@ -16,7 +16,7 @@ from backend.config import PROFORMA_DIR, APP_URL
 from backend.email_service import (
     encrypt_value, decrypt_value, get_access_token,
     send_email, render_template, DEFAULT_EMAIL_TEMPLATE,
-    DEFAULT_CONSULTANT_EMAIL_TEMPLATE,
+    DEFAULT_CONSULTANT_EMAIL_TEMPLATE, DEFAULT_THANKYOU_EMAIL_TEMPLATE,
 )
 
 # 1x1 transparent PNG pixel (68 bytes)
@@ -175,7 +175,10 @@ def get_email_settings(
             "email_template_type": s.get("email_template_type") or "text",
             "email_template": s.get("email_template") or DEFAULT_EMAIL_TEMPLATE,
             "email_template_html": s.get("email_template_html") or "",
-            "has_credentials": bool(client_secret and refresh_token)
+            "has_credentials": bool(client_secret and refresh_token),
+            "email_timeout_days": s.get("email_timeout_days") if s.get("email_timeout_days") is not None else 3,
+            "email_timeout_hours": s.get("email_timeout_hours") if s.get("email_timeout_hours") is not None else 0,
+            "email_timeout_minutes": s.get("email_timeout_minutes") if s.get("email_timeout_minutes") is not None else 0,
         }
     }
 
@@ -251,6 +254,77 @@ def update_credentials(
 
 
 # ==========================================
+# PUT /api/email/timeout — Save email timeout settings
+# ==========================================
+class EmailTimeoutUpdate(BaseModel):
+    email_timeout_days: int = 3
+    email_timeout_hours: int = 0
+    email_timeout_minutes: int = 0
+
+
+@router.put("/timeout")
+def update_email_timeout(
+    data: EmailTimeoutUpdate,
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db)
+):
+    cursor = db.cursor()
+    existing = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+
+    if existing:
+        cursor.execute("""
+            UPDATE email_settings SET
+                email_timeout_days = ?,
+                email_timeout_hours = ?,
+                email_timeout_minutes = ?,
+                updated_at = ?
+            WHERE id = ?
+        """, (
+            max(0, data.email_timeout_days),
+            max(0, data.email_timeout_hours),
+            max(0, data.email_timeout_minutes),
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            existing["id"]
+        ))
+    else:
+        cursor.execute("""
+            INSERT INTO email_settings (
+                gmail_client_id, gmail_client_secret_encrypted, gmail_refresh_token_encrypted,
+                sender_email, cc_emails, email_subject, email_template_type, email_template,
+                email_template_html, is_enabled, email_timeout_days, email_timeout_hours,
+                email_timeout_minutes, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "", "", "", "", "",
+            "Payment Reminder — {{company_name}}",
+            "text",
+            DEFAULT_EMAIL_TEMPLATE,
+            "",
+            1,
+            max(0, data.email_timeout_days),
+            max(0, data.email_timeout_hours),
+            max(0, data.email_timeout_minutes),
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        ))
+
+    db.commit()
+    return {"message": "Email timeout settings saved successfully"}
+
+
+def _get_timeout_seconds(db) -> int:
+    """Get the configured email timeout duration in seconds from email_settings."""
+    cursor = db.cursor()
+    settings = cursor.execute("SELECT email_timeout_days, email_timeout_hours, email_timeout_minutes FROM email_settings LIMIT 1").fetchone()
+    if not settings:
+        return 3 * 86400  # default 3 days
+    s = dict(settings)
+    days = s.get("email_timeout_days") if s.get("email_timeout_days") is not None else 3
+    hours = s.get("email_timeout_hours") if s.get("email_timeout_hours") is not None else 0
+    minutes = s.get("email_timeout_minutes") if s.get("email_timeout_minutes") is not None else 0
+    return (days * 86400) + (hours * 3600) + (minutes * 60)
+
+
+# ==========================================
 # PUT /api/email/template — Save default email template only
 # ==========================================
 @router.put("/template")
@@ -302,23 +376,38 @@ def update_template(
 
 
 # ==========================================
-# GET /api/email/companies — List companies with pending payments within 60 days
+# GET /api/email/companies — List companies with pending payments for a given month/year
 # ==========================================
 @router.get("/companies")
 def get_companies_for_email(
+    year: int = Query(None, description="Year to filter payments"),
+    month: int = Query(None, description="Month (1-indexed, 1=Jan)"),
     current_user: dict = Depends(require_admin),
     db=Depends(get_db)
 ):
     """
-    Fetch companies with pending payments due within the next 60 days.
-    Only includes non-expired agreements with pending payment status.
-    Companies are sorted by nearest due date first.
-    A company remains in the list until its payment is marked as paid.
+    Fetch companies with pending (unpaid) payments whose due date falls
+    in the specified month/year.  Defaults to the current month/year.
+    Only includes non-expired agreements.
+    Returns available_years for the year dropdown.
     """
     cursor = db.cursor()
     now = datetime.now()
-    today_str = now.strftime("%Y-%m-%d")
-    sixty_days_str = (now + timedelta(days=60)).strftime("%Y-%m-%d")
+
+    # Default to current year
+    if year is None:
+        year = now.year
+
+    # Build date range: if month is provided, filter by month; otherwise, filter by full year
+    if month is not None:
+        date_start = f"{year:04d}-{month:02d}-01"
+        if month == 12:
+            date_end = f"{year + 1:04d}-01-01"
+        else:
+            date_end = f"{year:04d}-{month + 1:02d}-01"
+    else:
+        date_start = f"{year:04d}-01-01"
+        date_end = f"{year + 1:04d}-01-01"
 
     rows = cursor.execute("""
         SELECT
@@ -337,9 +426,13 @@ def get_companies_for_email(
         LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
         WHERE p.status = 'pending'
           AND a.status != 'expired'
-          AND p.due_date BETWEEN ? AND ?
+          AND p.due_date >= ? AND p.due_date < ?
         ORDER BY p.due_date ASC
-    """, (today_str, sixty_days_str)).fetchall()
+    """, (date_start, date_end)).fetchall()
+
+    # Get email timeout duration for per-payment timeout checks
+    timeout_seconds = _get_timeout_seconds(db)
+    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
 
     # Group payments by agreement and compute totals
     companies_map = {}
@@ -372,12 +465,35 @@ def get_companies_for_email(
             proforma_status = dict(proforma)["status"]
             proforma_id = dict(proforma)["id"]
 
+        # Check email timeout for this specific payment (exclude thankyou emails)
+        is_timed_out = False
+        last_email_sent_at = None
+        if timeout_seconds > 0:
+            last_email = cursor.execute(
+                "SELECT sent_at FROM email_log WHERE payment_id = ? AND email_type != 'thankyou' AND status = 'sent' ORDER BY sent_at DESC LIMIT 1",
+                (r["payment_id"],)
+            ).fetchone()
+            if last_email:
+                last_sent = dict(last_email)["sent_at"]
+                last_email_sent_at = last_sent
+                if last_sent:
+                    try:
+                        clean = last_sent.split(".")[0].replace("Z", "").replace("T", " ").strip()
+                        sent_dt = datetime.strptime(clean, "%Y-%m-%d %H:%M:%S")
+                        elapsed = (datetime.utcnow() - sent_dt).total_seconds()
+                        if elapsed < timeout_seconds:
+                            is_timed_out = True
+                    except Exception:
+                        pass
+
         companies_map[aid]["payments"].append({
             "payment_id": r["payment_id"],
             "due_date": r["due_date"],
             "amount": amount,
             "proforma_status": proforma_status,
             "proforma_id": proforma_id,
+            "is_timed_out": is_timed_out,
+            "last_email_sent_at": last_email_sent_at,
         })
         companies_map[aid]["total_amount"] += amount
 
@@ -388,7 +504,20 @@ def get_companies_for_email(
     # Convert to list and sort by nearest due date
     companies = sorted(companies_map.values(), key=lambda c: c["nearest_due_date"])
 
-    return {"companies": companies}
+    # Collect available years from ALL pending payments (for the year dropdown)
+    all_years_rows = cursor.execute("""
+        SELECT DISTINCT CAST(strftime('%Y', p.due_date) AS INTEGER) AS yr
+        FROM payments p
+        JOIN agreements a ON p.agreement_id = a.id
+        WHERE p.status = 'pending' AND a.status != 'expired'
+        ORDER BY yr
+    """).fetchall()
+    available_years = [dict(r)["yr"] for r in all_years_rows if dict(r)["yr"]]
+    if year not in available_years:
+        available_years.append(year)
+    available_years.sort()
+
+    return {"companies": companies, "available_years": available_years}
 
 
 # ==========================================
@@ -484,23 +613,48 @@ def send_emails_to_companies(
                 payment_ids
             ).fetchall()
         else:
-            # If no specific payment IDs, get all pending payments for this agreement within 60 days
-            now = datetime.now()
+            # If no specific payment IDs, get all pending payments for this agreement
             payments = cursor.execute("""
                 SELECT * FROM payments
                 WHERE agreement_id = ? AND status = 'pending'
-                  AND due_date BETWEEN ? AND ?
                 ORDER BY due_date ASC
             """, (
                 company.agreement_id,
-                now.strftime("%Y-%m-%d"),
-                (now + timedelta(days=60)).strftime("%Y-%m-%d")
             )).fetchall()
 
         if not payments:
             stats["failed"] += 1
             stats["errors"].append(f"No pending payments found for {ad.get('company_name', 'Unknown')}")
             continue
+
+        # Filter out timed-out payments (per-payment email timeout)
+        timeout_secs = _get_timeout_seconds(db)
+        if timeout_secs > 0:
+            now_ts = datetime.now()
+            non_timed_out = []
+            for p in payments:
+                p_dict = dict(p)
+                last_email = cursor.execute(
+                    "SELECT sent_at FROM email_log WHERE payment_id = ? AND email_type != 'thankyou' AND status = 'sent' ORDER BY sent_at DESC LIMIT 1",
+                    (p_dict["id"],)
+                ).fetchone()
+                if last_email:
+                    last_sent = dict(last_email)["sent_at"]
+                    if last_sent:
+                        try:
+                            clean = last_sent.split(".")[0].replace("Z", "").replace("T", " ").strip()
+                            sent_dt = datetime.strptime(clean, "%Y-%m-%d %H:%M:%S")
+                            elapsed = (datetime.utcnow() - sent_dt).total_seconds()
+                            if elapsed < timeout_secs:
+                                continue  # skip this payment — it's timed out
+                        except Exception:
+                            pass
+                non_timed_out.append(p)
+            if not non_timed_out:
+                stats["failed"] += 1
+                stats["errors"].append(f"All selected payments for {ad.get('company_name', 'Unknown')} are within the email timeout period")
+                continue
+            payments = non_timed_out
 
         # Check for confirmed proforma invoices for ALL selected payments
         attachments = []
@@ -1026,21 +1180,38 @@ class ConsultantSendEmailRequest(BaseModel):
 
 # ==========================================
 # GET /api/email/consultant-companies — List companies with pending payments
-# that have assigned consultants (for manual send)
+# that have assigned consultants (for manual send), filtered by month/year
 # ==========================================
 @router.get("/consultant-companies")
 def get_consultant_companies_for_email(
+    year: int = Query(None, description="Year to filter payments"),
+    month: int = Query(None, description="Month (1-indexed, 1=Jan)"),
     current_user: dict = Depends(require_admin),
     db=Depends(get_db)
 ):
     """
-    Fetch agreements with pending payments due within the next 60 days
-    that have active consultants assigned. For manual consultant email sending.
+    Fetch agreements with pending (unpaid) payments whose due date falls
+    in the specified month/year, that have active consultants assigned.
+    Defaults to the current month/year.
+    Returns available_years for the year dropdown.
     """
     cursor = db.cursor()
     now = datetime.now()
-    today_str = now.strftime("%Y-%m-%d")
-    sixty_days_str = (now + timedelta(days=60)).strftime("%Y-%m-%d")
+
+    # Default to current year
+    if year is None:
+        year = now.year
+
+    # Build date range: if month is provided, filter by month; otherwise, filter by full year
+    if month is not None:
+        date_start = f"{year:04d}-{month:02d}-01"
+        if month == 12:
+            date_end = f"{year + 1:04d}-01-01"
+        else:
+            date_end = f"{year:04d}-{month + 1:02d}-01"
+    else:
+        date_start = f"{year:04d}-01-01"
+        date_end = f"{year + 1:04d}-01-01"
 
     rows = cursor.execute("""
         SELECT
@@ -1058,9 +1229,12 @@ def get_consultant_companies_for_email(
         LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
         WHERE p.status = 'pending'
           AND a.status != 'expired'
-          AND p.due_date BETWEEN ? AND ?
+          AND p.due_date >= ? AND p.due_date < ?
         ORDER BY p.due_date ASC
-    """, (today_str, sixty_days_str)).fetchall()
+    """, (date_start, date_end)).fetchall()
+
+    # Get email timeout duration for per-payment timeout checks
+    timeout_seconds = _get_timeout_seconds(db)
 
     # Group payments by agreement and compute totals
     companies_map = {}
@@ -1082,10 +1256,33 @@ def get_consultant_companies_for_email(
                 "consultants": [],
             }
 
+        # Check email timeout for this specific payment (exclude thankyou emails)
+        is_timed_out = False
+        last_email_sent_at = None
+        if timeout_seconds > 0:
+            last_email = cursor.execute(
+                "SELECT sent_at FROM email_log WHERE payment_id = ? AND email_type != 'thankyou' AND status = 'sent' ORDER BY sent_at DESC LIMIT 1",
+                (r["payment_id"],)
+            ).fetchone()
+            if last_email:
+                last_sent = dict(last_email)["sent_at"]
+                last_email_sent_at = last_sent
+                if last_sent:
+                    try:
+                        clean = last_sent.split(".")[0].replace("Z", "").replace("T", " ").strip()
+                        sent_dt = datetime.strptime(clean, "%Y-%m-%d %H:%M:%S")
+                        elapsed = (datetime.utcnow() - sent_dt).total_seconds()
+                        if elapsed < timeout_seconds:
+                            is_timed_out = True
+                    except Exception:
+                        pass
+
         companies_map[aid]["payments"].append({
             "payment_id": r["payment_id"],
             "due_date": r["due_date"],
             "amount": amount,
+            "is_timed_out": is_timed_out,
+            "last_email_sent_at": last_email_sent_at,
         })
         companies_map[aid]["total_amount"] += amount
 
@@ -1118,7 +1315,20 @@ def get_consultant_companies_for_email(
     # Convert to list and sort by nearest due date
     companies = sorted(companies_map.values(), key=lambda c: c["nearest_due_date"])
 
-    return {"companies": companies}
+    # Collect available years from ALL pending payments (for the year dropdown)
+    all_years_rows = cursor.execute("""
+        SELECT DISTINCT CAST(strftime('%Y', p.due_date) AS INTEGER) AS yr
+        FROM payments p
+        JOIN agreements a ON p.agreement_id = a.id
+        WHERE p.status = 'pending' AND a.status != 'expired'
+        ORDER BY yr
+    """).fetchall()
+    available_years = [dict(r)["yr"] for r in all_years_rows if dict(r)["yr"]]
+    if year not in available_years:
+        available_years.append(year)
+    available_years.sort()
+
+    return {"companies": companies, "available_years": available_years}
 
 
 # ==========================================
@@ -1225,6 +1435,35 @@ def send_emails_to_consultants(
             stats["failed"] += 1
             stats["errors"].append(f"No pending payments found for {ad.get('company_name', 'Unknown')}")
             continue
+
+        # Filter out timed-out payments (per-payment email timeout)
+        timeout_secs = _get_timeout_seconds(db)
+        if timeout_secs > 0:
+            now_ts = datetime.now()
+            non_timed_out = []
+            for p in payments:
+                p_dict = dict(p)
+                last_email = cursor.execute(
+                    "SELECT sent_at FROM email_log WHERE payment_id = ? AND email_type != 'thankyou' AND status = 'sent' ORDER BY sent_at DESC LIMIT 1",
+                    (p_dict["id"],)
+                ).fetchone()
+                if last_email:
+                    last_sent = dict(last_email)["sent_at"]
+                    if last_sent:
+                        try:
+                            clean = last_sent.split(".")[0].replace("Z", "").replace("T", " ").strip()
+                            sent_dt = datetime.strptime(clean, "%Y-%m-%d %H:%M:%S")
+                            elapsed = (datetime.utcnow() - sent_dt).total_seconds()
+                            if elapsed < timeout_secs:
+                                continue  # skip this payment — it's timed out
+                        except Exception:
+                            pass
+                non_timed_out.append(p)
+            if not non_timed_out:
+                stats["failed"] += 1
+                stats["errors"].append(f"All selected payments for {ad.get('company_name', 'Unknown')} are within the email timeout period")
+                continue
+            payments = non_timed_out
 
         # Use the nearest pending payment for template variables
         nearest_payment = dict(payments[0])
@@ -1734,3 +1973,302 @@ def get_proforma_form_data(
         form_data = {}
 
     return {"form_data": form_data}
+
+
+# ==========================================
+# Thank You Email Template Request Model
+# ==========================================
+class ThankYouTemplateUpdate(BaseModel):
+    thankyou_email_subject: Optional[str] = None
+    thankyou_email_template_type: Optional[str] = "text"
+    thankyou_email_template: Optional[str] = None
+    thankyou_email_template_html: Optional[str] = None
+
+
+# ==========================================
+# GET /api/email/thankyou-template — Get thank you email template
+# ==========================================
+@router.get("/thankyou-template")
+def get_thankyou_template(
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    cursor = db.cursor()
+    settings = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+
+    if not settings:
+        return {
+            "template": {
+                "thankyou_email_subject": "Thank You for Your Payment — {{company_name}}",
+                "thankyou_email_template_type": "text",
+                "thankyou_email_template": DEFAULT_THANKYOU_EMAIL_TEMPLATE,
+                "thankyou_email_template_html": "",
+            }
+        }
+
+    s = dict(settings)
+    return {
+        "template": {
+            "thankyou_email_subject": s.get("thankyou_email_subject") or "Thank You for Your Payment — {{company_name}}",
+            "thankyou_email_template_type": s.get("thankyou_email_template_type") or "text",
+            "thankyou_email_template": s.get("thankyou_email_template") or DEFAULT_THANKYOU_EMAIL_TEMPLATE,
+            "thankyou_email_template_html": s.get("thankyou_email_template_html") or "",
+        }
+    }
+
+
+# ==========================================
+# PUT /api/email/thankyou-template — Save thank you email template
+# ==========================================
+@router.put("/thankyou-template")
+def update_thankyou_template(
+    data: ThankYouTemplateUpdate,
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    cursor = db.cursor()
+    existing = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+
+    if existing:
+        ex = dict(existing)
+        cursor.execute("""
+            UPDATE email_settings SET
+                thankyou_email_subject = ?,
+                thankyou_email_template_type = ?,
+                thankyou_email_template = ?,
+                thankyou_email_template_html = ?,
+                updated_at = ?
+            WHERE id = ?
+        """, (
+            data.thankyou_email_subject or "Thank You for Your Payment — {{company_name}}",
+            data.thankyou_email_template_type or "text",
+            data.thankyou_email_template if data.thankyou_email_template is not None else (ex.get("thankyou_email_template") or DEFAULT_THANKYOU_EMAIL_TEMPLATE),
+            data.thankyou_email_template_html if data.thankyou_email_template_html is not None else (ex.get("thankyou_email_template_html") or ""),
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            existing["id"],
+        ))
+    else:
+        cursor.execute("""
+            INSERT INTO email_settings (
+                gmail_client_id, gmail_client_secret_encrypted, gmail_refresh_token_encrypted,
+                sender_email, cc_emails, email_subject, email_template_type, email_template,
+                email_template_html, is_enabled,
+                thankyou_email_subject, thankyou_email_template_type,
+                thankyou_email_template, thankyou_email_template_html,
+                updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "", "", "", "", "",
+            "Payment Reminder — {{company_name}}",
+            "text",
+            "",
+            "",
+            1,
+            data.thankyou_email_subject or "Thank You for Your Payment — {{company_name}}",
+            data.thankyou_email_template_type or "text",
+            data.thankyou_email_template or DEFAULT_THANKYOU_EMAIL_TEMPLATE,
+            data.thankyou_email_template_html or "",
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        ))
+
+    db.commit()
+    return {"message": "Thank you email template saved successfully"}
+
+
+# ==========================================
+# POST /api/email/send-thankyou — Send thank you email for a paid payment
+# ==========================================
+class ThankYouSendRequest(BaseModel):
+    payment_id: int
+    agreement_id: int
+
+
+@router.post("/send-thankyou")
+def send_thankyou_email(
+    data: ThankYouSendRequest,
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db),
+):
+    cursor = db.cursor()
+
+    # Get agreement analysis data
+    agreement_data = cursor.execute("""
+        SELECT aa.company_name, aa.contact_person, aa.currency, aa.agreement_title, aa.email
+        FROM agreement_analysis aa
+        WHERE aa.agreement_id = ?
+    """, (data.agreement_id,)).fetchone()
+
+    if not agreement_data:
+        return {"status": "skipped", "reason": "Agreement analysis not found"}
+
+    ad = dict(agreement_data)
+    recipient_email = (ad.get("email") or "").strip()
+
+    if not recipient_email:
+        return {"status": "skipped", "reason": "Company email is missing"}
+
+    # Get the specific payment info
+    payment = cursor.execute(
+        "SELECT * FROM payments WHERE id = ?", (data.payment_id,)
+    ).fetchone()
+    if not payment:
+        return {"status": "skipped", "reason": "Payment not found"}
+    payment = dict(payment)
+
+    # Calculate total paid amount for this agreement
+    total_paid_row = cursor.execute(
+        "SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE agreement_id = ? AND status = 'paid'",
+        (data.agreement_id,)
+    ).fetchone()
+    total_paid = dict(total_paid_row)["total"] if total_paid_row else 0
+
+    # Load email settings
+    settings = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+    if not settings:
+        return {"status": "failed", "error": "Email settings not configured"}
+
+    s = dict(settings)
+
+    # Decrypt credentials
+    client_id = s.get("gmail_client_id") or ""
+    client_secret = decrypt_value(s.get("gmail_client_secret_encrypted") or "")
+    refresh_token = decrypt_value(s.get("gmail_refresh_token_encrypted") or "")
+    sender_email = s.get("sender_email") or ""
+
+    if not all([client_id, client_secret, refresh_token, sender_email]):
+        return {"status": "failed", "error": "Gmail credentials are incomplete"}
+
+    # Get access token
+    try:
+        access_token = get_access_token(client_id, client_secret, refresh_token)
+    except ValueError as e:
+        return {"status": "failed", "error": str(e)}
+
+    # Load thank you template
+    template_type = s.get("thankyou_email_template_type") or "text"
+    is_html = template_type == "html"
+
+    if is_html:
+        template = s.get("thankyou_email_template_html") or s.get("thankyou_email_template") or DEFAULT_THANKYOU_EMAIL_TEMPLATE
+    else:
+        template = s.get("thankyou_email_template") or DEFAULT_THANKYOU_EMAIL_TEMPLATE
+        # Auto-detect HTML content from the visual rich text editor
+        if template and ('<' in template and '>' in template):
+            is_html = True
+
+    subject_template = s.get("thankyou_email_subject") or "Thank You for Your Payment — {{company_name}}"
+
+    # Build template variables
+    currency = ad.get("currency") or "₹"
+    paid_date = payment.get("paid_at") or datetime.now().strftime("%Y-%m-%d")
+    # Format paid_date to just the date portion
+    if paid_date and len(paid_date) > 10:
+        paid_date = paid_date[:10]
+
+    variables = {
+        "company_name": ad.get("company_name") or "Valued Client",
+        "payment_paid_amount": f"{(payment.get('amount') or 0):,.2f}",
+        "payment_paid_date": paid_date,
+        "total_paid_amount": f"{total_paid:,.2f}",
+        "currency": currency,
+        "agreement_title": ad.get("agreement_title") or "Consulting Agreement",
+        "contact_person": ad.get("contact_person") or "Sir/Madam",
+    }
+
+    # Render email body and subject
+    email_body = render_template(template, variables)
+    email_subject = render_template(subject_template, variables)
+
+    cc_emails = s.get("cc_emails") or ""
+
+    # Send email
+    result = send_email(
+        sender=sender_email,
+        to=recipient_email,
+        subject=email_subject,
+        body=email_body,
+        cc=cc_emails if cc_emails.strip() else None,
+        is_html=is_html,
+        access_token=access_token,
+    )
+
+    # Log the thankyou email
+    cursor.execute("""
+        INSERT INTO email_log (payment_id, agreement_id, recipient_email, subject, status, error_message, email_type)
+        VALUES (?, ?, ?, ?, ?, ?, 'thankyou')
+    """, (
+        data.payment_id, data.agreement_id, recipient_email,
+        email_subject, result["status"], result.get("error")
+    ))
+    db.commit()
+
+    if result["status"] == "sent":
+        return {"status": "sent"}
+    else:
+        return {"status": "failed", "error": result.get("error", "Unknown error")}
+
+
+# ==========================================
+# GET /api/email/thankyou-logs — Get THANKYOU email send history
+# ==========================================
+@router.get("/thankyou-logs")
+def get_thankyou_email_logs(
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db)
+):
+    cursor = db.cursor()
+
+    # Auto-cleanup: delete THANKYOU email logs older than 30 days from sent_at
+    thirty_days_ago = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("DELETE FROM email_log WHERE sent_at < ? AND email_type = 'thankyou'",
+                   (thirty_days_ago,))
+    db.commit()
+
+    logs = cursor.execute("""
+        SELECT el.*, aa.company_name
+        FROM email_log el
+        LEFT JOIN agreement_analysis aa ON el.agreement_id = aa.agreement_id
+        WHERE el.email_type = 'thankyou'
+        ORDER BY el.sent_at DESC
+        LIMIT 100
+    """).fetchall()
+
+    result_logs = []
+    for log in logs:
+        d = dict(log)
+        result_logs.append(d)
+
+    return {"logs": result_logs}
+
+
+# ==========================================
+# DELETE /api/email/thankyou-logs — Clear all THANKYOU email logs
+# ==========================================
+@router.delete("/thankyou-logs")
+def clear_all_thankyou_email_logs(
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db)
+):
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM email_log WHERE email_type = 'thankyou'")
+    db.commit()
+    return {"message": "All thank you email logs cleared successfully"}
+
+
+# ==========================================
+# DELETE /api/email/thankyou-logs/{log_id} — Delete single THANKYOU email log
+# ==========================================
+@router.delete("/thankyou-logs/{log_id}")
+def delete_thankyou_email_log(
+    log_id: int,
+    current_user: dict = Depends(require_admin),
+    db=Depends(get_db)
+):
+    cursor = db.cursor()
+    existing = cursor.execute("SELECT id FROM email_log WHERE id = ? AND email_type = 'thankyou'",
+                              (log_id,)).fetchone()
+    if not existing:
+        raise HTTPException(status_code=404, detail="Thank you email log entry not found")
+    cursor.execute("DELETE FROM email_log WHERE id = ?", (log_id,))
+    db.commit()
+    return {"message": "Thank you email log entry deleted successfully"}

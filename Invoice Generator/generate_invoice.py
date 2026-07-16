@@ -456,7 +456,7 @@ def generate_invoice(client):
 
     # -- Reference No / Other references (row3, right block) --
     label_value(c, col2_x, y3, mid_col_w, "Reference No. & Date.",
-                f"{reference_no}  {reference_date}", value_size=8)
+                f"{reference_no} dt. {reference_date}", value_size=8)
     label_value(c, col3_x, y3, mid_col_w, "Sales Person", other_references)
 
     # -- Terms of delivery (row4, merged) --

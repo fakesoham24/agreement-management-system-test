@@ -36,7 +36,7 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
 
 def _image_to_base64(img, max_size: int = 4 * 1024 * 1024) -> str | None:
     """Convert PIL Image to base64 JPEG, progressively reducing quality/size to fit limit.
-    Also ensures the image stays within the Groq Vision maximum pixel limit (33,177,600 pixels).
+    Also ensures the image stays within the Vision maximum pixel limit (33,177,600 pixels).
     Memory-optimized: reuses buffers and cleans up intermediates.
     """
     from io import BytesIO
@@ -44,14 +44,14 @@ def _image_to_base64(img, max_size: int = 4 * 1024 * 1024) -> str | None:
     import math
     from PIL import Image
 
-    # Max pixel count constraint by Groq Vision
+    # Max pixel count constraint by Vision API
     max_pixels = 30000000
     if img.width * img.height > max_pixels:
         scale = math.sqrt(max_pixels / (img.width * img.height))
         new_w = int(img.width * scale)
         new_h = int(img.height * scale)
         img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-        logger.info(f"Image resized to {new_w}x{new_h} to fit Groq pixel count limit.")
+        logger.info(f"Image resized to {new_w}x{new_h} to fit pixel count limit.")
 
     # Reuse a single BytesIO buffer to reduce memory allocations
     buf = BytesIO()
@@ -89,7 +89,7 @@ def _image_to_base64(img, max_size: int = 4 * 1024 * 1024) -> str | None:
 
 
 def _ocr_page_with_vision(client, model: str, img_b64: str, page_num: int, total_pages: int) -> str:
-    """Send a single page image to Groq vision model for OCR text extraction.
+    """Send a single page image to OpenAI vision model for OCR text extraction.
     
     Uses strict anti-hallucination prompting and retries on transient failures.
     """
@@ -145,9 +145,9 @@ def _ocr_page_with_vision(client, model: str, img_b64: str, page_num: int, total
 
 
 def extract_text_from_scanned_pdf(file_bytes: bytes) -> str:
-    """Extract text from a scanned (image-based) PDF using Groq Vision model.
+    """Extract text from a scanned (image-based) PDF using OpenAI Vision model.
 
-    Converts each page to an image using PyMuPDF, then runs Groq Llama 4 Scout
+    Converts each page to an image using PyMuPDF, then runs OpenAI vision model
     for text recognition.
     Falls back to PyPDF2 text extraction if OCR yields no results.
 
@@ -156,13 +156,13 @@ def extract_text_from_scanned_pdf(file_bytes: bytes) -> str:
     """
     import fitz  # PyMuPDF
     from PIL import Image
-    from groq import Groq
-    from backend.config import GROQ_API_KEY, GROQ_VISION_MODEL
+    from openai import OpenAI
+    from backend.config import OPENAI_API_KEY, OPENAI_VISION_MODEL
 
-    MAX_BASE64_SIZE = 4 * 1024 * 1024  # 4 MB Groq limit
+    MAX_BASE64_SIZE = 4 * 1024 * 1024  # 4 MB limit
     MAX_OCR_PAGES = 20  # Cap pages to prevent runaway memory usage
 
-    client = Groq(api_key=GROQ_API_KEY)
+    client = OpenAI(api_key=OPENAI_API_KEY)
     doc = fitz.open(stream=file_bytes, filetype="pdf")
     text_parts = []
     total_pages = len(doc)
@@ -198,8 +198,8 @@ def extract_text_from_scanned_pdf(file_bytes: bytes) -> str:
                     logger.warning(f"Page {page_num + 1}: Could not compress/downscale to under 4MB, skipping.")
                     continue
 
-                # Run OCR using Groq Vision completion
-                page_text = _ocr_page_with_vision(client, GROQ_VISION_MODEL, img_b64, page_num + 1, total_pages)
+                # Run OCR using OpenAI Vision completion
+                page_text = _ocr_page_with_vision(client, OPENAI_VISION_MODEL, img_b64, page_num + 1, total_pages)
 
                 # Free the base64 string immediately after API call
                 del img_b64

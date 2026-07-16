@@ -102,7 +102,7 @@
                         <button class="status-filter-btn" data-status="paid" onclick="setStatusFilter('paid')">Paid</button>
                         <button class="status-filter-btn" data-status="pending" onclick="setStatusFilter('pending')">Unpaid</button>
                     </div>
-                    <button class="btn btn-sm btn-export" id="export-excel-btn" onclick="exportPaymentsExcel()" title="Export filtered payments to Excel" style="display:none">
+                    <button class="btn btn-sm btn-export" id="export-excel-btn" onclick="exportPaymentsExcelWithLoading(this)" title="Export filtered payments to Excel" style="display:none">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Export Excel
                     </button>
@@ -449,16 +449,59 @@
             tbody.innerHTML = rows + totalRow;
         }
 
-        // Mark payment as paid
+        // Mark payment as paid (with confirmation + automatic thank you email)
         async function markPaymentPaid(paymentId, e) {
             e.stopPropagation();
+
+            // Show confirmation popup
+            const isAdmin = user && user.role === 'admin';
+            const confirmMsg = isAdmin
+                ? 'Are you sure you want to mark this payment as paid? A thank you email will be sent to the company automatically.'
+                : 'Are you sure you want to mark this payment as paid?';
+
+            const confirmed = await showConfirm('Mark Payment as Paid', confirmMsg);
+            if (!confirmed) return;
+
+            // Find the button and show loading state
+            const btn = e.target.closest('.btn-mark-paid');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+            }
+
             try {
-                await api.put(`/payments/${paymentId}/mark-paid`);
-                showToast('Payment marked as paid', 'success');
+                const result = await api.put(`/payments/${paymentId}/mark-paid`);
+
+                // Only send thank you email if marking as paid (not toggling back to pending) and user is admin
+                if (result.status === 'paid' && isAdmin && result.agreement_id) {
+                    try {
+                        const emailResult = await api.post('/email/send-thankyou', {
+                            payment_id: result.payment_id || paymentId,
+                            agreement_id: result.agreement_id
+                        });
+
+                        if (emailResult.status === 'sent') {
+                            showToast('Payment marked as paid — Thank you email sent!', 'success');
+                        } else if (emailResult.status === 'skipped') {
+                            showToast(`Payment marked as paid, but ${emailResult.reason || 'thank you email was not sent'}.`, 'warning');
+                        } else {
+                            showToast('Payment marked as paid, but thank you email failed to send.', 'warning');
+                        }
+                    } catch (emailErr) {
+                        showToast('Payment marked as paid, but thank you email failed to send.', 'warning');
+                    }
+                } else {
+                    showToast('Payment marked as paid', 'success');
+                }
+
                 loadPayments();
                 loadNotifications();
             } catch (err) {
                 showToast(err.message, 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Mark Paid';
+                }
             }
         }
 
@@ -544,8 +587,13 @@
             }
         });
 
-        // Export payments to Excel
-        function exportPaymentsExcel() {
+        // Export payments to Excel with loading animation
+        function exportPaymentsExcelWithLoading(btn) {
+            if (btn.disabled) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px"></div> Exporting...';
+
             let url = `/api/export/payments?year=${selectedYear}`;
             if (viewMode === 'month') {
                 url += `&month=${selectedMonth}`;
@@ -574,7 +622,11 @@
                 URL.revokeObjectURL(a.href);
                 showToast('Payments exported successfully', 'success');
             })
-            .catch(err => showToast(err.message, 'error'));
+            .catch(err => showToast(err.message, 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            });
         }
 
         // Mobile sidebar

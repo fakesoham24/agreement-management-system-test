@@ -175,6 +175,17 @@ Company Contact: {{contact_person}}
 Regards,
 D&V Business Consulting — Automated Payment Reminder"""
 
+DEFAULT_THANKYOU_EMAIL_TEMPLATE = """Dear {{contact_person}},
+
+Thank you for your payment of {{currency}}{{payment_paid_amount}} received on {{payment_paid_date}} for the agreement "{{agreement_title}}" with {{company_name}}.
+
+Your total payments to date for this agreement amount to {{currency}}{{total_paid_amount}}.
+
+We truly appreciate your prompt payment and look forward to continuing our partnership.
+
+Warm regards,
+D&V Business Consulting"""
+
 
 def render_template(template_str: str, variables: dict) -> str:
     """Replace {{variable}} placeholders with actual values."""
@@ -185,3 +196,4 @@ def render_template(template_str: str, variables: dict) -> str:
         placeholder = "{{" + key + "}}"
         result = result.replace(placeholder, str(value) if value is not None else "")
     return result
+

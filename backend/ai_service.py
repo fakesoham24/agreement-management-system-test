@@ -1,14 +1,14 @@
 import json
 import re
-from groq import Groq
-from backend.config import GROQ_API_KEY, GROQ_MODEL
+from openai import OpenAI
+from backend.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
-def get_groq_client():
-    """Get Groq client instance."""
-    if not GROQ_API_KEY:
-        raise ValueError("GROQ_API_KEY not configured")
-    return Groq(api_key=GROQ_API_KEY)
+def get_openai_client():
+    """Get OpenAI client instance."""
+    if not OPENAI_API_KEY:
+        raise ValueError("OPENAI_API_KEY not configured")
+    return OpenAI(api_key=OPENAI_API_KEY)
 
 
 # All fields returned by the deep analysis
@@ -316,8 +316,8 @@ def _sort_plans_by_due_date(plans: list) -> list:
 
 
 def analyze_agreement(text: str) -> dict:
-    """Analyze agreement text using Groq LLM and extract structured data."""
-    client = get_groq_client()
+    """Analyze agreement text using OpenAI LLM and extract structured data."""
+    client = get_openai_client()
 
     system_prompt = (
         "You are a precise legal document analyst for consulting agreements. Rules:\n"
@@ -379,7 +379,7 @@ Agreement text:
 
     try:
         response = client.chat.completions.create(
-            model=GROQ_MODEL,
+            model=OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}

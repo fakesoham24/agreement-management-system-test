@@ -4,7 +4,7 @@ AI-powered Consulting Agreement Management System for internal consulting compan
 
 ## Features
 
-- **Agreement Upload & Analysis**: Upload PDF/DOCX agreements, AI extracts structured data using Llama 3.3 70B
+- **Agreement Upload & Analysis**: Upload PDF/DOCX agreements, AI extracts structured data using OpenAI LLM
 - **Payment Tracking**: Automatic payment schedule generation with mark-paid functionality
 - **Timeline Visualization**: Professional agreement timeline view
 - **Search & Filter**: Fast search by company name, ID, status, payment type
@@ -16,7 +16,7 @@ AI-powered Consulting Agreement Management System for internal consulting compan
 
 - **Backend**: Python, FastAPI, SQLite
 - **Frontend**: HTML, CSS, JavaScript
-- **AI**: Groq API (Llama 3.3 70B Versatile)
+- **AI**: OpenAI API
 - **Auth**: Custom JWT with bcrypt password hashing
 - **Deployment**: Railway
 
@@ -29,7 +29,7 @@ AI-powered Consulting Agreement Management System for internal consulting compan
 
 2. Create `.env` file (see `.env.example`):
    ```
-   GROQ_API_KEY=your_groq_api_key
+   OPENAI_API_KEY=your_openai_api_key
    ```
 
 3. Run the application:
@@ -57,7 +57,7 @@ AI-powered Consulting Agreement Management System for internal consulting compan
 │   ├── config.py            # Application configuration
 │   ├── database.py          # SQLite database setup & initialization
 │   ├── auth.py              # JWT authentication & authorization
-│   ├── ai_service.py        # Groq AI agreement analysis
+│   ├── ai_service.py        # OpenAI AI agreement analysis
 │   ├── file_utils.py        # PDF/DOCX text extraction
 │   └── routes/
 │       ├── auth_routes.py       # Login, register, profile
@@ -80,7 +80,7 @@ AI-powered Consulting Agreement Management System for internal consulting compan
 1. Push code to GitHub
 2. Connect repository in Railway
 3. Set environment variables:
-   - `GROQ_API_KEY`
+   - `OPENAI_API_KEY`
    - `SECRET_KEY` (use a strong random string)
 4. Deploy
 

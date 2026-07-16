@@ -1910,8 +1910,8 @@ h4 {
     background: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: 3px;
-    margin-bottom: var(--space-lg);
+    padding: 4px;
+    /* margin-bottom: var(--space-lg); */
 }
 
 .filter-tab {
@@ -3056,6 +3056,13 @@ h4 {
     display: none;
 }
 
+/* Month tabs faded state (Year view mode in email sections) */
+.month-tabs-faded {
+    opacity: 0.35;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
 /* Payments table container */
 .payments-table-container {
     background: var(--color-surface);
@@ -3169,6 +3176,9 @@ h4 {
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .view-toggle-btn:hover {
@@ -4489,10 +4499,12 @@ h4 {
     gap: 8px;
     flex: 1;
     min-width: 180px;
+    flex-grow: 0.3;
 }
 
 .email-search-field .form-input {
-    flex: 1;
+    flex: 0;
+    width: 160px; 
     padding: 7px 12px;
     font-size: 0.82rem;
 }
@@ -4679,4 +4691,155 @@ h4 {
     .email-search-field {
         min-width: 100%;
     }
+}
+
+/* === Dashboard & Admin Panel UI Enhancements === */
+.dashboard-list-container {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.dashboard-list-container .payment-table-enhanced {
+    margin: 0;
+}
+
+.email-search-bar-inline {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+}
+
+.month-tabs-inline {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.btn-reset-filters {
+    color: var(--color-danger) !important;
+    border-color: rgba(239, 68, 68, 0.2) !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px !important;
+    height: 38px;
+    transition: all var(--transition-fast) !important;
+}
+
+.btn-reset-filters:hover {
+    color: white !important;
+    background: var(--color-danger) !important;
+    border-color: var(--color-danger) !important;
+}
+
+@media (max-width: 1200px) {
+    .email-search-bar-inline {
+        flex-wrap: wrap !important;
+    }
+    .month-tabs-inline {
+        order: 3;
+        width: 100%;
+        flex: none !important;
+    }
+}
+
+/* ============================================
+   Session Expired Popup (non-dismissible)
+   ============================================ */
+.session-expired-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.session-expired-overlay.visible {
+    opacity: 1;
+}
+
+.session-expired-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 40px 36px 32px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    animation: sessionExpiredIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes sessionExpiredIn {
+    from { transform: scale(0.85) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.session-expired-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.12), rgba(245, 158, 11, 0.18));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: #d97706;
+}
+
+.session-expired-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 10px;
+}
+
+.session-expired-message {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+    margin-bottom: 28px;
+}
+
+.session-expired-ok {
+    min-width: 140px;
+    padding: 10px 32px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+}
+
+/* ============================================
+   Email Timeout — Timed-out Payment Rows
+   ============================================ */
+tr.email-timed-out {
+    opacity: 0.4;
+    position: relative;
+}
+
+tr.email-timed-out td {
+    cursor: not-allowed !important;
+}
+
+tr.email-timed-out .company-checkbox {
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+tr.email-timed-out .company-email-input,
+tr.email-timed-out .email-action-btn,
+tr.email-timed-out .company-more-info-btn {
+    pointer-events: none;
 }

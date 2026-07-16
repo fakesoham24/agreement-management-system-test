@@ -101,16 +101,52 @@
 
                 <!-- Monthly Payment Summary Cards -->
                 <div class="dashboard-payment-cards" id="dashboard-payment-cards"></div>
-                <div class="filter-tabs" id="filter-tabs">
-                    <button class="filter-tab active" data-filter="">All</button>
-                    <button class="filter-tab" data-filter="active">Active</button>
-                    <button class="filter-tab" data-filter="pending">Pending</button>
-                    <button class="filter-tab" data-filter="expired">Expired</button>
-                    <button class="filter-tab" data-filter="terminated">Terminated</button>
+                <div class="payments-filters" style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:nowrap;justify-content:space-between">
+                    <div class="filter-tabs" id="filter-tabs">
+                        <button class="filter-tab active" data-filter="">All</button>
+                        <button class="filter-tab" data-filter="active">Active</button>
+                        <button class="filter-tab" data-filter="pending">Pending</button>
+                        <button class="filter-tab" data-filter="expired">Expired</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="view-toggle" id="dashboard-view-toggle">
+                            <button class="view-toggle-btn active" data-view="template" onclick="switchDashboardView('template')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                                Template
+                            </button>
+                            <button class="view-toggle-btn" data-view="list" onclick="switchDashboardView('list')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                List
+                            </button>
+                        </div>
+                        <button class="btn btn-sm btn-export" id="dashboard-export-btn" onclick="exportDashboardExcelWithLoading(this)" title="Export filtered agreements to Excel" style="display:none">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Export Excel
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Agreements Grid -->
+                <!-- Agreements Grid (Template View) -->
                 <div class="agreements-grid" id="agreements-grid"></div>
+
+                <!-- Agreements List (Table View) -->
+                <div id="agreements-list-view" class="dashboard-list-container" style="display:none">
+                    <div style="overflow-x:auto">
+                        <table class="payment-table-enhanced">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Status</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Total Amount</th>
+                                    <th>Paid Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agreements-list-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
 
                 <!-- Empty State -->
                 <div class="empty-state" id="empty-state" style="display:none">
@@ -439,6 +475,13 @@
         const user = Auth.getUser();
         let allAgreements = [];
         let currentFilter = '';
+        let dashboardViewMode = localStorage.getItem('dashboardViewMode') || 'template';
+
+        // Parse URL params for deep-linking from admin widgets
+        const dashboardUrlParams = new URLSearchParams(window.location.search);
+        if (dashboardUrlParams.has('filter')) {
+            currentFilter = dashboardUrlParams.get('filter');
+        }
 
         // Setup UI
         function initUI() {
@@ -447,7 +490,30 @@
             document.getElementById('user-avatar').textContent = user.full_name.charAt(0).toUpperCase();
             if (user.role === 'admin') {
                 document.getElementById('admin-nav-section').style.display = 'block';
+                document.getElementById('dashboard-export-btn').style.display = '';
             }
+
+            // Restore view mode from localStorage
+            if (dashboardViewMode === 'list') {
+                document.querySelectorAll('#dashboard-view-toggle .view-toggle-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('#dashboard-view-toggle [data-view="list"]').classList.add('active');
+            }
+
+            // Activate URL filter tab if present
+            if (currentFilter) {
+                document.querySelectorAll('.filter-tab').forEach(t => {
+                    t.classList.remove('active');
+                    if (t.dataset.filter === currentFilter) t.classList.add('active');
+                });
+            }
+        }
+
+        function switchDashboardView(mode) {
+            dashboardViewMode = mode;
+            localStorage.setItem('dashboardViewMode', mode);
+            document.querySelectorAll('#dashboard-view-toggle .view-toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`#dashboard-view-toggle [data-view="${mode}"]`).classList.add('active');
+            renderAgreements();
         }
 
         // Load payment summary for dashboard cards
@@ -562,52 +628,102 @@
             }
 
             const grid = document.getElementById('agreements-grid');
+            const listView = document.getElementById('agreements-list-view');
             const empty = document.getElementById('empty-state');
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
+                grid.style.display = 'none';
+                listView.style.display = 'none';
                 empty.style.display = 'block';
                 return;
             }
 
             empty.style.display = 'none';
-            grid.innerHTML = filtered.map(a => {
-                // Calculate total Amount (base amount without GST/TDS) from payment_plans
-                let totalAmount = 0;
-                try {
-                    const plans = JSON.parse(a.payment_plans || '[]');
-                    if (Array.isArray(plans)) {
-                        plans.forEach(p => { totalAmount += (p.amount || 0); });
-                    }
-                } catch(e) {}
 
-                const currency = a.currency || '₹';
+            if (dashboardViewMode === 'list') {
+                // List/Table View
+                grid.style.display = 'none';
+                listView.style.display = 'block';
 
-                return `
-                <div class="agreement-card" onclick="window.location.href='/agreement/${a.id}'">
-                    ${a.is_viewed === 0 ? '<div class="badge-new">New</div>' : ''}
-                    <button class="card-remove" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    </button>
-                    <div class="card-company">${a.company_name || a.file_name || 'Unnamed Agreement'}</div>
-                    <div>${statusBadge(a.status)}</div>
-                    <div class="card-meta">
-                        <div class="card-meta-item">
-                            <span class="card-meta-label">Start Date</span>
-                            <span class="card-meta-value">${formatDate(a.effective_date)}</span>
-                        </div>
-                        <div class="card-meta-item">
-                            <span class="card-meta-label">End Date</span>
-                            <span class="card-meta-value">${formatDate(a.expiry_date)}</span>
-                        </div>
-                        <div class="card-meta-item">
-                            <span class="card-meta-label">Total Amount</span>
-                            <span class="card-meta-value" style="font-weight:700;color:var(--color-text-primary)">${totalAmount > 0 ? formatCurrency(totalAmount, currency) : '—'}</span>
+                const tbody = document.getElementById('agreements-list-tbody');
+                tbody.innerHTML = filtered.map(a => {
+                    let totalAmount = 0;
+                    let paidAmount = 0;
+                    try {
+                        const plans = JSON.parse(a.payment_plans || '[]');
+                        if (Array.isArray(plans)) {
+                            plans.forEach(p => {
+                                totalAmount += (p.amount || 0);
+                                if ((p.status || '').toLowerCase() === 'paid') paidAmount += (p.amount || 0);
+                            });
+                        }
+                    } catch(e) {}
+
+                    const currency = a.currency || '₹';
+
+                    return `
+                        <tr onclick="window.location.href='/agreement/${a.id}'" style="cursor:pointer">
+                            <td class="plan-name">${a.company_name || a.file_name || 'Unnamed Agreement'}</td>
+                            <td>${statusBadge(a.status)}</td>
+                            <td>${formatDate(a.effective_date)}</td>
+                            <td>${formatDate(a.expiry_date)}</td>
+                            <td><strong>${totalAmount > 0 ? formatCurrency(totalAmount, currency) : '—'}</strong></td>
+                            <td style="color:${paidAmount > 0 ? 'var(--color-success)' : 'var(--color-text-muted)'}">${paidAmount > 0 ? formatCurrency(paidAmount, currency) : '—'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                // Template/Card View
+                grid.style.display = '';
+                listView.style.display = 'none';
+
+                grid.innerHTML = filtered.map(a => {
+                    // Calculate total Amount and paid Amount from payment_plans
+                    let totalAmount = 0;
+                    let paidAmount = 0;
+                    try {
+                        const plans = JSON.parse(a.payment_plans || '[]');
+                        if (Array.isArray(plans)) {
+                            plans.forEach(p => {
+                                totalAmount += (p.amount || 0);
+                                if ((p.status || '').toLowerCase() === 'paid') paidAmount += (p.amount || 0);
+                            });
+                        }
+                    } catch(e) {}
+
+                    const currency = a.currency || '₹';
+
+                    return `
+                    <div class="agreement-card" onclick="window.location.href='/agreement/${a.id}'">
+                        ${a.is_viewed === 0 ? '<div class="badge-new">New</div>' : ''}
+                        <button class="card-remove" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                        <div class="card-company">${a.company_name || a.file_name || 'Unnamed Agreement'}</div>
+                        <div>${statusBadge(a.status)}</div>
+                        <div class="card-meta">
+                            <div class="card-meta-item">
+                                <span class="card-meta-label">Start Date</span>
+                                <span class="card-meta-value">${formatDate(a.effective_date)}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="card-meta-label">End Date</span>
+                                <span class="card-meta-value">${formatDate(a.expiry_date)}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="card-meta-label">Total Amount</span>
+                                <span class="card-meta-value" style="font-weight:700;color:var(--color-text-primary)">${totalAmount > 0 ? formatCurrency(totalAmount, currency) : '—'}</span>
+                            </div>
+                            <div class="card-meta-item">
+                                <span class="card-meta-label">Paid Amount</span>
+                                <span class="card-meta-value" style="font-weight:700;color:${paidAmount > 0 ? 'var(--color-success)' : 'var(--color-text-muted)'}">${paidAmount > 0 ? formatCurrency(paidAmount, currency) : '—'}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-            }).join('');
+                `;
+                }).join('');
+            }
         }
 
         // Delete agreement
@@ -1217,6 +1333,47 @@
                 await api.delete('/notifications/');
                 loadNotifications();
             } catch (err) { /* silent */ }
+        }
+
+        // Export agreements to Excel with loading animation
+        function exportDashboardExcelWithLoading(btn) {
+            if (btn.disabled) return;
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px"></div> Exporting...';
+
+            let url = `/api/export/agreements?`;
+            if (currentFilter) {
+                url += `status=${currentFilter}&`;
+            }
+            const search = document.getElementById('search-input').value.trim();
+            if (search) {
+                url += `search=${encodeURIComponent(search)}&`;
+            }
+
+            const token = Auth.getToken();
+            fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Agreements_Report${currentFilter ? '_' + currentFilter : ''}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(a.href);
+                showToast('Agreements exported successfully', 'success');
+            })
+            .catch(err => showToast(err.message, 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            });
         }
 
         // Mobile sidebar

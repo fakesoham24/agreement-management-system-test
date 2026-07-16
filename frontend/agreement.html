@@ -927,16 +927,60 @@
         // Mark Payment Plan as Paid
         // ========================
         async function markPlanPaid(index) {
+            const isAdmin = user && user.role === 'admin';
+            const confirmMsg = isAdmin
+                ? 'Are you sure you want to mark this plan as paid? A thank you email will be sent to the company automatically.'
+                : 'Are you sure you want to mark this plan as paid?';
+
+            const confirmed = await showConfirm('Mark Payment as Paid', confirmMsg);
+            if (!confirmed) return;
+
+            // Find button and show loading state if possible
+            const btn = document.querySelector(`.btn-mark-paid[onclick="markPlanPaid(${index})"]`);
+            let originalText = '';
+            if (btn) {
+                originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+            }
+
             try {
                 const result = await api.put(`/agreements/${agreementId}/payment-plans/${index}/mark-paid`);
-                showToast(result.message, 'success');
+
                 // Update local data
                 if (result.plans) {
                     analysisData.payment_plans = JSON.stringify(result.plans);
                 }
+
+                // Send thank you email if status is Paid, user is admin, and we have payment_id
+                if (result.status === 'Paid' && isAdmin && result.payment_id) {
+                    try {
+                        const emailResult = await api.post('/email/send-thankyou', {
+                            payment_id: result.payment_id,
+                            agreement_id: agreementId
+                        });
+
+                        if (emailResult.status === 'sent') {
+                            showToast('Payment marked as paid — Thank you email sent!', 'success');
+                        } else if (emailResult.status === 'skipped') {
+                            showToast(`Payment marked as paid, but ${emailResult.reason || 'thank you email was not sent'}.`, 'warning');
+                        } else {
+                            showToast('Payment marked as paid, but thank you email failed to send.', 'warning');
+                        }
+                    } catch (emailErr) {
+                        showToast('Payment marked as paid, but thank you email failed to send.', 'warning');
+                    }
+                } else {
+                    showToast(result.message, 'success');
+                }
+
                 loadAgreement();
             } catch (err) {
                 showToast(err.message, 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText || 'Mark Paid';
+                }
             }
         }
 

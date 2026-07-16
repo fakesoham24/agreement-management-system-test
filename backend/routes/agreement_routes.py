@@ -278,8 +278,8 @@ async def upload_agreement(
             os.remove(file_path)
         db.rollback()
         error_msg = str(e)
-        if "GROQ_API_KEY" in error_msg:
-            raise HTTPException(status_code=500, detail="AI service not configured. Please set your GROQ_API_KEY.")
+        if "OPENAI_API_KEY" in error_msg:
+            raise HTTPException(status_code=500, detail="AI service not configured. Please set your OPENAI_API_KEY.")
         raise HTTPException(status_code=500, detail=f"Processing error: {error_msg}")
 
 
@@ -1145,6 +1145,7 @@ def mark_plan_paid(
     plan = plans[plan_index]
     due_date = plan.get("due_date", "")
     amount = plan.get("amount") or 0
+    matched_payment_id = None
 
     if due_date and amount:
         # Check if payment record exists for this due date
@@ -1157,6 +1158,7 @@ def mark_plan_paid(
         db_status = "paid" if new_status == "Paid" else "pending"
 
         if existing:
+            matched_payment_id = existing["id"]
             cursor.execute(
                 "UPDATE payments SET status = ?, paid_at = ? WHERE id = ?",
                 (db_status, paid_at, existing["id"])
@@ -1166,6 +1168,7 @@ def mark_plan_paid(
                 "INSERT INTO payments (agreement_id, due_date, amount, status, paid_at) VALUES (?, ?, ?, ?, ?)",
                 (agreement_id, due_date, amount, db_status, paid_at)
             )
+            matched_payment_id = cursor.lastrowid
 
     # Auto-mark payment-related notifications as read when payment is marked as paid
     if new_status == "Paid":
@@ -1175,7 +1178,7 @@ def mark_plan_paid(
         )
 
     db.commit()
-    return {"message": f"Payment plan marked as {new_status}", "status": new_status, "plans": plans}
+    return {"message": f"Payment plan marked as {new_status}", "status": new_status, "plans": plans, "payment_id": matched_payment_id}
 
 
 @router.put("/{agreement_id}/status")

@@ -66,12 +66,12 @@ async function apiRequest(endpoint, options = {}) {
             headers: { ...headers, ...options.headers }
         });
 
-        // Handle 401 — only auto-logout if we were already logged in (not on login/register pages)
+        // Handle 401 — show session expired popup instead of immediate logout
         if (response.status === 401) {
-            // Check if this is a login/register request (don't logout for auth attempts)
+            // Check if this is a login/register request (don't show popup for auth attempts)
             const isAuthRequest = endpoint.startsWith('/auth/');
             if (!isAuthRequest) {
-                Auth.logout();
+                showSessionExpiredPopup();
                 throw new Error('Session expired. Please log in again.');
             }
         }
@@ -153,6 +153,40 @@ function showToast(message, type = 'info') {
         toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, 4000);
+}
+
+// ==========================================
+// Session Expired Popup (non-dismissible)
+// ==========================================
+let _sessionExpiredShown = false;
+function showSessionExpiredPopup() {
+    if (_sessionExpiredShown) return; // prevent multiple popups
+    _sessionExpiredShown = true;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'session-expired-overlay';
+    overlay.innerHTML = `
+        <div class="session-expired-modal">
+            <div class="session-expired-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:48px;height:48px">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+            </div>
+            <h3 class="session-expired-title">Session Expired</h3>
+            <p class="session-expired-message">Your session has expired due to inactivity.<br>Please log in again to continue where you left off.</p>
+            <button class="btn btn-primary session-expired-ok" id="session-expired-ok-btn">OK</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Force layout to trigger animation
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    // Only the OK button can dismiss
+    document.getElementById('session-expired-ok-btn').onclick = () => {
+        Auth.logout();
+    };
 }
 
 // ==========================================

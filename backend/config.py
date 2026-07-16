@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # Project root directory (parent of backend/)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,10 +20,10 @@ DATA_DIR = os.getenv("DATA_DIR", os.path.join(BASE_DIR, "data"))
 DATABASE_PATH = os.getenv("DATABASE_PATH", os.path.join(DATA_DIR, "agreement_management.db"))
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DATABASE_PATH}")
 
-# Groq AI
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = "openai/gpt-oss-120b"
-GROQ_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+# OpenAI AI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini")
 
 # File Upload
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", os.path.join(DATA_DIR, "uploads"))

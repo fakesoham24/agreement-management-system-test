@@ -269,6 +269,31 @@ def init_db():
         except Exception:
             pass  # Column already exists
 
+    # Migrate email_settings — add thank you email template columns
+    thankyou_email_cols = [
+        ("thankyou_email_subject", "TEXT DEFAULT 'Thank You for Your Payment — {{company_name}}'"),
+        ("thankyou_email_template", "TEXT"),
+        ("thankyou_email_template_html", "TEXT"),
+        ("thankyou_email_template_type", "TEXT DEFAULT 'text'"),
+    ]
+    for col_name, col_type in thankyou_email_cols:
+        try:
+            cursor.execute(f"ALTER TABLE email_settings ADD COLUMN {col_name} {col_type}")
+        except Exception:
+            pass  # Column already exists
+
+    # Migrate email_settings — add email timeout columns (for preventing duplicate emails)
+    email_timeout_cols = [
+        ("email_timeout_days", "INTEGER DEFAULT 3"),
+        ("email_timeout_hours", "INTEGER DEFAULT 0"),
+        ("email_timeout_minutes", "INTEGER DEFAULT 0"),
+    ]
+    for col_name, col_type in email_timeout_cols:
+        try:
+            cursor.execute(f"ALTER TABLE email_settings ADD COLUMN {col_name} {col_type}")
+        except Exception:
+            pass  # Column already exists
+
     # Migrate email_log — add email_type column to distinguish client vs consultant emails
     try:
         cursor.execute("ALTER TABLE email_log ADD COLUMN email_type TEXT DEFAULT 'client'")

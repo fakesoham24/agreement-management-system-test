@@ -261,4 +261,4 @@ def mark_payment_paid(
         )
 
     db.commit()
-    return {"message": f"Payment marked as {new_status}", "status": new_status}
+    return {"message": f"Payment marked as {new_status}", "status": new_status, "agreement_id": agreement_id, "payment_id": payment_id}

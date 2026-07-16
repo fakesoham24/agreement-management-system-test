@@ -241,8 +241,9 @@
                                     id="company-count-label"></span>
                             </div>
 
-                            <!-- Search Bar -->
-                            <div class="email-search-bar" id="client-search-bar" style="display:none">
+                            <!-- Month/Year Filter + Search Bar — ALL IN ONE LINE -->
+                            <div class="email-search-bar email-search-bar-inline" id="client-search-bar"
+                                style="display:none">
                                 <div class="email-search-field">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         style="width:15px;height:15px;opacity:0.5">
@@ -252,17 +253,12 @@
                                     <input type="text" class="form-input" id="client-search-name"
                                         placeholder="Search by company name..." oninput="filterClientCompanies()">
                                 </div>
-                                <div class="email-search-field">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        style="width:15px;height:15px;opacity:0.5">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                                        <path d="M16 2v4M8 2v4M3 10h18" />
-                                    </svg>
-                                    <input type="date" class="form-input" id="client-search-date"
-                                        onchange="filterClientCompanies()">
-                                </div>
-                                <button class="btn btn-sm btn-secondary" onclick="clearClientSearch()"
-                                    title="Clear search">
+                                <div class="month-tabs month-tabs-inline" id="client-email-month-tabs"></div>
+                                <select class="form-input" id="client-email-year-selector"
+                                    onchange="onClientEmailYearChange()" style="width:auto;min-width:90px;padding: 7px;"></select>
+                                
+                                <button class="btn btn-sm btn-secondary btn-reset-filters"
+                                    onclick="resetClientFilters()" title="Reset all filters">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         style="width:14px;height:14px">
                                         <path d="M18 6L6 18M6 6l12 12" />
@@ -283,6 +279,10 @@
                                         </svg>
                                         Send Email
                                     </button>
+                                </div>
+                                <div class="view-toggle" id="client-email-view-toggle">
+                                    <button class="view-toggle-btn active" data-client-view="month" onclick="switchClientEmailView('month')">Month</button>
+                                    <button class="view-toggle-btn" data-client-view="year" onclick="switchClientEmailView('year')">Year</button>
                                 </div>
                             </div>
 
@@ -370,6 +370,50 @@
                                 </table>
                             </div>
                         </div>
+
+                        <!-- Thank You Email History -->
+                        <div class="email-settings-section" id="thankyou-log-section">
+                            <div class="section-title" style="justify-content:space-between">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        style="width:18px;height:18px">
+                                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                                    </svg>
+                                    Thank You Email History
+                                    <span style="font-weight:400;font-size:0.72rem;color:var(--color-text-muted)">(auto-deleted after 30 days)</span>
+                                </div>
+                                <button class="btn btn-sm btn-danger" id="clear-all-thankyou-logs-btn"
+                                    onclick="clearAllThankYouLogs()" style="font-size:0.75rem;padding:4px 10px">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:12px;height:12px">
+                                        <path
+                                            d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg>
+                                    Clear All
+                                </button>
+                            </div>
+                            <div style="overflow-x:auto">
+                                <table class="email-log-table" id="thankyou-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Recipient</th>
+                                            <th>Company</th>
+                                            <th>Subject</th>
+                                            <th>Status</th>
+                                            <th style="width:40px"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="thankyou-log-tbody">
+                                        <tr>
+                                            <td colspan="6"
+                                                style="text-align:center;color:var(--color-text-muted);padding:24px">No
+                                                thank you emails sent yet</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ======================== -->
@@ -392,8 +436,9 @@
                                     id="consultant-company-count-label"></span>
                             </div>
 
-                            <!-- Consultant Search Bar -->
-                            <div class="email-search-bar" id="consultant-search-bar" style="display:none">
+                            <!-- Consultant Month/Year Filter + Search Bar — ALL IN ONE LINE -->
+                            <div class="email-search-bar email-search-bar-inline" id="consultant-search-bar"
+                                style="display:none">
                                 <div class="email-search-field">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         style="width:15px;height:15px;opacity:0.5">
@@ -406,23 +451,19 @@
                                 <div class="email-search-field">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         style="width:15px;height:15px;opacity:0.5">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                                        <path d="M16 2v4M8 2v4M3 10h18" />
-                                    </svg>
-                                    <input type="date" class="form-input" id="consultant-search-date"
-                                        onchange="filterConsultantCompanies()">
-                                </div>
-                                <div class="email-search-field">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        style="width:15px;height:15px;opacity:0.5">
                                         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                                         <circle cx="12" cy="7" r="4" />
                                     </svg>
                                     <input type="text" class="form-input" id="consultant-search-consultant"
                                         placeholder="Search by consultant..." oninput="filterConsultantCompanies()">
                                 </div>
-                                <button class="btn btn-sm btn-secondary" onclick="clearConsultantSearch()"
-                                    title="Clear search">
+                                <div class="month-tabs month-tabs-inline" id="consultant-email-month-tabs"></div>
+                                <select class="form-input" id="consultant-email-year-selector"
+                                    onchange="onConsultantEmailYearChange()"
+                                    style="width:auto;min-width:90px;padding: 7px;"></select>
+                                
+                                <button class="btn btn-sm btn-secondary btn-reset-filters"
+                                    onclick="resetConsultantFilters()" title="Reset all filters">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         style="width:14px;height:14px">
                                         <path d="M18 6L6 18M6 6l12 12" />
@@ -435,6 +476,10 @@
                                 <div style="display:flex;align-items:center;gap:12px">
                                     <span class="company-selected-count" id="consultant-selected-count">0
                                         selected</span>
+                                </div>
+                                <div class="view-toggle" id="consultant-email-view-toggle">
+                                    <button class="view-toggle-btn active" data-consultant-view="month" onclick="switchConsultantEmailView('month')">Month</button>
+                                    <button class="view-toggle-btn" data-consultant-view="year" onclick="switchConsultantEmailView('year')">Year</button>
                                 </div>
                             </div>
 
@@ -624,6 +669,43 @@
                             </div>
                         </div>
 
+                        <!-- Email Timeout Settings -->
+                        <div class="email-settings-section">
+                            <div class="section-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    style="width:18px;height:18px">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                                Email Timeout
+                            </div>
+                            <p style="font-size:0.82rem;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.5">
+                                Set a cooldown period to prevent sending duplicate emails for the same payment. After an email is sent for a specific payment, that payment will be locked for the configured duration. This does not apply to Thank You emails.
+                            </p>
+                            <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                                <div class="form-group" style="margin-bottom:0;min-width:80px">
+                                    <label>Days</label>
+                                    <input type="number" class="form-input" id="email-timeout-days" min="0" max="365" value="3" style="width:80px">
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;min-width:80px">
+                                    <label>Hours</label>
+                                    <input type="number" class="form-input" id="email-timeout-hours" min="0" max="23" value="0" style="width:80px">
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;min-width:80px">
+                                    <label>Minutes</label>
+                                    <input type="number" class="form-input" id="email-timeout-minutes" min="0" max="59" value="0" style="width:80px">
+                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="saveEmailTimeout()" style="height:38px;padding:0 16px">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                                        <polyline points="17 21 17 13 7 13 7 21"/>
+                                        <polyline points="7 3 7 8 15 8"/>
+                                    </svg>
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Default Email Template -->
                         <div class="email-settings-section">
                             <div class="section-title">
@@ -796,6 +878,85 @@
                                         <polyline points="7 3 7 8 15 8" />
                                     </svg>
                                     Save Consultant Email Template
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Thank You Email Template -->
+                        <div class="email-settings-section">
+                            <div class="section-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    style="width:18px;height:18px">
+                                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                                </svg>
+                                Thank You Email Template
+                            </div>
+                            <p style="font-size:0.8rem;color:var(--color-text-muted);margin-bottom:16px">
+                                This template is used for the automatic thank you email sent when a payment is marked as paid.
+                            </p>
+
+                            <div class="form-group">
+                                <label>Subject line (supports {{variables}})</label>
+                                <input type="text" class="form-input" id="thankyou-email-subject"
+                                    placeholder="Thank You for Your Payment — {{company_name}}">
+                            </div>
+
+                            <div class="template-type-toggle">
+                                <button class="template-type-btn active" data-ttype="text"
+                                    onclick="switchThankYouTemplateType('text')">Visual</button>
+                                <button class="template-type-btn" data-ttype="html"
+                                    onclick="switchThankYouTemplateType('html')">HTML</button>
+                            </div>
+
+                            <div id="thankyou-template-text-wrapper" class="rich-text-editor-wrapper">
+                                <div class="editor-toolbar" id="thankyou-editor-toolbar">
+                                    <button type="button" class="editor-toolbar-btn" onclick="execThankYouCmd('bold')"
+                                        title="Bold"><b>B</b></button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execThankYouCmd('italic')" title="Italic"><i>I</i></button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execThankYouCmd('underline')" title="Underline"><u>U</u></button>
+                                    <div class="editor-toolbar-separator"></div>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execThankYouCmd('insertUnorderedList')"
+                                        title="Bullet List">•</button>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execThankYouCmd('insertOrderedList')"
+                                        title="Numbered List">1.</button>
+                                    <div class="editor-toolbar-separator"></div>
+                                    <button type="button" class="editor-toolbar-btn"
+                                        onclick="execThankYouCmd('removeFormat')" title="Clear Formatting">✘</button>
+                                </div>
+                                <div class="rich-text-editor" id="thankyou-template-text" contenteditable="true"
+                                    data-placeholder="Enter your thank you email template here... Use {{variables}} for dynamic content.">
+                                </div>
+                            </div>
+
+                            <textarea class="template-editor" id="thankyou-template-html"
+                                placeholder="Paste your HTML template here..." style="display:none"></textarea>
+
+                            <div class="template-variables">
+                                <h4>Available Variables</h4>
+                                <div>
+                                    <code>{{company_name}}</code>
+                                    <code>{{payment_paid_amount}}</code>
+                                    <code>{{payment_paid_date}}</code>
+                                    <code>{{total_paid_amount}}</code>
+                                    <code>{{currency}}</code>
+                                    <code>{{agreement_title}}</code>
+                                    <code>{{contact_person}}</code>
+                                </div>
+                            </div>
+
+                            <div class="email-actions" style="margin-top:16px">
+                                <button class="btn btn-primary" onclick="saveThankYouTemplate()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:15px;height:15px">
+                                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                        <polyline points="17 21 17 13 7 13 7 21" />
+                                        <polyline points="7 3 7 8 15 8" />
+                                    </svg>
+                                    Save Thank You Email Template
                                 </button>
                             </div>
                         </div>
@@ -1129,7 +1290,8 @@
                             placeholder="Type or select description..." autocomplete="off"
                             oninput="filterProformaDescriptions()" onfocus="showDescriptionDropdown()"
                             value="Professional Fees - Time">
-                        <div class="proforma-city-dropdown" id="proforma-description-dropdown" style="display:none"></div>
+                        <div class="proforma-city-dropdown" id="proforma-description-dropdown" style="display:none">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>HSN/SAC <span style="color:var(--color-danger)">*</span></label>
@@ -1177,7 +1339,7 @@
         </div>
     </div>
 
-    <!-- Pro Forma Invoice PDF Preview Modal -->    
+    <!-- Pro Forma Invoice PDF Preview Modal -->
     <div class="modal-overlay proforma-modal-overlay" id="proforma-preview-modal">
         <div class="modal proforma-preview-container">
             <h3 class="modal-title" style="display:flex;align-items:center;gap:8px">
@@ -1229,27 +1391,31 @@
             <h3 class="modal-title">Select Consultants</h3>
             <div class="modal-body">
                 <p style="margin-bottom: 12px; font-size: 0.88rem; color: var(--color-text-secondary);">
-                    Select which consultants should receive the payment reminder email for <strong id="pref-company-name" style="color: var(--color-text-primary);"></strong>.
+                    Select which consultants should receive the payment reminder email for <strong
+                        id="pref-company-name" style="color: var(--color-text-primary);"></strong>.
                 </p>
                 <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 16px;">
                     Payment: <span id="pref-payment-details"></span>
                 </div>
-                
+
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;">
-                        <input type="checkbox" id="pref-select-all-btn" onchange="togglePrefSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-accent);">
+                        <input type="checkbox" id="pref-select-all-btn" onchange="togglePrefSelectAll(this)"
+                            style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--color-accent);">
                         <span>Select All Attached Consultants</span>
                     </label>
                 </div>
-                
-                <div id="pref-consultant-list" class="pref-consultant-list" style="max-height: 240px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 8px;">
+
+                <div id="pref-consultant-list" class="pref-consultant-list"
+                    style="max-height: 240px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 8px;">
                     <!-- Populated dynamically -->
                 </div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeConsultantPreferenceModal()">Cancel</button>
                 <button class="btn btn-primary" id="pref-send-btn" onclick="submitConsultantPreferenceSend()" disabled>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px; margin-right: 4px; display: inline-block; vertical-align: middle;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width: 15px; height: 15px; margin-right: 4px; display: inline-block; vertical-align: middle;">
                         <path d="M22 2L11 13" />
                         <path d="M22 2l-7 20-4-9-9-4 20-7z" />
                     </svg>
@@ -1264,6 +1430,14 @@
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
 
         const user = Auth.getUser();
+
+        // Utility: escape HTML to prevent XSS in dynamic content
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str || ''));
+            return div.innerHTML;
+        }
+
         if (user.role !== 'admin') {
             window.location.href = '/dashboard';
             throw new Error('Not admin');
@@ -1284,27 +1458,27 @@
                 const s = data.stats;
 
                 document.getElementById('admin-stats').innerHTML = `
-                    <div class="stat-card accent">
+                    <div class="stat-card accent" style="cursor:pointer" onclick="switchTab('users');document.getElementById('tab-users').scrollIntoView({behavior:'smooth'})" title="View Users">
                         <div class="stat-label">Total Users</div>
                         <div class="stat-value">${s.total_users}</div>
                     </div>
-                    <div class="stat-card success">
+                    <div class="stat-card success" style="cursor:pointer" onclick="window.location.href='/dashboard?filter=active'" title="View Active Agreements">
                         <div class="stat-label">Active Agreements</div>
                         <div class="stat-value">${s.active_agreements}</div>
                     </div>
-                    <div class="stat-card warning">
+                    <div class="stat-card warning" style="cursor:pointer" onclick="window.location.href='/dashboard?filter=pending'" title="View Pending Agreements">
                         <div class="stat-label">Pending Agreements</div>
                         <div class="stat-value">${s.pending_agreements}</div>
                     </div>
-                    <div class="stat-card danger">
+                    <div class="stat-card danger" style="cursor:pointer" onclick="window.location.href='/dashboard?filter=expired'" title="View Expired Agreements">
                         <div class="stat-label">Expired Agreements</div>
                         <div class="stat-value">${s.expired_agreements}</div>
                     </div>
-                    <div class="stat-card accent">
+                    <div class="stat-card accent" style="cursor:pointer" onclick="window.location.href='/dashboard'" title="View All Agreements">
                         <div class="stat-label">Total Agreements</div>
                         <div class="stat-value">${s.total_agreements}</div>
                     </div>
-                    <div class="stat-card warning">
+                    <div class="stat-card warning" style="cursor:pointer" onclick="window.location.href='/payments?status=pending'" title="View Pending Payments">
                         <div class="stat-label">Pending Payments</div>
                         <div class="stat-value">${s.pending_payments}</div>
                     </div>
@@ -1621,7 +1795,7 @@
             document.getElementById('tab-email').style.display = tab === 'email' ? 'block' : 'none';
 
             if (tab === 'consultants') { loadConsultants(); }
-            if (tab === 'email') { loadCompanies(); loadEmailLogs(); loadConsultantTemplate(); }
+            if (tab === 'email') { loadCompanies(); loadEmailLogs(); loadThankYouLogs(); loadConsultantTemplate(); loadThankYouTemplate(); }
         }
 
         // ========================
@@ -1667,6 +1841,7 @@
             if (tab === 'send') {
                 loadCompanies();
                 loadEmailLogs();
+                loadThankYouLogs();
             } else if (tab === 'consultant-send') {
                 loadConsultantCompanies();
                 loadConsultantEmailLogs();
@@ -1695,14 +1870,42 @@
 
                 currentTemplateType = s.email_template_type || 'text';
                 switchTemplateType(currentTemplateType);
+
+                // Load email timeout settings
+                document.getElementById('email-timeout-days').value = s.email_timeout_days != null ? s.email_timeout_days : 3;
+                document.getElementById('email-timeout-hours').value = s.email_timeout_hours != null ? s.email_timeout_hours : 0;
+                document.getElementById('email-timeout-minutes').value = s.email_timeout_minutes != null ? s.email_timeout_minutes : 0;
             } catch (err) {
                 // Settings not configured yet — that's fine
             }
         }
 
+        async function saveEmailTimeout() {
+            try {
+                const days = parseInt(document.getElementById('email-timeout-days').value) || 0;
+                const hours = parseInt(document.getElementById('email-timeout-hours').value) || 0;
+                const minutes = parseInt(document.getElementById('email-timeout-minutes').value) || 0;
+                await api.put('/email/timeout', {
+                    email_timeout_days: Math.max(0, days),
+                    email_timeout_hours: Math.max(0, Math.min(23, hours)),
+                    email_timeout_minutes: Math.max(0, Math.min(59, minutes)),
+                });
+                showToast('Email timeout settings saved', 'success');
+            } catch (err) {
+                showToast(err.message || 'Failed to save email timeout settings', 'error');
+            }
+        }
+
         // ========================
-        // Company Selection (Send Email Sub-tab)
+        // Company Selection (Send Email Sub-tab) — Month/Year filtering
         // ========================
+        const EMAIL_MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        let clientEmailYear = new Date().getFullYear();
+        let clientEmailMonth = new Date().getMonth() + 1; // 1-indexed
+        let clientEmailAvailableYears = [];
+        let clientEmailViewMode = 'month'; // 'month' or 'year'
+        let clientEmailMonthsWithPayments = new Set(); // tracks which months have pending payments
+
         async function loadCompanies() {
             const loading = document.getElementById('company-loading');
             const empty = document.getElementById('company-empty');
@@ -1715,14 +1918,41 @@
             actionBar.style.display = 'none';
 
             try {
-                const data = await api.get('/email/companies');
+                const url = clientEmailViewMode === 'year'
+                    ? `/email/companies?year=${clientEmailYear}`
+                    : `/email/companies?year=${clientEmailYear}&month=${clientEmailMonth}`;
+                const data = await api.get(url);
                 companiesList = data.companies || [];
+                clientEmailAvailableYears = data.available_years || [clientEmailYear];
                 selectedCompanies.clear();
+
+                // Fetch year-level data to determine which months have pending payments (for dot indicators)
+                try {
+                    const yearData = await api.get(`/email/companies?year=${clientEmailYear}`);
+                    clientEmailMonthsWithPayments.clear();
+                    (yearData.companies || []).forEach(c => {
+                        (c.payments || []).forEach(p => {
+                            if (p.due_date) {
+                                const d = new Date(p.due_date);
+                                if (d.getFullYear() === clientEmailYear) {
+                                    clientEmailMonthsWithPayments.add(d.getMonth() + 1); // 1-indexed
+                                }
+                            }
+                        });
+                    });
+                } catch(e) { /* silent — dots will just not show */ }
 
                 loading.style.display = 'none';
 
+                // Always show the search bar (month tabs are embedded inline)
+                document.getElementById('client-search-bar').style.display = 'flex';
+                renderClientEmailYearSelector();
+                renderClientEmailMonthTabs();
+
                 if (companiesList.length === 0) {
                     empty.style.display = 'block';
+                    const periodLabel = clientEmailViewMode === 'year' ? 'this year' : 'this month';
+                    empty.innerHTML = `<div style="padding:32px;text-align:center;color:var(--color-text-muted)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto 12px;display:block;opacity:0.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p style="font-weight:600;margin-bottom:4px">No pending payments for ${periodLabel}</p><p style="font-size:0.82rem">Try selecting a different ${clientEmailViewMode === 'year' ? 'year' : 'month or year'}.</p></div>`;
                     document.getElementById('company-count-label').textContent = '';
                     return;
                 }
@@ -1734,7 +1964,6 @@
                 document.getElementById('company-count-label').textContent = `${totalPayments} ${totalPayments === 1 ? 'payment' : 'payments'} across ${companyCount} ${companyCount === 1 ? 'company' : 'companies'}`;
                 actionBar.style.display = 'flex';
                 table.style.display = 'table';
-                document.getElementById('client-search-bar').style.display = 'flex';
                 renderCompanyList();
             } catch (err) {
                 loading.style.display = 'none';
@@ -1744,13 +1973,61 @@
             }
         }
 
+        function renderClientEmailYearSelector() {
+            const select = document.getElementById('client-email-year-selector');
+            select.innerHTML = clientEmailAvailableYears.map(y =>
+                `<option value="${y}" ${y === clientEmailYear ? 'selected' : ''}>${y}</option>`
+            ).join('');
+        }
+
+        function onClientEmailYearChange() {
+            clientEmailYear = parseInt(document.getElementById('client-email-year-selector').value);
+            loadCompanies();
+        }
+
+        function renderClientEmailMonthTabs() {
+            const tabs = document.getElementById('client-email-month-tabs');
+            tabs.innerHTML = EMAIL_MONTH_NAMES.map((name, idx) => {
+                const m = idx + 1; // 1-indexed
+                const isActive = m === clientEmailMonth ? 'active' : '';
+                const hasPayments = clientEmailMonthsWithPayments.has(m) ? 'has-payments' : '';
+                return `<button class="month-tab ${hasPayments} ${isActive}" data-month="${m}" onclick="selectClientEmailMonth(${m})">${name}</button>`;
+            }).join('');
+            // Apply faded state if in year view
+            if (clientEmailViewMode === 'year') {
+                tabs.classList.add('month-tabs-faded');
+            } else {
+                tabs.classList.remove('month-tabs-faded');
+            }
+        }
+
+        function switchClientEmailView(mode) {
+            clientEmailViewMode = mode;
+            document.querySelectorAll('[data-client-view]').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-client-view="${mode}"]`).classList.add('active');
+            // Apply/remove faded state on month tabs
+            const tabs = document.getElementById('client-email-month-tabs');
+            if (mode === 'year') {
+                tabs.classList.add('month-tabs-faded');
+            } else {
+                tabs.classList.remove('month-tabs-faded');
+                // Reset to current month when switching back
+                clientEmailMonth = new Date().getMonth() + 1;
+            }
+            loadCompanies();
+        }
+
+        function selectClientEmailMonth(month) {
+            clientEmailMonth = month;
+            loadCompanies();
+        }
+
         function renderCompanyList() {
             const tbody = document.getElementById('company-select-tbody');
             const now = new Date();
 
             // Apply search filters
             const searchName = (document.getElementById('client-search-name').value || '').trim().toLowerCase();
-            const searchDate = document.getElementById('client-search-date').value || '';
 
             // Flatten companies into individual payment rows
             const flatRows = [];
@@ -1768,6 +2045,7 @@
                         amount: p.amount || 0,
                         proforma_status: p.proforma_status,
                         proforma_id: p.proforma_id,
+                        is_timed_out: p.is_timed_out || false,
                     });
                 });
             });
@@ -1775,10 +2053,9 @@
             // Sort all payment rows by due_date ascending
             flatRows.sort((a, b) => (a.due_date || '').localeCompare(b.due_date || ''));
 
-            // Filter
+            // Filter by name only (month/year filtering is done server-side)
             const filtered = flatRows.filter(row => {
                 if (searchName && !(row.company_name || '').toLowerCase().includes(searchName)) return false;
-                if (searchDate && row.due_date !== searchDate) return false;
                 return true;
             });
 
@@ -1792,7 +2069,7 @@
                 let dueDateBadge = '';
                 if (daysLeft <= 2) {
                     dueDateClass = 'company-due-urgent';
-                    dueDateBadge = `<span class="company-due-badge urgent">${daysLeft <= 0 ? 'Due today' : daysLeft + 'd left'}</span>`;
+                    dueDateBadge = `<span class="company-due-badge urgent">${daysLeft < 0 ? 'Pending' : daysLeft === 0 ? 'Due today' : daysLeft + 'd left'}</span>`;
                 } else if (daysLeft <= 7) {
                     dueDateClass = 'company-due-warning';
                     dueDateBadge = `<span class="company-due-badge warning">${daysLeft}d left</span>`;
@@ -1811,10 +2088,13 @@
                     </div>`;
                 }
 
+                const timedOutClass = row.is_timed_out ? 'email-timed-out' : '';
+                const timedOutTitle = row.is_timed_out ? 'title="Email timeout: you cannot send another email for this payment at this time."' : '';
+
                 return `
-                    <tr class="${isSelected ? 'company-row-selected' : ''} ${dueDateClass}" data-pid="${row.payment_id}" data-aid="${row.agreement_id}">
+                    <tr class="${isSelected ? 'company-row-selected' : ''} ${dueDateClass} ${timedOutClass}" data-pid="${row.payment_id}" data-aid="${row.agreement_id}" ${timedOutTitle}>
                         <td>
-                            <input type="checkbox" class="company-checkbox" ${isSelected ? 'checked' : ''}
+                            <input type="checkbox" class="company-checkbox" ${isSelected ? 'checked' : ''} ${row.is_timed_out ? 'disabled' : ''}
                                 onchange="toggleCompanySelect(${row.payment_id})">
                         </td>
                         <td>
@@ -1831,9 +2111,9 @@
                         </td>
                         <td>
                             ${(() => {
-                                const isConfirmed = (row.email && row.email.trim() !== '') && !unconfirmedAgreementEmails.has(row.agreement_id);
-                                if (isConfirmed) {
-                                    return `
+                        const isConfirmed = (row.email && row.email.trim() !== '') && !unconfirmedAgreementEmails.has(row.agreement_id);
+                        if (isConfirmed) {
+                            return `
                                         <div class="company-email-container confirmed" data-aid="${row.agreement_id}" style="display:flex;align-items:center;gap:8px;">
                                             <input type="email" class="form-input company-email-input" value="${row.email || ''}" disabled readonly style="flex:1;background:var(--color-bg);border-color:var(--color-border);color:var(--color-text-secondary);cursor:default;">
                                             <button class="btn btn-sm btn-danger email-action-btn remove-btn" onclick="handleRemoveEmail(${row.companyIndex}, ${row.agreement_id})" title="Remove or change email" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:6px;flex-shrink:0;background:var(--color-danger-light);color:var(--color-danger);border:1px solid rgba(220,38,38,0.2);cursor:pointer;transition:all 0.2s;" onmouseenter="this.style.background='var(--color-danger)';this.style.color='white';" onmouseleave="this.style.background='var(--color-danger-light)';this.style.color='var(--color-danger)';">
@@ -1841,9 +2121,9 @@
                                             </button>
                                         </div>
                                     `;
-                                } else {
-                                    const isVal = isValidEmail(row.email || '');
-                                    return `
+                        } else {
+                            const isVal = isValidEmail(row.email || '');
+                            return `
                                         <div class="company-email-container unconfirmed" data-aid="${row.agreement_id}" style="display:flex;align-items:center;gap:8px;">
                                             <input type="email" class="form-input company-email-input" placeholder="Enter email address" value="${row.email || ''}" 
                                                 oninput="validateInlineEmailInput(this, ${row.agreement_id})"
@@ -1854,8 +2134,8 @@
                                             </button>
                                         </div>
                                     `;
-                                }
-                            })()}
+                        }
+                    })()}
                         </td>
                         <td>
                             <a href="/agreement/${row.agreement_id}" class="btn btn-sm btn-secondary company-more-info-btn" title="View Agreement">
@@ -1940,7 +2220,7 @@
         function validateInlineEmailInput(inputEl, agreementId) {
             const value = inputEl.value.trim();
             const isVal = isValidEmail(value);
-            
+
             // Sync current input value in memory while typing so if they confirm it uses it
             const inputs = document.querySelectorAll(`.company-email-container[data-aid="${agreementId}"] .company-email-input`);
             inputs.forEach(input => {
@@ -1956,11 +2236,11 @@
                     btn.style.color = 'var(--color-success)';
                     btn.style.border = '1px solid rgba(5,150,105,0.2)';
                     btn.style.cursor = 'pointer';
-                    btn.onmouseenter = function() {
+                    btn.onmouseenter = function () {
                         this.style.background = 'var(--color-success)';
                         this.style.color = 'white';
                     };
-                    btn.onmouseleave = function() {
+                    btn.onmouseleave = function () {
                         this.style.background = 'var(--color-success-light)';
                         this.style.color = 'var(--color-success)';
                     };
@@ -2096,6 +2376,12 @@
         let consultantCompaniesList = [];
         let selectedConsultantPayments = new Set();
 
+        let consultantEmailYear = new Date().getFullYear();
+        let consultantEmailMonth = new Date().getMonth() + 1; // 1-indexed
+        let consultantEmailAvailableYears = [];
+        let consultantEmailViewMode = 'month'; // 'month' or 'year'
+        let consultantEmailMonthsWithPayments = new Set(); // tracks which months have pending payments
+
         async function loadConsultantCompanies() {
             const loading = document.getElementById('consultant-company-loading');
             const empty = document.getElementById('consultant-company-empty');
@@ -2108,14 +2394,41 @@
             actionBar.style.display = 'none';
 
             try {
-                const data = await api.get('/email/consultant-companies');
+                const url = consultantEmailViewMode === 'year'
+                    ? `/email/consultant-companies?year=${consultantEmailYear}`
+                    : `/email/consultant-companies?year=${consultantEmailYear}&month=${consultantEmailMonth}`;
+                const data = await api.get(url);
                 consultantCompaniesList = data.companies || [];
+                consultantEmailAvailableYears = data.available_years || [consultantEmailYear];
                 selectedConsultantPayments.clear();
+
+                // Fetch year-level data to determine which months have pending payments (for dot indicators)
+                try {
+                    const yearData = await api.get(`/email/consultant-companies?year=${consultantEmailYear}`);
+                    consultantEmailMonthsWithPayments.clear();
+                    (yearData.companies || []).forEach(c => {
+                        (c.payments || []).forEach(p => {
+                            if (p.due_date) {
+                                const d = new Date(p.due_date);
+                                if (d.getFullYear() === consultantEmailYear) {
+                                    consultantEmailMonthsWithPayments.add(d.getMonth() + 1);
+                                }
+                            }
+                        });
+                    });
+                } catch(e) { /* silent */ }
 
                 loading.style.display = 'none';
 
+                // Always show the search bar (month tabs are embedded inline)
+                document.getElementById('consultant-search-bar').style.display = 'flex';
+                renderConsultantEmailYearSelector();
+                renderConsultantEmailMonthTabs();
+
                 if (consultantCompaniesList.length === 0) {
                     empty.style.display = 'block';
+                    const periodLabel = consultantEmailViewMode === 'year' ? 'this year' : 'this month';
+                    empty.innerHTML = `<div style="padding:32px;text-align:center;color:var(--color-text-muted)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto 12px;display:block;opacity:0.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p style="font-weight:600;margin-bottom:4px">No pending payments for ${periodLabel}</p><p style="font-size:0.82rem">Try selecting a different ${consultantEmailViewMode === 'year' ? 'year' : 'month or year'}.</p></div>`;
                     document.getElementById('consultant-company-count-label').textContent = '';
                     return;
                 }
@@ -2126,7 +2439,6 @@
                 document.getElementById('consultant-company-count-label').textContent = `${totalPayments} ${totalPayments === 1 ? 'payment' : 'payments'} across ${companyCount} ${companyCount === 1 ? 'company' : 'companies'}`;
                 actionBar.style.display = 'flex';
                 table.style.display = 'table';
-                document.getElementById('consultant-search-bar').style.display = 'flex';
                 renderConsultantCompanyList();
             } catch (err) {
                 loading.style.display = 'none';
@@ -2136,13 +2448,59 @@
             }
         }
 
+        function renderConsultantEmailYearSelector() {
+            const select = document.getElementById('consultant-email-year-selector');
+            select.innerHTML = consultantEmailAvailableYears.map(y =>
+                `<option value="${y}" ${y === consultantEmailYear ? 'selected' : ''}>${y}</option>`
+            ).join('');
+        }
+
+        function onConsultantEmailYearChange() {
+            consultantEmailYear = parseInt(document.getElementById('consultant-email-year-selector').value);
+            loadConsultantCompanies();
+        }
+
+        function renderConsultantEmailMonthTabs() {
+            const tabs = document.getElementById('consultant-email-month-tabs');
+            tabs.innerHTML = EMAIL_MONTH_NAMES.map((name, idx) => {
+                const m = idx + 1;
+                const isActive = m === consultantEmailMonth ? 'active' : '';
+                const hasPayments = consultantEmailMonthsWithPayments.has(m) ? 'has-payments' : '';
+                return `<button class="month-tab ${hasPayments} ${isActive}" data-month="${m}" onclick="selectConsultantEmailMonth(${m})">${name}</button>`;
+            }).join('');
+            // Apply faded state if in year view
+            if (consultantEmailViewMode === 'year') {
+                tabs.classList.add('month-tabs-faded');
+            } else {
+                tabs.classList.remove('month-tabs-faded');
+            }
+        }
+
+        function switchConsultantEmailView(mode) {
+            consultantEmailViewMode = mode;
+            document.querySelectorAll('[data-consultant-view]').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-consultant-view="${mode}"]`).classList.add('active');
+            const tabs = document.getElementById('consultant-email-month-tabs');
+            if (mode === 'year') {
+                tabs.classList.add('month-tabs-faded');
+            } else {
+                tabs.classList.remove('month-tabs-faded');
+                consultantEmailMonth = new Date().getMonth() + 1;
+            }
+            loadConsultantCompanies();
+        }
+
+        function selectConsultantEmailMonth(month) {
+            consultantEmailMonth = month;
+            loadConsultantCompanies();
+        }
+
         function renderConsultantCompanyList() {
             const tbody = document.getElementById('consultant-company-select-tbody');
             const now = new Date();
 
             // Apply search filters
             const searchName = (document.getElementById('consultant-search-name').value || '').trim().toLowerCase();
-            const searchDate = document.getElementById('consultant-search-date').value || '';
             const searchConsultant = (document.getElementById('consultant-search-consultant').value || '').trim().toLowerCase();
 
             // Flatten companies into individual payment rows
@@ -2159,6 +2517,7 @@
                         payment_id: p.payment_id,
                         due_date: p.due_date,
                         amount: p.amount || 0,
+                        is_timed_out: p.is_timed_out || false,
                     });
                 });
             });
@@ -2166,10 +2525,9 @@
             // Sort all payment rows by due_date ascending
             flatRows.sort((a, b) => (a.due_date || '').localeCompare(b.due_date || ''));
 
-            // Filter
+            // Filter by name and consultant only (month/year filtering is done server-side)
             const filtered = flatRows.filter(row => {
                 if (searchName && !(row.company_name || '').toLowerCase().includes(searchName)) return false;
-                if (searchDate && row.due_date !== searchDate) return false;
                 if (searchConsultant && !row.consultants.some(c => (c.name || '').toLowerCase().includes(searchConsultant))) return false;
                 return true;
             });
@@ -2184,7 +2542,7 @@
                 let dueDateBadge = '';
                 if (daysLeft <= 2) {
                     dueDateClass = 'company-due-urgent';
-                    dueDateBadge = `<span class="company-due-badge urgent">${daysLeft <= 0 ? 'Due today' : daysLeft + 'd left'}</span>`;
+                    dueDateBadge = `<span class="company-due-badge urgent">${daysLeft < 0 ? 'Pending' : daysLeft === 0 ? 'Due today' : daysLeft + 'd left'}</span>`;
                 } else if (daysLeft <= 7) {
                     dueDateClass = 'company-due-warning';
                     dueDateBadge = `<span class="company-due-badge warning">${daysLeft}d left</span>`;
@@ -2197,10 +2555,13 @@
                     `<span class="badge badge-pending" style="font-size:0.72rem;margin:2px 4px 2px 0">${c.name}</span>`
                 ).join('');
 
+                const timedOutClass = row.is_timed_out ? 'email-timed-out' : '';
+                const timedOutTitle = row.is_timed_out ? 'title="Email timeout: you cannot send another email for this payment at this time."' : '';
+
                 return `
-                    <tr class="${isSelected ? 'company-row-selected' : ''} ${dueDateClass}" data-cpid="${row.payment_id}" data-caid="${row.agreement_id}">
+                    <tr class="${isSelected ? 'company-row-selected' : ''} ${dueDateClass} ${timedOutClass}" data-cpid="${row.payment_id}" data-caid="${row.agreement_id}" ${timedOutTitle}>
                         <td>
-                            <input type="checkbox" class="company-checkbox consultant-cb" ${isSelected ? 'checked' : ''}
+                            <input type="checkbox" class="company-checkbox consultant-cb" ${isSelected ? 'checked' : ''} ${row.is_timed_out ? 'disabled' : ''}
                                 onchange="toggleConsultantSelect(${row.payment_id})">
                         </td>
                         <td>
@@ -2338,7 +2699,7 @@
         function updatePrefSendBtnState() {
             const checkboxes = document.querySelectorAll('#pref-consultant-list .pref-consultant-checkbox');
             const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-            
+
             const sendBtn = document.getElementById('pref-send-btn');
             sendBtn.disabled = (checkedCount === 0);
 
@@ -2351,7 +2712,7 @@
         function closeConsultantPreferenceModal() {
             const modal = document.getElementById('consultant-preference-modal');
             modal.classList.remove('open');
-            
+
             if (currentPopupPaymentRow) {
                 const paymentId = currentPopupPaymentRow.payment_id;
                 const row = document.querySelector(`tr[data-cpid="${paymentId}"]`);
@@ -3059,20 +3420,179 @@
         // (escapeAttr is already defined above at line ~1162)
 
         // ========================
+        // Thank You Email Template
+        // ========================
+        let thankyouTemplateType = 'text';
+
+        async function loadThankYouTemplate() {
+            try {
+                const data = await api.get('/email/thankyou-template');
+                const t = data.template;
+                document.getElementById('thankyou-email-subject').value = t.thankyou_email_subject || '';
+                thankyouTemplateType = t.thankyou_email_template_type || 'text';
+
+                if (thankyouTemplateType === 'html') {
+                    document.getElementById('thankyou-template-html').value = t.thankyou_email_template_html || '';
+                    document.getElementById('thankyou-template-text-wrapper').style.display = 'none';
+                    document.getElementById('thankyou-template-html').style.display = 'block';
+                } else {
+                    const editor = document.getElementById('thankyou-template-text');
+                    const content = t.thankyou_email_template || '';
+                    if (content.includes('<')) {
+                        editor.innerHTML = content;
+                    } else {
+                        editor.innerText = content;
+                    }
+                    document.getElementById('thankyou-template-text-wrapper').style.display = 'block';
+                    document.getElementById('thankyou-template-html').style.display = 'none';
+                }
+
+                // Update toggle buttons
+                document.querySelectorAll('[data-ttype]').forEach(b => b.classList.remove('active'));
+                document.querySelector(`[data-ttype="${thankyouTemplateType}"]`).classList.add('active');
+            } catch (err) { /* silent */ }
+        }
+
+        function switchThankYouTemplateType(type) {
+            thankyouTemplateType = type;
+            document.querySelectorAll('[data-ttype]').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-ttype="${type}"]`).classList.add('active');
+
+            if (type === 'html') {
+                document.getElementById('thankyou-template-text-wrapper').style.display = 'none';
+                document.getElementById('thankyou-template-html').style.display = 'block';
+            } else {
+                document.getElementById('thankyou-template-text-wrapper').style.display = 'block';
+                document.getElementById('thankyou-template-html').style.display = 'none';
+            }
+        }
+
+        function execThankYouCmd(command) {
+            document.getElementById('thankyou-template-text').focus();
+            document.execCommand(command, false, null);
+        }
+
+        async function saveThankYouTemplate() {
+            const subject = document.getElementById('thankyou-email-subject').value;
+            const payload = {
+                thankyou_email_subject: subject,
+                thankyou_email_template_type: thankyouTemplateType,
+            };
+
+            if (thankyouTemplateType === 'html') {
+                payload.thankyou_email_template_html = document.getElementById('thankyou-template-html').value;
+            } else {
+                payload.thankyou_email_template = document.getElementById('thankyou-template-text').innerHTML;
+            }
+
+            try {
+                await api.put('/email/thankyou-template', payload);
+                showToast('Thank you email template saved successfully', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ========================
+        // Thank You Email Logs
+        // ========================
+        async function loadThankYouLogs() {
+            try {
+                const data = await api.get('/email/thankyou-logs');
+                const tbody = document.getElementById('thankyou-log-tbody');
+                const logs = data.logs || [];
+
+                if (logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-text-muted);padding:24px">No thank you emails sent yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = logs.map(log => {
+                    const date = log.sent_at ? new Date(log.sent_at).toLocaleString() : '—';
+                    const statusClass = log.status === 'sent' ? 'email-status-sent' : 'email-status-failed';
+                    const statusLabel = log.status === 'sent' ? 'Sent' : 'Failed';
+                    return `<tr>
+                        <td style="white-space:nowrap">${date}</td>
+                        <td>${escapeHtml(log.recipient_email || '—')}</td>
+                        <td>${escapeHtml(log.company_name || '—')}</td>
+                        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(log.subject || '—')}</td>
+                        <td><span class="email-status-badge ${statusClass}">${statusLabel}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" style="padding:2px 6px;font-size:0.7rem" onclick="deleteThankYouLog(${log.id})" title="Delete">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px">
+                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (err) { /* silent */ }
+        }
+
+        async function deleteThankYouLog(logId) {
+            const confirmed = await showConfirm(
+                'Delete Thank You Email Log',
+                'Are you sure you want to delete this log entry?'
+            );
+            if (!confirmed) return;
+            try {
+                await api.delete(`/email/thankyou-logs/${logId}`);
+                showToast('Log entry deleted', 'success');
+                loadThankYouLogs();
+            } catch (err) {
+                showToast(err.message || 'Failed to delete log', 'error');
+            }
+        }
+
+        async function clearAllThankYouLogs() {
+            const confirmed = await showConfirm(
+                'Clear Thank You Email History',
+                'Are you sure you want to delete all thank you email logs?'
+            );
+            if (!confirmed) return;
+            try {
+                await api.delete('/email/thankyou-logs');
+                showToast('All thank you email history cleared', 'success');
+                loadThankYouLogs();
+            } catch (err) {
+                showToast(err.message || 'Failed to clear thank you email history', 'error');
+            }
+        }
+
+        // ========================
         // Search / Filter Functions
         // ========================
         function filterClientCompanies() { renderCompanyList(); }
         function clearClientSearch() {
             document.getElementById('client-search-name').value = '';
-            document.getElementById('client-search-date').value = '';
             renderCompanyList();
+        }
+        // Full reset: clear search, reset month and year to current
+        function resetClientFilters() {
+            document.getElementById('client-search-name').value = '';
+            clientEmailMonth = new Date().getMonth() + 1;
+            clientEmailYear = new Date().getFullYear();
+            clientEmailViewMode = 'month';
+            document.querySelectorAll('[data-client-view]').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-client-view="month"]').classList.add('active');
+            loadCompanies();
         }
         function filterConsultantCompanies() { renderConsultantCompanyList(); }
         function clearConsultantSearch() {
             document.getElementById('consultant-search-name').value = '';
-            document.getElementById('consultant-search-date').value = '';
             document.getElementById('consultant-search-consultant').value = '';
             renderConsultantCompanyList();
+        }
+        // Full reset: clear search, reset month and year to current
+        function resetConsultantFilters() {
+            document.getElementById('consultant-search-name').value = '';
+            document.getElementById('consultant-search-consultant').value = '';
+            consultantEmailMonth = new Date().getMonth() + 1;
+            consultantEmailYear = new Date().getFullYear();
+            consultantEmailViewMode = 'month';
+            document.querySelectorAll('[data-consultant-view]').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-consultant-view="month"]').classList.add('active');
+            loadConsultantCompanies();
         }
 
         // ========================
