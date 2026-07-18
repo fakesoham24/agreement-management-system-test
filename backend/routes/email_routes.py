@@ -1058,6 +1058,19 @@ def delete_consultant_email_log(
 
 
 # ==========================================
+def is_blank_template(content: str) -> bool:
+    """Check if the template content is empty or contains only whitespace / blank HTML tags."""
+    if not content:
+        return True
+    import re
+    # Strip HTML tags
+    clean = re.sub(r'<[^>]*>', '', content)
+    # Replace common HTML whitespace entities
+    clean = clean.replace('&nbsp;', ' ').replace('&nbsp', ' ')
+    return len(clean.strip()) == 0
+
+
+# ==========================================
 # Consultant Email Template Request Model
 # ==========================================
 class ConsultantTemplateUpdate(BaseModel):
@@ -1110,9 +1123,35 @@ def update_consultant_template(
 ):
     cursor = db.cursor()
     existing = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+    ex = dict(existing) if existing else {}
+
+    subject = (data.consultant_email_subject or "").strip()
+    if not subject:
+        subject = "Payment Reminder — {{company_name}} (Internal)"
+
+    template_type = data.consultant_email_template_type or "text"
+
+    # Check if the saved template is blank
+    is_blank = False
+    if template_type == "html":
+        is_blank = is_blank_template(data.consultant_email_template_html)
+    else:
+        is_blank = is_blank_template(data.consultant_email_template)
+
+    if is_blank:
+        # Save default template as visual mode (type text)
+        template_type = "text"
+        template_text = DEFAULT_CONSULTANT_EMAIL_TEMPLATE
+        template_html = ""
+    else:
+        if template_type == "html":
+            template_text = data.consultant_email_template if data.consultant_email_template is not None else (ex.get("consultant_email_template") or DEFAULT_CONSULTANT_EMAIL_TEMPLATE)
+            template_html = data.consultant_email_template_html or ""
+        else:
+            template_text = data.consultant_email_template or DEFAULT_CONSULTANT_EMAIL_TEMPLATE
+            template_html = data.consultant_email_template_html if data.consultant_email_template_html is not None else (ex.get("consultant_email_template_html") or "")
 
     if existing:
-        ex = dict(existing)
         cursor.execute("""
             UPDATE email_settings SET
                 consultant_email_subject = ?,
@@ -1122,10 +1161,10 @@ def update_consultant_template(
                 updated_at = ?
             WHERE id = ?
         """, (
-            data.consultant_email_subject or "Payment Reminder — {{company_name}} (Internal)",
-            data.consultant_email_template_type or "text",
-            data.consultant_email_template if data.consultant_email_template is not None else (ex.get("consultant_email_template") or DEFAULT_CONSULTANT_EMAIL_TEMPLATE),
-            data.consultant_email_template_html if data.consultant_email_template_html is not None else (ex.get("consultant_email_template_html") or ""),
+            subject,
+            template_type,
+            template_text,
+            template_html,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             existing["id"],
         ))
@@ -1146,10 +1185,10 @@ def update_consultant_template(
             "",
             "",
             1,
-            data.consultant_email_subject or "Payment Reminder — {{company_name}} (Internal)",
-            data.consultant_email_template_type or "text",
-            data.consultant_email_template or DEFAULT_CONSULTANT_EMAIL_TEMPLATE,
-            data.consultant_email_template_html or "",
+            subject,
+            template_type,
+            template_text,
+            template_html,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         ))
 
@@ -2028,9 +2067,35 @@ def update_thankyou_template(
 ):
     cursor = db.cursor()
     existing = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+    ex = dict(existing) if existing else {}
+
+    subject = (data.thankyou_email_subject or "").strip()
+    if not subject:
+        subject = "Thank You for Your Payment — {{company_name}}"
+
+    template_type = data.thankyou_email_template_type or "text"
+
+    # Check if the saved template is blank
+    is_blank = False
+    if template_type == "html":
+        is_blank = is_blank_template(data.thankyou_email_template_html)
+    else:
+        is_blank = is_blank_template(data.thankyou_email_template)
+
+    if is_blank:
+        # Save default template as visual mode (type text)
+        template_type = "text"
+        template_text = DEFAULT_THANKYOU_EMAIL_TEMPLATE
+        template_html = ""
+    else:
+        if template_type == "html":
+            template_text = data.thankyou_email_template if data.thankyou_email_template is not None else (ex.get("thankyou_email_template") or DEFAULT_THANKYOU_EMAIL_TEMPLATE)
+            template_html = data.thankyou_email_template_html or ""
+        else:
+            template_text = data.thankyou_email_template or DEFAULT_THANKYOU_EMAIL_TEMPLATE
+            template_html = data.thankyou_email_template_html if data.thankyou_email_template_html is not None else (ex.get("thankyou_email_template_html") or "")
 
     if existing:
-        ex = dict(existing)
         cursor.execute("""
             UPDATE email_settings SET
                 thankyou_email_subject = ?,
@@ -2040,10 +2105,10 @@ def update_thankyou_template(
                 updated_at = ?
             WHERE id = ?
         """, (
-            data.thankyou_email_subject or "Thank You for Your Payment — {{company_name}}",
-            data.thankyou_email_template_type or "text",
-            data.thankyou_email_template if data.thankyou_email_template is not None else (ex.get("thankyou_email_template") or DEFAULT_THANKYOU_EMAIL_TEMPLATE),
-            data.thankyou_email_template_html if data.thankyou_email_template_html is not None else (ex.get("thankyou_email_template_html") or ""),
+            subject,
+            template_type,
+            template_text,
+            template_html,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             existing["id"],
         ))
@@ -2064,10 +2129,10 @@ def update_thankyou_template(
             "",
             "",
             1,
-            data.thankyou_email_subject or "Thank You for Your Payment — {{company_name}}",
-            data.thankyou_email_template_type or "text",
-            data.thankyou_email_template or DEFAULT_THANKYOU_EMAIL_TEMPLATE,
-            data.thankyou_email_template_html or "",
+            subject,
+            template_type,
+            template_text,
+            template_html,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         ))
 

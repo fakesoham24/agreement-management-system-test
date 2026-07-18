@@ -170,7 +170,7 @@ This is an internal reminder that the payment of {{currency}}{{payment_amount}} 
 
 Please follow up with the client to ensure timely payment.
 
-Company Contact: {{contact_person}}
+Company : {{company_name}}
 
 Regards,
 D&V Business Consulting — Automated Payment Reminder"""

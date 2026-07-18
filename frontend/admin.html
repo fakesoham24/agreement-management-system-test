@@ -855,6 +855,16 @@
                             <textarea class="template-editor" id="consultant-template-html"
                                 placeholder="Paste your HTML template here..." style="display:none"></textarea>
 
+                            <!-- HTML Preview (html mode only) -->
+                            <div id="consultant-html-preview-section" style="display:none;margin-top:12px">
+                                <div
+                                    style="font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--color-text-secondary)">
+                                    HTML Preview</div>
+                                <iframe id="consultant-html-preview-frame"
+                                    style="width:100%;min-height:250px;border:1px solid var(--color-border);border-radius:var(--radius);background:white"
+                                    sandbox="allow-same-origin"></iframe>
+                            </div>
+
                             <div class="template-variables">
                                 <h4>Available Variables</h4>
                                 <div>
@@ -934,6 +944,16 @@
 
                             <textarea class="template-editor" id="thankyou-template-html"
                                 placeholder="Paste your HTML template here..." style="display:none"></textarea>
+
+                            <!-- HTML Preview (html mode only) -->
+                            <div id="thankyou-html-preview-section" style="display:none;margin-top:12px">
+                                <div
+                                    style="font-size:0.85rem;font-weight:600;margin-bottom:6px;color:var(--color-text-secondary)">
+                                    HTML Preview</div>
+                                <iframe id="thankyou-html-preview-frame"
+                                    style="width:100%;min-height:250px;border:1px solid var(--color-border);border-radius:var(--radius);background:white"
+                                    sandbox="allow-same-origin"></iframe>
+                            </div>
 
                             <div class="template-variables">
                                 <h4>Available Variables</h4>
@@ -2935,6 +2955,32 @@
             }
         }
 
+        function updateConsultantHtmlPreview() {
+            const frame = document.getElementById('consultant-html-preview-frame');
+            const html = document.getElementById('consultant-template-html').value || '';
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(html || '<p style="color:#999;padding:20px;font-family:sans-serif">HTML preview will appear here...</p>');
+                doc.close();
+            } catch (e) {
+                // Silently ignore preview errors
+            }
+        }
+
+        function updateThankYouHtmlPreview() {
+            const frame = document.getElementById('thankyou-html-preview-frame');
+            const html = document.getElementById('thankyou-template-html').value || '';
+            try {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(html || '<p style="color:#999;padding:20px;font-family:sans-serif">HTML preview will appear here...</p>');
+                doc.close();
+            } catch (e) {
+                // Silently ignore preview errors
+            }
+        }
+
         // Live HTML preview updates
         document.getElementById('email-template-html').addEventListener('input', () => {
             htmlTemplate = document.getElementById('email-template-html').value || '';
@@ -2946,6 +2992,26 @@
             setTimeout(() => {
                 htmlTemplate = document.getElementById('email-template-html').value || '';
                 updateHtmlPreview();
+            }, 50);
+        });
+
+        // Consultant HTML preview updates
+        document.getElementById('consultant-template-html').addEventListener('input', () => {
+            updateConsultantHtmlPreview();
+        });
+        document.getElementById('consultant-template-html').addEventListener('paste', (e) => {
+            setTimeout(() => {
+                updateConsultantHtmlPreview();
+            }, 50);
+        });
+
+        // Thank you HTML preview updates
+        document.getElementById('thankyou-template-html').addEventListener('input', () => {
+            updateThankYouHtmlPreview();
+        });
+        document.getElementById('thankyou-template-html').addEventListener('paste', (e) => {
+            setTimeout(() => {
+                updateThankYouHtmlPreview();
             }, 50);
         });
 
@@ -3359,6 +3425,8 @@
                     document.getElementById('consultant-template-html').value = t.consultant_email_template_html || '';
                     document.getElementById('consultant-template-text-wrapper').style.display = 'none';
                     document.getElementById('consultant-template-html').style.display = 'block';
+                    document.getElementById('consultant-html-preview-section').style.display = 'block';
+                    updateConsultantHtmlPreview();
                 } else {
                     const editor = document.getElementById('consultant-template-text');
                     const content = t.consultant_email_template || '';
@@ -3369,6 +3437,7 @@
                     }
                     document.getElementById('consultant-template-text-wrapper').style.display = 'block';
                     document.getElementById('consultant-template-html').style.display = 'none';
+                    document.getElementById('consultant-html-preview-section').style.display = 'none';
                 }
 
                 // Update toggle buttons
@@ -3385,9 +3454,12 @@
             if (type === 'html') {
                 document.getElementById('consultant-template-text-wrapper').style.display = 'none';
                 document.getElementById('consultant-template-html').style.display = 'block';
+                document.getElementById('consultant-html-preview-section').style.display = 'block';
+                updateConsultantHtmlPreview();
             } else {
                 document.getElementById('consultant-template-text-wrapper').style.display = 'block';
                 document.getElementById('consultant-template-html').style.display = 'none';
+                document.getElementById('consultant-html-preview-section').style.display = 'none';
             }
         }
 
@@ -3412,6 +3484,7 @@
             try {
                 await api.put('/email/consultant-template', payload);
                 showToast('Consultant email template saved successfully', 'success');
+                await loadConsultantTemplate();
             } catch (err) {
                 showToast(err.message, 'error');
             }
@@ -3435,6 +3508,8 @@
                     document.getElementById('thankyou-template-html').value = t.thankyou_email_template_html || '';
                     document.getElementById('thankyou-template-text-wrapper').style.display = 'none';
                     document.getElementById('thankyou-template-html').style.display = 'block';
+                    document.getElementById('thankyou-html-preview-section').style.display = 'block';
+                    updateThankYouHtmlPreview();
                 } else {
                     const editor = document.getElementById('thankyou-template-text');
                     const content = t.thankyou_email_template || '';
@@ -3445,6 +3520,7 @@
                     }
                     document.getElementById('thankyou-template-text-wrapper').style.display = 'block';
                     document.getElementById('thankyou-template-html').style.display = 'none';
+                    document.getElementById('thankyou-html-preview-section').style.display = 'none';
                 }
 
                 // Update toggle buttons
@@ -3461,9 +3537,12 @@
             if (type === 'html') {
                 document.getElementById('thankyou-template-text-wrapper').style.display = 'none';
                 document.getElementById('thankyou-template-html').style.display = 'block';
+                document.getElementById('thankyou-html-preview-section').style.display = 'block';
+                updateThankYouHtmlPreview();
             } else {
                 document.getElementById('thankyou-template-text-wrapper').style.display = 'block';
                 document.getElementById('thankyou-template-html').style.display = 'none';
+                document.getElementById('thankyou-html-preview-section').style.display = 'none';
             }
         }
 
@@ -3488,6 +3567,7 @@
             try {
                 await api.put('/email/thankyou-template', payload);
                 showToast('Thank you email template saved successfully', 'success');
+                await loadThankYouTemplate();
             } catch (err) {
                 showToast(err.message, 'error');
             }
