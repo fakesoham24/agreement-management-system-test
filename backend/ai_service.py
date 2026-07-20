@@ -336,7 +336,7 @@ def analyze_agreement(text: str) -> dict:
 {{
   "company_name": "client company",
   "agreement_title": "document title",
-  "contact_person": "primary contact name",
+  "contact_person": "primary contact name(contact person of the client company useally contact persona is mention at the last signature area)",
   "agreement_date": "YYYY-MM-DD",
   "effective_date": "YYYY-MM-DD (this is the consulting start date — when consulting work begins)",
   "expiry_date": "YYYY-MM-DD (this is the consulting end date — when the agreement expires)",
