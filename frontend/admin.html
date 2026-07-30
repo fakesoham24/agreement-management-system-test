@@ -123,6 +123,20 @@
                             Create User
                         </button>
                     </div>
+                    <!-- Users Search Bar -->
+                    <div style="margin-bottom:14px">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;max-width:400px;background:var(--color-bg-secondary);border:1px solid var(--color-border);border-radius:8px;padding:0 12px">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width:15px;height:15px;opacity:0.5;flex-shrink:0">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="M21 21l-4.35-4.35" />
+                            </svg>
+                            <input type="text" class="form-input" id="users-search-input"
+                                placeholder="Search by name, email, or role..." oninput="filterUsers()"
+                                style="border:none;background:none;padding:10px 0;flex:1;outline:none;box-shadow:none">
+                        </div>
+                    </div>
                     <div style="overflow-x:auto">
                         <table class="data-table" id="users-table">
                             <thead>
@@ -157,6 +171,21 @@
                             </svg>
                             Add Consultant
                         </button>
+                    </div>
+                    <!-- Consultants Search Bar -->
+                    <div style="margin-bottom:14px">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;max-width:400px;background:var(--color-bg-secondary);border:1px solid var(--color-border);border-radius:8px;padding:0 12px">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width:15px;height:15px;opacity:0.5;flex-shrink:0">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="M21 21l-4.35-4.35" />
+                            </svg>
+                            <input type="text" class="form-input" id="consultants-search-input"
+                                placeholder="Search by name, designation, or email..."
+                                oninput="filterConsultantsTable()"
+                                style="border:none;background:none;padding:10px 0;flex:1;outline:none;box-shadow:none">
+                        </div>
                     </div>
                     <div style="overflow-x:auto">
                         <table class="data-table" id="consultants-table">
@@ -255,8 +284,9 @@
                                 </div>
                                 <div class="month-tabs month-tabs-inline" id="client-email-month-tabs"></div>
                                 <select class="form-input" id="client-email-year-selector"
-                                    onchange="onClientEmailYearChange()" style="width:auto;min-width:90px;padding: 7px;"></select>
-                                
+                                    onchange="onClientEmailYearChange()"
+                                    style="width:auto;min-width:90px;padding: 7px;"></select>
+
                                 <button class="btn btn-sm btn-secondary btn-reset-filters"
                                     onclick="resetClientFilters()" title="Reset all filters">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -281,8 +311,10 @@
                                     </button>
                                 </div>
                                 <div class="view-toggle" id="client-email-view-toggle">
-                                    <button class="view-toggle-btn active" data-client-view="month" onclick="switchClientEmailView('month')">Month</button>
-                                    <button class="view-toggle-btn" data-client-view="year" onclick="switchClientEmailView('year')">Year</button>
+                                    <button class="view-toggle-btn active" data-client-view="month"
+                                        onclick="switchClientEmailView('month')">Month</button>
+                                    <button class="view-toggle-btn" data-client-view="year"
+                                        onclick="switchClientEmailView('year')">Year</button>
                                 </div>
                             </div>
 
@@ -377,10 +409,13 @@
                                 <div style="display:flex;align-items:center;gap:8px">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                         style="width:18px;height:18px">
-                                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                                        <path
+                                            d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
                                     </svg>
                                     Thank You Email History
-                                    <span style="font-weight:400;font-size:0.72rem;color:var(--color-text-muted)">(auto-deleted after 30 days)</span>
+                                    <span
+                                        style="font-weight:400;font-size:0.72rem;color:var(--color-text-muted)">(auto-deleted
+                                        after 30 days)</span>
                                 </div>
                                 <button class="btn btn-sm btn-danger" id="clear-all-thankyou-logs-btn"
                                     onclick="clearAllThankYouLogs()" style="font-size:0.75rem;padding:4px 10px">
@@ -461,7 +496,7 @@
                                 <select class="form-input" id="consultant-email-year-selector"
                                     onchange="onConsultantEmailYearChange()"
                                     style="width:auto;min-width:90px;padding: 7px;"></select>
-                                
+
                                 <button class="btn btn-sm btn-secondary btn-reset-filters"
                                     onclick="resetConsultantFilters()" title="Reset all filters">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -478,8 +513,10 @@
                                         selected</span>
                                 </div>
                                 <div class="view-toggle" id="consultant-email-view-toggle">
-                                    <button class="view-toggle-btn active" data-consultant-view="month" onclick="switchConsultantEmailView('month')">Month</button>
-                                    <button class="view-toggle-btn" data-consultant-view="year" onclick="switchConsultantEmailView('year')">Year</button>
+                                    <button class="view-toggle-btn active" data-consultant-view="month"
+                                        onclick="switchConsultantEmailView('month')">Month</button>
+                                    <button class="view-toggle-btn" data-consultant-view="year"
+                                        onclick="switchConsultantEmailView('year')">Year</button>
                                 </div>
                             </div>
 
@@ -587,6 +624,11 @@
                             </div>
                             <div class="email-settings-grid">
                                 <div class="form-group">
+                                    <label>Sender Name</label>
+                                    <input type="text" class="form-input" id="email-sender-name"
+                                        placeholder="e.g., D&V Business Consulting">
+                                </div>
+                                <div class="form-group">
                                     <label>Sender Email</label>
                                     <input type="email" class="form-input" id="email-sender"
                                         placeholder="your.email@gmail.com">
@@ -642,7 +684,7 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="form-group full-width">
+                                <div class="form-group">
                                     <label>CC Emails (optional, comma-separated)</label>
                                     <input type="text" class="form-input" id="email-cc"
                                         placeholder="cc1@example.com, cc2@example.com">
@@ -674,32 +716,40 @@
                             <div class="section-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                     style="width:18px;height:18px">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <path d="M12 6v6l4 2"/>
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M12 6v6l4 2" />
                                 </svg>
                                 Email Timeout
                             </div>
-                            <p style="font-size:0.82rem;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.5">
-                                Set a cooldown period to prevent sending duplicate emails for the same payment. After an email is sent for a specific payment, that payment will be locked for the configured duration. This does not apply to Thank You emails.
+                            <p
+                                style="font-size:0.82rem;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.5">
+                                Set a cooldown period to prevent sending duplicate emails for the same payment. After an
+                                email is sent for a specific payment, that payment will be locked for the configured
+                                duration. This does not apply to Thank You emails.
                             </p>
                             <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
                                 <div class="form-group" style="margin-bottom:0;min-width:80px">
                                     <label>Days</label>
-                                    <input type="number" class="form-input" id="email-timeout-days" min="0" max="365" value="3" style="width:80px">
+                                    <input type="number" class="form-input" id="email-timeout-days" min="0" max="365"
+                                        value="3" style="width:80px">
                                 </div>
                                 <div class="form-group" style="margin-bottom:0;min-width:80px">
                                     <label>Hours</label>
-                                    <input type="number" class="form-input" id="email-timeout-hours" min="0" max="23" value="0" style="width:80px">
+                                    <input type="number" class="form-input" id="email-timeout-hours" min="0" max="23"
+                                        value="0" style="width:80px">
                                 </div>
                                 <div class="form-group" style="margin-bottom:0;min-width:80px">
                                     <label>Minutes</label>
-                                    <input type="number" class="form-input" id="email-timeout-minutes" min="0" max="59" value="0" style="width:80px">
+                                    <input type="number" class="form-input" id="email-timeout-minutes" min="0" max="59"
+                                        value="0" style="width:80px">
                                 </div>
-                                <button class="btn btn-primary btn-sm" onclick="saveEmailTimeout()" style="height:38px;padding:0 16px">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
-                                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-                                        <polyline points="17 21 17 13 7 13 7 21"/>
-                                        <polyline points="7 3 7 8 15 8"/>
+                                <button class="btn btn-primary btn-sm" onclick="saveEmailTimeout()"
+                                    style="height:38px;padding:0 16px">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        style="width:14px;height:14px">
+                                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                        <polyline points="17 21 17 13 7 13 7 21" />
+                                        <polyline points="7 3 7 8 15 8" />
                                     </svg>
                                     Save
                                 </button>
@@ -897,12 +947,14 @@
                             <div class="section-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                     style="width:18px;height:18px">
-                                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
                                 </svg>
                                 Thank You Email Template
                             </div>
                             <p style="font-size:0.8rem;color:var(--color-text-muted);margin-bottom:16px">
-                                This template is used for the automatic thank you email sent when a payment is marked as paid.
+                                This template is used for the automatic thank you email sent when a payment is marked as
+                                paid.
                             </p>
 
                             <div class="form-group">
@@ -922,17 +974,15 @@
                                 <div class="editor-toolbar" id="thankyou-editor-toolbar">
                                     <button type="button" class="editor-toolbar-btn" onclick="execThankYouCmd('bold')"
                                         title="Bold"><b>B</b></button>
-                                    <button type="button" class="editor-toolbar-btn"
-                                        onclick="execThankYouCmd('italic')" title="Italic"><i>I</i></button>
+                                    <button type="button" class="editor-toolbar-btn" onclick="execThankYouCmd('italic')"
+                                        title="Italic"><i>I</i></button>
                                     <button type="button" class="editor-toolbar-btn"
                                         onclick="execThankYouCmd('underline')" title="Underline"><u>U</u></button>
                                     <div class="editor-toolbar-separator"></div>
                                     <button type="button" class="editor-toolbar-btn"
-                                        onclick="execThankYouCmd('insertUnorderedList')"
-                                        title="Bullet List">•</button>
+                                        onclick="execThankYouCmd('insertUnorderedList')" title="Bullet List">•</button>
                                     <button type="button" class="editor-toolbar-btn"
-                                        onclick="execThankYouCmd('insertOrderedList')"
-                                        title="Numbered List">1.</button>
+                                        onclick="execThankYouCmd('insertOrderedList')" title="Numbered List">1.</button>
                                     <div class="editor-toolbar-separator"></div>
                                     <button type="button" class="editor-toolbar-btn"
                                         onclick="execThankYouCmd('removeFormat')" title="Clear Formatting">✘</button>
@@ -1010,62 +1060,120 @@
         <div class="modal">
             <h3 class="modal-title">Create New User</h3>
             <div class="modal-body">
-                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem">Create a new user
-                    account. Only @dvconsulting.co.in emails are allowed.</p>
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem" id="create-user-desc">
+                    Verify the email address first, then fill in user details.</p>
+
+                <!-- Gmail credentials warning (shown when not configured) -->
+                <div id="create-gmail-warning"
+                    style="display:none;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1px solid #ffb74d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;color:#e65100;line-height:1.5">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-weight:600">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="width:16px;height:16px;flex-shrink:0">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        Gmail Credentials Required
+                    </div>
+                    Gmail OAuth2 credentials are not configured. Please go to <strong>Email Settings →
+                        Credentials</strong> tab and save your Gmail credentials before creating users.
+                </div>
+
+                <!-- Step 1: Email + Send OTP -->
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" class="form-input" id="create-email" placeholder="user@dvconsulting.co.in"
-                        required>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <div style="flex:1">
+                            <input type="email" class="form-input" id="create-email" placeholder="user@example.com"
+                                required oninput="onCreateEmailInput()">
+                        </div>
+                        <button class="btn btn-sm ai-style-change-1" id="create-send-otp-btn" onclick="createSendOTP()"
+                            style="opacity: 0.5; min-width: 95px; height: 38px; font-size: 0.8rem; white-space: nowrap; color: rgb(255, 255, 255); background-color: var(--color-accent); cursor: not-allowed;"
+                            disabled="">Send OTP</button>
+                    </div>
                     <span class="field-error" id="create-email-error"></span>
+                    <!-- Email verified indicator -->
+                    <div id="create-email-verified"
+                        style="display:none;color:#2e7d32;font-size:0.82rem;margin-top:6px;display:none;align-items:center;gap:4px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5"
+                            style="width:14px;height:14px">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Email verified successfully
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" class="form-input" id="create-fullname" placeholder="Enter full name" required>
-                    <span class="field-error" id="create-fullname-error"></span>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="password-input-wrapper">
-                        <input type="password" class="form-input" id="create-password" placeholder="Min 6 characters"
-                            required minlength="6">
-                        <button type="button" class="password-toggle"
-                            onclick="togglePasswordVisibility('create-password', this)" title="Show password">
-                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.8" style="width:18px;height:18px">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                            <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.8" style="width:18px;height:18px;display:none">
-                                <path
-                                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
-                                <line x1="1" y1="1" x2="23" y2="23" />
-                            </svg>
+
+                <!-- Step 2: OTP Input (hidden until OTP is sent) -->
+                <div class="form-group" id="create-otp-group" style="display:none">
+                    <label>Enter OTP <span style="color:var(--color-text-muted);font-weight:400">(check your
+                            email)</span></label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <input type="text" class="form-input" id="create-otp-input" placeholder="4-digit OTP"
+                            maxlength="4" pattern="[0-9]*" inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                            style="max-width:140px;letter-spacing:8px;font-weight:600;font-size:1.1rem;text-align:center">
+                        <button class="btn btn-sm btn-primary" id="create-verify-otp-btn" onclick="createVerifyOTP()"
+                            style="min-width:80px;height:38px;font-size:0.8rem">
+                            Verify
                         </button>
                     </div>
-                    <span class="field-error" id="create-password-error"></span>
+                    <span class="field-error" id="create-otp-error"></span>
                 </div>
-                <div class="form-group">
-                    <label>Role</label>
-                    <select class="form-input" id="create-role" onchange="toggleCreatePaymentAccess()">
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="form-group" id="create-payment-access-group" style="display:block">
-                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                        <input type="checkbox" id="create-payment-access"
-                            style="width:16px;height:16px;cursor:pointer;accent-color:var(--color-primary)">
-                        <span>Advanced Payment Access</span>
-                    </label>
-                    <span style="font-size:0.78rem;color:var(--color-text-muted);margin-top:4px;display:block">
-                        Grant access to view all users' payment sections
-                    </span>
+
+                <!-- Step 3: Remaining fields (hidden until email is verified) -->
+                <div id="create-user-fields" style="display:none">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" class="form-input" id="create-fullname" placeholder="Enter full name"
+                            required>
+                        <span class="field-error" id="create-fullname-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-input" id="create-password"
+                                placeholder="Min 6 characters" required minlength="6">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePasswordVisibility('create-password', this)" title="Show password">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" style="width:18px;height:18px">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" style="width:18px;height:18px;display:none">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span class="field-error" id="create-password-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select class="form-input" id="create-role" onchange="toggleCreatePaymentAccess()">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="create-payment-access-group" style="display:block">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                            <input type="checkbox" id="create-payment-access"
+                                style="width:16px;height:16px;cursor:pointer;accent-color:var(--color-primary)">
+                            <span>Advanced Payment Access</span>
+                        </label>
+                        <span style="font-size:0.78rem;color:var(--color-text-muted);margin-top:4px;display:block">
+                            Grant access to view all users' payment sections
+                        </span>
+                    </div>
                 </div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeCreateUserModal()">Cancel</button>
-                <button class="btn btn-primary" id="create-user-btn" onclick="submitCreateUser()">Create User</button>
+                <button class="btn btn-primary" id="create-user-btn" onclick="submitCreateUser()"
+                    style="display:none">Create User</button>
             </div>
         </div>
     </div>
@@ -1077,11 +1185,61 @@
             <div class="modal-body">
                 <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem" id="edit-user-label">
                     Update user email, name, or password.</p>
+
+                <!-- Email field with (X) clear button -->
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" class="form-input" id="edit-email" placeholder="user@dvconsulting.co.in">
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <div style="flex:1;position:relative">
+                            <input type="email" class="form-input" id="edit-email" placeholder="user@example.com"
+                                disabled style="opacity:0.6;padding-right:36px">
+                            <!-- (X) clear button to change email -->
+                            <button type="button" id="edit-email-clear-btn" onclick="editEmailClearClick()"
+                                title="Change email address"
+                                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s"
+                                onmouseover="this.style.background='rgba(0,0,0,0.08)'"
+                                onmouseout="this.style.background='none'">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Send OTP button (hidden until email change is confirmed) -->
+                        <button class="btn btn-sm" id="edit-send-otp-btn" onclick="editSendOTP()" disabled
+                            style="display:none;opacity:0.5;min-width:95px;height:38px;font-size:0.8rem;white-space:nowrap;background:var(--color-accent);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                            Send OTP
+                        </button>
+                    </div>
                     <span class="field-error" id="edit-email-error"></span>
+                    <!-- Email verified indicator for edit -->
+                    <div id="edit-email-verified"
+                        style="display:none;color:#2e7d32;font-size:0.82rem;margin-top:6px;align-items:center;gap:4px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5"
+                            style="width:14px;height:14px">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        New email verified successfully
+                    </div>
                 </div>
+
+                <!-- OTP Input for edit (hidden until OTP is sent) -->
+                <div class="form-group" id="edit-otp-group" style="display:none">
+                    <label>Enter OTP <span style="color:var(--color-text-muted);font-weight:400">(check your
+                            email)</span></label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <input type="text" class="form-input" id="edit-otp-input" placeholder="4-digit OTP"
+                            maxlength="4" pattern="[0-9]*" inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                            style="max-width:140px;letter-spacing:8px;font-weight:600;font-size:1.1rem;text-align:center">
+                        <button class="btn btn-sm btn-primary" id="edit-verify-otp-btn" onclick="editVerifyOTP()"
+                            style="min-width:80px;height:38px;font-size:0.8rem">
+                            Verify
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-otp-error"></span>
+                </div>
+
                 <div class="form-group">
                     <label>Full Name</label>
                     <input type="text" class="form-input" id="edit-fullname" placeholder="Enter full name">
@@ -1123,6 +1281,53 @@
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeEditUserModal()">Cancel</button>
                 <button class="btn btn-primary" id="edit-user-btn" onclick="submitEditUser()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Change Warning Modal -->
+    <div class="modal-overlay" id="email-change-warning-modal">
+        <div class="modal" style="max-width:420px">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:8px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2" style="width:20px;height:20px">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Change Email Address?
+            </h3>
+            <div class="modal-body">
+                <p style="color:var(--color-text-secondary);font-size:0.88rem;line-height:1.6">
+                    If you want to change the email ID, you need to verify the new email with <strong>OTP
+                        verification</strong>.
+                    Are you sure you want to change the existing email ID?
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="cancelEmailChange()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmEmailChange()">Change</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Error Modal -->
+    <div class="modal-overlay" id="otp-error-modal">
+        <div class="modal" style="max-width:380px">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;color:var(--color-danger)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="width:20px;height:20px">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+                Verification Failed
+            </h3>
+            <div class="modal-body">
+                <p style="color:var(--color-text-secondary);font-size:0.88rem;line-height:1.6" id="otp-error-message">
+                    Email is not valid because OTP does not match.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeOtpErrorModal()">OK</button>
             </div>
         </div>
     </div>
@@ -1518,10 +1723,11 @@
             }
         }
 
-        function renderUsers() {
+        function renderUsers(usersToRender) {
             const tbody = document.getElementById('users-tbody');
             const currentUserId = user.id;
-            tbody.innerHTML = allUsers.map(u => `
+            const list = usersToRender || allUsers;
+            tbody.innerHTML = list.map(u => `
                 <tr>
                     <td>${u.id}</td>
                     <td><strong>${u.email}</strong></td>
@@ -1547,6 +1753,20 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function filterUsers() {
+            const query = (document.getElementById('users-search-input').value || '').trim().toLowerCase();
+            if (!query) {
+                renderUsers(allUsers);
+                return;
+            }
+            const filtered = allUsers.filter(u => {
+                return (u.full_name || '').toLowerCase().includes(query)
+                    || (u.email || '').toLowerCase().includes(query)
+                    || (u.role || '').toLowerCase().includes(query);
+            });
+            renderUsers(filtered);
         }
 
         function escapeAttr(str) {
@@ -1626,16 +1846,53 @@
         });
 
         // ========================
-        // Create User
+        // Create User — OTP Email Verification Flow
         // ========================
-        function openCreateUserModal() {
+        let createEmailVerified = false;
+        let createVerifiedEmail = '';
+        let createOtpSending = false;
+        let createGmailConfigured = null; // null = not checked yet
+
+        async function checkGmailCredentials() {
+            try {
+                const res = await api.get('/admin/check-gmail-credentials');
+                createGmailConfigured = res.configured;
+                return res.configured;
+            } catch (err) {
+                createGmailConfigured = false;
+                return false;
+            }
+        }
+
+        async function openCreateUserModal() {
+            // Reset all fields
             document.getElementById('create-email').value = '';
+            document.getElementById('create-email').disabled = false;
             document.getElementById('create-fullname').value = '';
             document.getElementById('create-password').value = '';
             document.getElementById('create-password').type = 'password';
             document.getElementById('create-role').value = 'user';
             document.getElementById('create-payment-access').checked = false;
             document.querySelectorAll('#create-user-modal .field-error').forEach(el => el.textContent = '');
+
+            // Reset OTP state
+            createEmailVerified = false;
+            createVerifiedEmail = '';
+            createOtpSending = false;
+
+            // Hide steps 2 and 3
+            document.getElementById('create-otp-group').style.display = 'none';
+            document.getElementById('create-user-fields').style.display = 'none';
+            document.getElementById('create-user-btn').style.display = 'none';
+            document.getElementById('create-email-verified').style.display = 'none';
+            document.getElementById('create-otp-input') && (document.getElementById('create-otp-input').value = '');
+
+            // Reset Send OTP button
+            const sendBtn = document.getElementById('create-send-otp-btn');
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
+
             // Reset password visibility toggle icons
             const createPwBtn = document.querySelector('#create-user-modal .password-toggle');
             if (createPwBtn) {
@@ -1643,8 +1900,160 @@
                 createPwBtn.querySelector('.eye-off-icon').style.display = 'none';
                 createPwBtn.title = 'Show password';
             }
+
             toggleCreatePaymentAccess();
+
+            // Check Gmail credentials
+            const gmailOk = await checkGmailCredentials();
+            const warningEl = document.getElementById('create-gmail-warning');
+            if (!gmailOk) {
+                warningEl.style.display = 'block';
+                sendBtn.style.display = 'none';
+            } else {
+                warningEl.style.display = 'none';
+                sendBtn.style.display = '';
+            }
+
             document.getElementById('create-user-modal').classList.add('open');
+        }
+
+        function onCreateEmailInput() {
+            const email = (document.getElementById('create-email').value || '').trim();
+            const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+            const sendBtn = document.getElementById('create-send-otp-btn');
+
+            if (isValid && createGmailConfigured) {
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+                sendBtn.style.cursor = 'pointer';
+            } else {
+                sendBtn.disabled = true;
+                sendBtn.style.opacity = '0.5';
+                sendBtn.style.cursor = 'not-allowed';
+            }
+
+            // Clear error
+            document.getElementById('create-email-error').textContent = '';
+        }
+
+        async function createSendOTP() {
+            const email = (document.getElementById('create-email').value || '').trim().toLowerCase();
+            if (!email || createOtpSending) return;
+
+            const sendBtn = document.getElementById('create-send-otp-btn');
+            createOtpSending = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.style.opacity = '0.7';
+
+            try {
+                await api.post('/admin/send-otp', { email });
+                showToast('OTP sent to ' + email, 'success');
+
+                // Show OTP input
+                document.getElementById('create-otp-group').style.display = 'block';
+                document.getElementById('create-otp-input').value = '';
+                document.getElementById('create-otp-input').focus();
+
+                // Disable email field while verifying
+                document.getElementById('create-email').disabled = true;
+                sendBtn.textContent = 'OTP Sent';
+                sendBtn.style.opacity = '0.5';
+            } catch (err) {
+                showToast(err.message || 'Failed to send OTP', 'error');
+                sendBtn.textContent = 'Send OTP';
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+            } finally {
+                createOtpSending = false;
+            }
+        }
+
+        async function createVerifyOTP() {
+            const email = (document.getElementById('create-email').value || '').trim().toLowerCase();
+            const otp = (document.getElementById('create-otp-input').value || '').trim();
+
+            if (!otp || otp.length !== 4) {
+                document.getElementById('create-otp-error').textContent = 'Please enter the 4-digit OTP';
+                return;
+            }
+
+            const verifyBtn = document.getElementById('create-verify-otp-btn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                const res = await api.post('/admin/verify-otp', { email, otp });
+                if (res.verified) {
+                    // Success! Mark as verified
+                    createEmailVerified = true;
+                    createVerifiedEmail = email;
+
+                    // Hide OTP group
+                    document.getElementById('create-otp-group').style.display = 'none';
+
+                    // Show verified indicator
+                    const verifiedEl = document.getElementById('create-email-verified');
+                    verifiedEl.style.display = 'flex';
+
+                    // Make email readonly
+                    document.getElementById('create-email').disabled = true;
+                    document.getElementById('create-email').style.opacity = '1';
+                    document.getElementById('create-send-otp-btn').style.display = 'none';
+
+                    // Show remaining fields
+                    document.getElementById('create-user-fields').style.display = 'block';
+                    document.getElementById('create-user-btn').style.display = '';
+
+                    // Focus on full name
+                    document.getElementById('create-fullname').focus();
+
+                    showToast('Email verified successfully!', 'success');
+                }
+            } catch (err) {
+                // Show error popup
+                document.getElementById('otp-error-message').textContent = err.message || 'OTP verification failed. Please try again.';
+                document.getElementById('otp-error-modal').classList.add('open');
+                // Reset the create user form on OTP failure
+                createOtpErrorContext = 'create';
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify';
+            }
+        }
+
+        let createOtpErrorContext = ''; // 'create' or 'edit'
+
+        function closeOtpErrorModal() {
+            document.getElementById('otp-error-modal').classList.remove('open');
+            if (createOtpErrorContext === 'create') {
+                // Reset the entire create user form
+                resetCreateUserForm();
+            }
+            createOtpErrorContext = '';
+        }
+
+        function resetCreateUserForm() {
+            createEmailVerified = false;
+            createVerifiedEmail = '';
+
+            document.getElementById('create-email').value = '';
+            document.getElementById('create-email').disabled = false;
+            document.getElementById('create-email').style.opacity = '1';
+            document.getElementById('create-otp-group').style.display = 'none';
+            document.getElementById('create-user-fields').style.display = 'none';
+            document.getElementById('create-user-btn').style.display = 'none';
+            document.getElementById('create-email-verified').style.display = 'none';
+            document.getElementById('create-otp-input') && (document.getElementById('create-otp-input').value = '');
+            document.querySelectorAll('#create-user-modal .field-error').forEach(el => el.textContent = '');
+
+            const sendBtn = document.getElementById('create-send-otp-btn');
+            if (createGmailConfigured) {
+                sendBtn.style.display = '';
+            }
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
         }
 
         function toggleCreatePaymentAccess() {
@@ -1663,7 +2072,7 @@
         }
 
         async function submitCreateUser() {
-            const email = (document.getElementById('create-email').value || '').trim().toLowerCase();
+            const email = createVerifiedEmail || (document.getElementById('create-email').value || '').trim().toLowerCase();
             const fullName = (document.getElementById('create-fullname').value || '').trim();
             const password = document.getElementById('create-password').value;
             const role = document.getElementById('create-role').value;
@@ -1673,8 +2082,8 @@
             let valid = true;
             document.querySelectorAll('#create-user-modal .field-error').forEach(el => el.textContent = '');
 
-            if (!email || !email.endsWith('@dvconsulting.co.in')) {
-                document.getElementById('create-email-error').textContent = 'Email must end with @dvconsulting.co.in';
+            if (!createEmailVerified) {
+                document.getElementById('create-email-error').textContent = 'Please verify the email address first';
                 valid = false;
             }
             if (!fullName || fullName.length < 2) {
@@ -1710,18 +2119,42 @@
         });
 
         // ========================
-        // Edit User Credentials
+        // Edit User — Email Change OTP Protection
         // ========================
         let editUserId = null;
+        let editOriginalEmail = '';
+        let editEmailVerified = false;
+        let editEmailChanging = false;
+        let editOtpSending = false;
 
         function openEditUserModal(userId, email, fullName, role, globalPaymentAccess) {
             editUserId = userId;
+            editOriginalEmail = email || '';
+            editEmailVerified = false;
+            editEmailChanging = false;
+            editOtpSending = false;
+
             document.getElementById('edit-user-label').textContent = `Update credentials for "${email}".`;
             document.getElementById('edit-email').value = email || '';
+            document.getElementById('edit-email').disabled = true;
+            document.getElementById('edit-email').style.opacity = '0.6';
+            document.getElementById('edit-email').style.paddingRight = '36px';
             document.getElementById('edit-fullname').value = fullName || '';
             document.getElementById('edit-password').value = '';
             document.getElementById('edit-password').type = 'password';
             document.querySelectorAll('#edit-user-modal .field-error').forEach(el => el.textContent = '');
+
+            // Reset OTP state
+            document.getElementById('edit-otp-group').style.display = 'none';
+            document.getElementById('edit-email-verified').style.display = 'none';
+            document.getElementById('edit-send-otp-btn').style.display = 'none';
+            document.getElementById('edit-email-clear-btn').style.display = 'flex';
+            document.getElementById('edit-otp-input') && (document.getElementById('edit-otp-input').value = '');
+
+            const sendBtn = document.getElementById('edit-send-otp-btn');
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
 
             // Reset password visibility toggle icons
             const editPwBtn = document.querySelector('#edit-user-modal .password-toggle');
@@ -1744,9 +2177,139 @@
             document.getElementById('edit-user-modal').classList.add('open');
         }
 
+        function editEmailClearClick() {
+            // Show warning popup
+            document.getElementById('email-change-warning-modal').classList.add('open');
+        }
+
+        function cancelEmailChange() {
+            document.getElementById('email-change-warning-modal').classList.remove('open');
+        }
+
+        async function confirmEmailChange() {
+            document.getElementById('email-change-warning-modal').classList.remove('open');
+
+            // Check Gmail credentials first
+            const gmailOk = await checkGmailCredentials();
+            if (!gmailOk) {
+                showToast('Gmail credentials are not configured. Please configure them in Email Settings → Credentials tab.', 'error');
+                return;
+            }
+
+            // Enable email field for editing
+            editEmailChanging = true;
+            const emailInput = document.getElementById('edit-email');
+            emailInput.disabled = false;
+            emailInput.style.opacity = '1';
+            emailInput.value = '';
+            emailInput.placeholder = 'Enter new email address';
+            emailInput.style.paddingRight = '8px';
+            emailInput.focus();
+
+            // Hide the X button, show Send OTP button
+            document.getElementById('edit-email-clear-btn').style.display = 'none';
+            const sendBtn = document.getElementById('edit-send-otp-btn');
+            sendBtn.style.display = '';
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+
+            // Add input listener for email validation
+            emailInput.oninput = function () {
+                const val = (emailInput.value || '').trim();
+                const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
+                if (isValid) {
+                    sendBtn.disabled = false;
+                    sendBtn.style.opacity = '1';
+                    sendBtn.style.cursor = 'pointer';
+                } else {
+                    sendBtn.disabled = true;
+                    sendBtn.style.opacity = '0.5';
+                    sendBtn.style.cursor = 'not-allowed';
+                }
+                document.getElementById('edit-email-error').textContent = '';
+            };
+        }
+
+        async function editSendOTP() {
+            const email = (document.getElementById('edit-email').value || '').trim().toLowerCase();
+            if (!email || editOtpSending) return;
+
+            const sendBtn = document.getElementById('edit-send-otp-btn');
+            editOtpSending = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.style.opacity = '0.7';
+
+            try {
+                await api.post('/admin/send-otp', { email });
+                showToast('OTP sent to ' + email, 'success');
+
+                // Show OTP input
+                document.getElementById('edit-otp-group').style.display = 'block';
+                document.getElementById('edit-otp-input').value = '';
+                document.getElementById('edit-otp-input').focus();
+
+                // Disable email field while verifying
+                document.getElementById('edit-email').disabled = true;
+                sendBtn.textContent = 'OTP Sent';
+                sendBtn.style.opacity = '0.5';
+            } catch (err) {
+                showToast(err.message || 'Failed to send OTP', 'error');
+                sendBtn.textContent = 'Send OTP';
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+            } finally {
+                editOtpSending = false;
+            }
+        }
+
+        async function editVerifyOTP() {
+            const email = (document.getElementById('edit-email').value || '').trim().toLowerCase();
+            const otp = (document.getElementById('edit-otp-input').value || '').trim();
+
+            if (!otp || otp.length !== 4) {
+                document.getElementById('edit-otp-error').textContent = 'Please enter the 4-digit OTP';
+                return;
+            }
+
+            const verifyBtn = document.getElementById('edit-verify-otp-btn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                const res = await api.post('/admin/verify-otp', { email, otp });
+                if (res.verified) {
+                    editEmailVerified = true;
+
+                    // Hide OTP group
+                    document.getElementById('edit-otp-group').style.display = 'none';
+
+                    // Show verified indicator
+                    document.getElementById('edit-email-verified').style.display = 'flex';
+
+                    // Make email readonly with verified status
+                    document.getElementById('edit-email').disabled = true;
+                    document.getElementById('edit-email').style.opacity = '1';
+                    document.getElementById('edit-send-otp-btn').style.display = 'none';
+
+                    showToast('New email verified successfully!', 'success');
+                }
+            } catch (err) {
+                // Show error popup
+                document.getElementById('otp-error-message').textContent = err.message || 'OTP verification failed. Please try again.';
+                document.getElementById('otp-error-modal').classList.add('open');
+                createOtpErrorContext = 'edit';
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify';
+            }
+        }
+
         function closeEditUserModal() {
             document.getElementById('edit-user-modal').classList.remove('open');
             editUserId = null;
+            editEmailChanging = false;
+            editEmailVerified = false;
         }
 
         async function submitEditUser() {
@@ -1758,10 +2321,18 @@
             let valid = true;
             document.querySelectorAll('#edit-user-modal .field-error').forEach(el => el.textContent = '');
 
-            if (email && !email.endsWith('@dvconsulting.co.in')) {
-                document.getElementById('edit-email-error').textContent = 'Email must end with @dvconsulting.co.in';
-                valid = false;
+            // If email was changed, it must be verified
+            if (editEmailChanging && email !== editOriginalEmail.toLowerCase()) {
+                if (!editEmailVerified) {
+                    document.getElementById('edit-email-error').textContent = 'Please verify the new email address first';
+                    valid = false;
+                }
+                if (email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+                    document.getElementById('edit-email-error').textContent = 'Please enter a valid email address';
+                    valid = false;
+                }
             }
+
             if (password && password.length < 6) {
                 document.getElementById('edit-password-error').textContent = 'Password must be at least 6 characters';
                 valid = false;
@@ -1769,7 +2340,10 @@
             if (!valid) return;
 
             const updateData = {};
-            if (email) updateData.email = email;
+            // Only include email if it was changed and verified
+            if (editEmailChanging && email && email !== editOriginalEmail.toLowerCase()) {
+                updateData.email = email;
+            }
             if (fullName) updateData.full_name = fullName;
             if (password) updateData.password = password;
 
@@ -1803,6 +2377,12 @@
 
         document.getElementById('edit-user-modal').addEventListener('click', (e) => {
             if (e.target.id === 'edit-user-modal') closeEditUserModal();
+        });
+        document.getElementById('email-change-warning-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'email-change-warning-modal') cancelEmailChange();
+        });
+        document.getElementById('otp-error-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'otp-error-modal') closeOtpErrorModal();
         });
 
         // Tab switching
@@ -1877,6 +2457,7 @@
             try {
                 const data = await api.get('/email/settings');
                 const s = data.settings;
+                document.getElementById('email-sender-name').value = s.sender_name || '';
                 document.getElementById('email-sender').value = s.sender_email || '';
                 document.getElementById('email-client-id').value = s.gmail_client_id || '';
                 document.getElementById('email-client-secret').value = s.gmail_client_secret || '';
@@ -1960,7 +2541,7 @@
                             }
                         });
                     });
-                } catch(e) { /* silent — dots will just not show */ }
+                } catch (e) { /* silent — dots will just not show */ }
 
                 loading.style.display = 'none';
 
@@ -2436,7 +3017,7 @@
                             }
                         });
                     });
-                } catch(e) { /* silent */ }
+                } catch (e) { /* silent */ }
 
                 loading.style.display = 'none';
 
@@ -3029,6 +3610,7 @@
                     gmail_client_secret: document.getElementById('email-client-secret').value,
                     gmail_refresh_token: document.getElementById('email-refresh-token').value,
                     sender_email: document.getElementById('email-sender').value.trim(),
+                    sender_name: document.getElementById('email-sender-name').value.trim(),
                     cc_emails: document.getElementById('email-cc').value.trim(),
                 });
                 showToast('Credentials saved successfully', 'success');
@@ -3244,12 +3826,13 @@
             }
         }
 
-        function renderConsultants() {
+        function renderConsultants(consultantsToRender) {
             const tbody = document.getElementById('consultants-tbody');
             const empty = document.getElementById('consultants-empty');
             const table = document.getElementById('consultants-table');
+            const list = consultantsToRender || allConsultants;
 
-            if (allConsultants.length === 0) {
+            if (list.length === 0) {
                 table.style.display = 'none';
                 empty.style.display = 'block';
                 return;
@@ -3257,7 +3840,7 @@
             table.style.display = 'table';
             empty.style.display = 'none';
 
-            tbody.innerHTML = allConsultants.map(c => `
+            tbody.innerHTML = list.map(c => `
                 <tr>
                     <td>${c.id}</td>
                     <td><strong>${c.name}</strong></td>
@@ -3277,6 +3860,20 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function filterConsultantsTable() {
+            const query = (document.getElementById('consultants-search-input').value || '').trim().toLowerCase();
+            if (!query) {
+                renderConsultants(allConsultants);
+                return;
+            }
+            const filtered = allConsultants.filter(c => {
+                return (c.name || '').toLowerCase().includes(query)
+                    || (c.designation || '').toLowerCase().includes(query)
+                    || (c.email || '').toLowerCase().includes(query);
+            });
+            renderConsultants(filtered);
         }
 
         function openAddConsultantModal() {

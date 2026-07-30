@@ -1301,6 +1301,26 @@ h4 {
     color: var(--color-danger);
 }
 
+.list-remove-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.list-remove-btn:hover {
+    background: var(--color-danger-light);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
 .card-company {
     font-size: 1.05rem;
     font-weight: 600;
@@ -1360,8 +1380,8 @@ h4 {
 }
 
 .badge-terminated {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: #fef2f2;
+    color: #991b1b;
 }
 
 .badge-paid {
@@ -3107,6 +3127,7 @@ h4 {
     #edit-toggle-btn,
     .btn-mark-paid,
     .card-remove,
+    .list-remove-btn,
     .mobile-toggle,
     .btn-export {
         display: none !important;
@@ -4842,4 +4863,252 @@ tr.email-timed-out .company-email-input,
 tr.email-timed-out .email-action-btn,
 tr.email-timed-out .company-more-info-btn {
     pointer-events: none;
+}
+
+/* ============================================
+   Terminated Agreement Styles
+   ============================================ */
+
+/* Terminate Button — danger red, placed at bottom of agreement page */
+.btn-terminate {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    font-family: var(--font-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fff;
+    background: #dc2626;
+    border: 2px solid #dc2626;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    letter-spacing: 0.01em;
+}
+
+.btn-terminate:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-terminate:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+
+.btn-terminate svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Terminate Section wrapper */
+.terminate-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px dashed var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.terminate-section .terminate-hint {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    max-width: 500px;
+    line-height: 1.5;
+}
+
+/* Terminate Warning Modal */
+.terminate-warning-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 10010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+
+.terminate-warning-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.terminate-warning-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.25s ease;
+}
+
+.terminate-warning-overlay.open .terminate-warning-modal {
+    transform: scale(1);
+}
+
+.terminate-warning-icon {
+    width: 64px;
+    height: 64px;
+    background: #fef2f2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.terminate-warning-icon svg {
+    width: 32px;
+    height: 32px;
+    color: #dc2626;
+}
+
+.terminate-warning-modal h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #991b1b;
+    margin-bottom: 12px;
+}
+
+.terminate-warning-modal p {
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.terminate-warning-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.terminate-warning-actions .btn-terminate-confirm {
+    padding: 10px 24px;
+    font-family: var(--font-primary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #fff;
+    background: #dc2626;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.terminate-warning-actions .btn-terminate-confirm:hover {
+    background: #b91c1c;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+
+/* Terminated Banner — shown at top of agreement page when terminated */
+.terminated-banner {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1.5px solid #fca5a5;
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.terminated-banner-icon {
+    width: 42px;
+    height: 42px;
+    background: #dc2626;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.terminated-banner-icon svg {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+}
+
+.terminated-banner-text h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #991b1b;
+    margin-bottom: 2px;
+}
+
+.terminated-banner-text p {
+    font-size: 0.82rem;
+    color: #b91c1c;
+    line-height: 1.45;
+}
+
+/* Faded styling for terminated agreement cards on dashboard */
+.agreement-card.terminated-card {
+    opacity: 0.45;
+    position: relative;
+    border-color: #fca5a5;
+    background: #fffbfb;
+}
+
+.agreement-card.terminated-card:hover {
+    opacity: 0.7;
+    border-color: #f87171;
+}
+
+/* Faded styling for terminated agreement rows in list view */
+tr.terminated-row {
+    opacity: 0.45;
+}
+
+tr.terminated-row:hover {
+    opacity: 0.7;
+}
+
+/* Faded styling for terminated payment rows */
+tr.payment-row-terminated {
+    opacity: 0.4;
+    text-decoration: line-through;
+    color: var(--color-text-muted) !important;
+}
+
+tr.payment-row-terminated td {
+    color: var(--color-text-muted) !important;
+}
+
+/* Terminated label shown next to company name in payments */
+.terminated-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #991b1b;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Large badge for agreement overview — terminated */
+.badge-lg.badge-terminated-lg {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
 }

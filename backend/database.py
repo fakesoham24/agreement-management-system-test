@@ -294,6 +294,12 @@ def init_db():
         except Exception:
             pass  # Column already exists
 
+    # Migrate email_settings — add sender_name column (display name for From header)
+    try:
+        cursor.execute("ALTER TABLE email_settings ADD COLUMN sender_name TEXT")
+    except Exception:
+        pass  # Column already exists
+
     # Migrate email_log — add email_type column to distinguish client vs consultant emails
     try:
         cursor.execute("ALTER TABLE email_log ADD COLUMN email_type TEXT DEFAULT 'client'")

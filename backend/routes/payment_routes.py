@@ -22,7 +22,7 @@ def get_payments_summary(
     if current_user["role"] == "admin" or current_user.get("global_payment_access"):
         query = """
             SELECT p.id as payment_id, p.agreement_id, p.due_date, p.amount, p.status, p.paid_at,
-                   aa.company_name, aa.currency, aa.payment_plans
+                   aa.company_name, aa.currency, aa.payment_plans, a.status as agreement_status
             FROM payments p
             JOIN agreements a ON p.agreement_id = a.id
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
@@ -32,7 +32,7 @@ def get_payments_summary(
     else:
         query = """
             SELECT p.id as payment_id, p.agreement_id, p.due_date, p.amount, p.status, p.paid_at,
-                   aa.company_name, aa.currency, aa.payment_plans
+                   aa.company_name, aa.currency, aa.payment_plans, a.status as agreement_status
             FROM payments p
             JOIN agreements a ON p.agreement_id = a.id
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
@@ -60,6 +60,7 @@ def get_payments_summary(
             "gst": 0,
             "tds": 0,
             "net": row_dict["amount"],
+            "agreement_status": row_dict.get("agreement_status") or "active",
         }
 
         # Try to match with payment_plans to get plan name, GST, TDS, NET
@@ -152,7 +153,7 @@ def get_upcoming_payments(
             FROM payments p
             JOIN agreements a ON p.agreement_id = a.id
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
-            WHERE p.status = 'pending' AND p.due_date BETWEEN ? AND ?
+            WHERE p.status = 'pending' AND a.status NOT IN ('terminated') AND p.due_date BETWEEN ? AND ?
             ORDER BY p.due_date ASC
         """
         params = [start_str, end_str]
@@ -163,7 +164,7 @@ def get_upcoming_payments(
             FROM payments p
             JOIN agreements a ON p.agreement_id = a.id
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
-            WHERE a.user_id = ? AND p.status = 'pending' AND p.due_date BETWEEN ? AND ?
+            WHERE a.user_id = ? AND p.status = 'pending' AND a.status NOT IN ('terminated') AND p.due_date BETWEEN ? AND ?
             ORDER BY p.due_date ASC
         """
         params = [current_user["id"], start_str, end_str]

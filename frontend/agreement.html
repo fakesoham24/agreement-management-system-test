@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Agreement Analysis — Deep analysis, timeline, payment structure, and legal clauses">
+    <meta name="description"
+        content="Agreement Analysis — Deep analysis, timeline, payment structure, and legal clauses">
     <title>Agreement Analysis — Agreement Management</title>
     <link rel="icon" type="image/webp" href="/static/favicon.webp">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body>
     <div class="app-shell">
         <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
@@ -15,31 +18,43 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <img src="/static/logo.webp" alt="D&amp;V Business Consulting" style="
-    width: 169px;
-    height: 81px;
-">
+                <img src="/static/logo.webp" alt="D&amp;V Business Consulting" style="width: 169px;height: 81px;">
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="nav-section-title">Main</div>
                     <a class="nav-item" href="/dashboard">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg>
                         Dashboard
                     </a>
                     <a class="nav-item" href="/payments">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                        </svg>
                         Payments
                     </a>
                     <a class="nav-item" href="/renewals">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115.36-6.36L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15.36 6.36L3 16"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M21 2v6h-6" />
+                            <path d="M3 12a9 9 0 0115.36-6.36L21 8" />
+                            <path d="M3 22v-6h6" />
+                            <path d="M21 12a9 9 0 01-15.36 6.36L3 16" />
+                        </svg>
                         Renewals
                     </a>
                 </div>
                 <div class="nav-section" id="admin-nav-section" style="display:none">
                     <div class="nav-section-title">Administration</div>
                     <a class="nav-item" href="/admin">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
                         Admin Panel
                     </a>
                 </div>
@@ -52,7 +67,12 @@
                         <div class="user-role" id="user-role">User</div>
                     </div>
                     <button class="btn-ghost btn-icon" onclick="Auth.logout()" title="Logout">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:18px;height:18px">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -63,21 +83,40 @@
             <header class="content-header">
                 <div style="display:flex;align-items:center;gap:12px">
                     <button class="mobile-toggle" onclick="toggleSidebar()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="width:20px;height:20px">
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
                     </button>
                     <h1 id="page-title">Agreement Analysis</h1>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-sm btn-outline" id="view-doc-btn" onclick="viewOriginalDocument()" title="View uploaded document in new tab">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <button class="btn btn-sm btn-outline" id="view-doc-btn" onclick="viewOriginalDocument()"
+                        title="View uploaded document in new tab">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:16px;height:16px">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
                         View Document
                     </button>
                     <button class="btn btn-sm btn-export" id="export-pdf-btn" onclick="exportPDF()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:16px;height:16px">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
                         Export PDF
                     </button>
                     <button class="btn btn-secondary btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:16px;height:16px">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
                         Edit Details
                     </button>
                 </div>
@@ -85,7 +124,10 @@
 
             <div class="content-body">
                 <a href="/dashboard" class="back-link">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        style="width:16px;height:16px">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
                     Back to Dashboard
                 </a>
 
@@ -96,6 +138,19 @@
 
                 <!-- Detail Content -->
                 <div id="detail-content" style="display:none">
+                    <!-- Terminated Banner (shown when agreement is terminated) -->
+                    <div id="terminated-banner" class="terminated-banner" style="display:none">
+                        <div class="terminated-banner-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </div>
+                        <div class="terminated-banner-text">
+                            <h4>Agreement Terminated</h4>
+                            <p>This agreement has been terminated. All payments, emails, and renewals have been stopped.
+                            </p>
+                        </div>
+                    </div>
                     <div class="detail-grid">
 
                         <!-- ======================== -->
@@ -104,7 +159,11 @@
                         <div class="detail-section detail-section-full" id="section-overview">
                             <div class="section-title">
                                 <div class="section-icon-badge blue">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                        <path d="M14 2v6h6" />
+                                        <path d="M16 13H8M16 17H8M10 9H8" />
+                                    </svg>
                                 </div>
                                 Agreement Overview
                             </div>
@@ -162,7 +221,11 @@
                         <div class="detail-section" id="section-company">
                             <div class="section-title">
                                 <div class="section-icon-badge green">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <rect x="4" y="2" width="16" height="20" rx="1" />
+                                        <path d="M9 22v-4h6v4" />
+                                        <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+                                    </svg>
                                 </div>
                                 Company Information
                             </div>
@@ -195,7 +258,12 @@
                         <div class="detail-section" id="section-timeline">
                             <div class="section-title">
                                 <div class="section-icon-badge amber">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                                        <line x1="16" y1="2" x2="16" y2="6" />
+                                        <line x1="8" y1="2" x2="8" y2="6" />
+                                        <line x1="3" y1="10" x2="21" y2="10" />
+                                    </svg>
                                 </div>
                                 Agreement Timeline
                             </div>
@@ -208,7 +276,10 @@
                         <div class="detail-section detail-section-full" id="section-payment">
                             <div class="section-title">
                                 <div class="section-icon-badge purple">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <line x1="12" y1="1" x2="12" y2="23" />
+                                        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                                    </svg>
                                 </div>
                                 Payment Structure
                             </div>
@@ -241,11 +312,17 @@
                         <div class="detail-section detail-section-full" id="section-note" style="display:none">
                             <div class="section-title">
                                 <div class="section-icon-badge amber">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                        <path d="M14 2v6h6" />
+                                        <path d="M16 13H8M16 17H8M10 9H8" />
+                                    </svg>
                                 </div>
                                 Note
                             </div>
-                            <div id="note-content" class="note-section-content" style="white-space: pre-wrap; font-size: 0.88rem; line-height: 1.6; color: var(--color-text-primary)"></div>
+                            <div id="note-content" class="note-section-content"
+                                style="white-space: pre-wrap; font-size: 0.88rem; line-height: 1.6; color: var(--color-text-primary)">
+                            </div>
                         </div>
 
                         <!-- ======================== -->
@@ -254,7 +331,11 @@
                         <div class="detail-section" id="section-visits">
                             <div class="section-title">
                                 <div class="section-icon-badge teal">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                                    </svg>
                                 </div>
                                 Consulting Visit Schedule
                             </div>
@@ -272,14 +353,27 @@
                             </div>
 
                             <!-- Assigned Consultants -->
-                            <div id="assigned-consultants-section" style="display:none;margin-top:20px;padding-top:16px;border-top:1px solid var(--color-border)">
-                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                                    <h4 style="font-size:0.9rem;font-weight:600;color:var(--color-text-primary);display:flex;align-items:center;gap:8px">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" style="width:16px;height:16px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                            <div id="assigned-consultants-section"
+                                style="display:none;margin-top:20px;padding-top:16px;border-top:1px solid var(--color-border)">
+                                <div
+                                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                                    <h4
+                                        style="font-size:0.9rem;font-weight:600;color:var(--color-text-primary);display:flex;align-items:center;gap:8px">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)"
+                                            stroke-width="1.8" style="width:16px;height:16px">
+                                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                            <circle cx="9" cy="7" r="4" />
+                                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                                        </svg>
                                         Assigned Consultants
                                     </h4>
-                                    <button class="btn btn-sm btn-secondary" onclick="openUpdateConsultantPopup()" title="Update consultant assignments">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    <button class="btn btn-sm btn-secondary" onclick="openUpdateConsultantPopup()"
+                                        title="Update consultant assignments">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                            style="width:14px;height:14px">
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
                                         Update Team
                                     </button>
                                 </div>
@@ -293,7 +387,9 @@
                         <div class="detail-section" id="section-legal">
                             <div class="section-title">
                                 <div class="section-icon-badge red">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                    </svg>
                                 </div>
                                 Legal Clauses
                             </div>
@@ -306,7 +402,11 @@
                         <div class="detail-section detail-section-full" id="section-services">
                             <div class="section-title">
                                 <div class="section-icon-badge teal">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                                        <rect x="9" y="3" width="6" height="4" rx="1" />
+                                        <path d="M9 14l2 2 4-4" />
+                                    </svg>
                                 </div>
                                 Services Provided
                             </div>
@@ -331,7 +431,11 @@
                     <div id="edit-form" style="display:none; margin-top:24px">
                         <div class="detail-section detail-section-full">
                             <div class="section-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px;color:var(--color-accent)"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    style="width:18px;height:18px;color:var(--color-accent)">
+                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
                                 Edit Agreement Details
                             </div>
 
@@ -383,17 +487,20 @@
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
                                 <div class="form-group">
                                     <label>Email</label>
-                                    <input type="email" class="form-input" id="edit-email" onblur="validateField('email')">
+                                    <input type="email" class="form-input" id="edit-email"
+                                        onblur="validateField('email')">
                                     <span class="field-error" id="error-email"></span>
                                 </div>
                                 <div class="form-group">
                                     <label>Phone</label>
-                                    <input type="tel" class="form-input" id="edit-phone" onblur="validateField('phone')">
+                                    <input type="tel" class="form-input" id="edit-phone"
+                                        onblur="validateField('phone')">
                                     <span class="field-error" id="error-phone"></span>
                                 </div>
                                 <div class="form-group">
                                     <label>Alternate Contact (Phone)</label>
-                                    <input type="tel" class="form-input" id="edit-alt-contact" onblur="validateField('alt-contact')">
+                                    <input type="tel" class="form-input" id="edit-alt-contact"
+                                        onblur="validateField('alt-contact')">
                                     <span class="field-error" id="error-alt-contact"></span>
                                 </div>
                             </div>
@@ -484,33 +591,63 @@
                                     <tbody id="edit-payment-tbody"></tbody>
                                 </table>
                             </div>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="addPaymentPlanRow()" style="margin-top:8px">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addPaymentPlanRow()"
+                                style="margin-top:8px">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
                                 Add Payment Plan
                             </button>
 
                             <!-- Services -->
                             <div class="edit-section-title">Services Provided</div>
                             <div id="edit-services-container"></div>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="addServiceRow()" style="margin-top:8px">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addServiceRow()"
+                                style="margin-top:8px">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
                                 Add Service
                             </button>
 
                             <!-- Note -->
                             <div class="edit-section-title">Note</div>
                             <div class="form-group">
-                                <textarea class="form-input" id="edit-note" rows="3" placeholder="Additional notes about payment structure..." style="resize:vertical;min-height:80px"></textarea>
+                                <textarea class="form-input" id="edit-note" rows="3"
+                                    placeholder="Additional notes about payment structure..."
+                                    style="resize:vertical;min-height:80px"></textarea>
                             </div>
 
                             <div class="edit-controls">
                                 <button class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
                                 <button class="btn btn-primary" onclick="saveAnalysis()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                        style="width:16px;height:16px">
+                                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                                        <polyline points="17 21 17 13 7 13 7 21" />
+                                        <polyline points="7 3 7 8 15 8" />
+                                    </svg>
                                     Save Changes
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Terminate Agreement Section (at bottom) -->
+                    <div id="terminate-section" class="terminate-section" style="display:none">
+                        <button class="btn-terminate" id="terminate-btn" onclick="showTerminateWarning()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                                <circle cx="12" cy="12" r="10" />
+                            </svg>
+                            Terminate Agreement
+                        </button>
+                        <p class="terminate-hint">Terminating this agreement will permanently stop all payments, email
+                            reminders, and renewals. This action cannot be undone.</p>
                     </div>
                 </div>
             </div>
@@ -521,29 +658,65 @@
     <div class="modal-overlay" id="consultant-assign-modal">
         <div class="modal" style="max-width:520px">
             <h3 class="modal-title" style="display:flex;align-items:center;gap:10px">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" style="width:22px;height:22px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8"
+                    style="width:22px;height:22px">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                </svg>
                 Assign Consulting Team
             </h3>
             <div class="modal-body">
-                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem" id="consultant-assign-desc">
-                    Select the consultants responsible for this agreement. This is required before viewing agreement details.
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem"
+                    id="consultant-assign-desc">
+                    Select the consultants responsible for this agreement. This is required before viewing agreement
+                    details.
                 </p>
                 <div id="consultant-checklist" class="consultant-checklist">
                     <div style="text-align:center;padding:20px;color:var(--color-text-muted)">
-                        <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div>
+                        <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px">
+                        </div>
                         Loading consultants...
                     </div>
                 </div>
-                <div id="consultant-assign-empty" style="display:none;text-align:center;padding:24px;color:var(--color-text-muted);font-size:0.85rem">
+                <div id="consultant-assign-empty"
+                    style="display:none;text-align:center;padding:24px;color:var(--color-text-muted);font-size:0.85rem">
                     No consultants available. Please ask an admin to add consultant persons first.
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-secondary" id="consultant-cancel-btn" style="display:none" onclick="closeConsultantPopup()">Cancel</button>
-                <button class="btn btn-primary" id="consultant-assign-btn" onclick="submitConsultantAssignment()" disabled>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg>
+                <button class="btn btn-secondary" id="consultant-cancel-btn" style="display:none"
+                    onclick="closeConsultantPopup()">Cancel</button>
+                <button class="btn btn-primary" id="consultant-assign-btn" onclick="submitConsultantAssignment()"
+                    disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:15px;height:15px">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
                     Assign Consultants
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terminate Warning Modal -->
+    <div class="terminate-warning-overlay" id="terminate-warning-modal">
+        <div class="terminate-warning-modal">
+            <div class="terminate-warning-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+            </div>
+            <h3>Terminate Agreement?</h3>
+            <p>Are you sure you want to terminate this agreement? This will <strong>permanently stop</strong> all
+                payments, email reminders, and renewals for this company. This action <strong>cannot be undone</strong>.
+            </p>
+            <div class="terminate-warning-actions">
+                <button class="btn btn-secondary" onclick="closeTerminateWarning()">Cancel</button>
+                <button class="btn-terminate-confirm" id="terminate-confirm-btn" onclick="confirmTerminate()">OK,
+                    Terminate</button>
             </div>
         </div>
     </div>
@@ -609,6 +782,9 @@
 
                 // Check consultant assignment for active agreements
                 await checkConsultantAssignment();
+
+                // Update termination UI (button/banner state)
+                updateTerminateUI();
             } catch (err) {
                 showToast(err.message, 'error');
                 document.getElementById('loading-state').innerHTML = `<p style="color:var(--color-danger)">${err.message}</p>`;
@@ -630,6 +806,8 @@
                 badges.push(`<span class="badge-lg badge-expired"><span class="badge-dot"></span> Expired</span>`);
             } else if (status === 'pending') {
                 badges.push(`<span class="badge-lg badge-pending"><span class="badge-dot"></span> Pending</span>`);
+            } else if (status === 'terminated') {
+                badges.push(`<span class="badge-lg badge-terminated-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><path d="M18 6L6 18M6 6l12 12"/></svg> Terminated</span>`);
             }
 
             const expiryDate = analysisData.expiry_date;
@@ -1014,6 +1192,10 @@
                 form.style.display = 'block';
                 btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M18 6L6 18M6 6l12 12"/></svg> Cancel Edit`;
 
+                // Hide terminate section while editing to prevent accidental clicks
+                const terminateSection = document.getElementById('terminate-section');
+                if (terminateSection) terminateSection.style.display = 'none';
+
                 // Clear validation errors
                 document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
                 document.querySelectorAll('.form-input.input-error').forEach(el => el.classList.remove('input-error'));
@@ -1054,6 +1236,9 @@
             } else {
                 form.style.display = 'none';
                 btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Details`;
+
+                // Restore terminate section visibility based on agreement status
+                updateTerminateUI();
             }
         }
 
@@ -1504,7 +1689,7 @@
                     try {
                         const err = await response.json();
                         errMsg = err.detail || errMsg;
-                    } catch (e) {}
+                    } catch (e) { }
                     throw new Error(errMsg);
                 }
                 const blob = await response.blob();
@@ -1691,6 +1876,63 @@
         // Init
         initUI();
         loadAgreement();
+
+        // ========================
+        // Terminate Agreement Logic
+        // ========================
+        function updateTerminateUI() {
+            const status = (agreementData && agreementData.status || '').toLowerCase();
+            const isTerminated = status === 'terminated';
+
+            // Show/hide terminate button
+            const terminateSection = document.getElementById('terminate-section');
+            if (terminateSection) {
+                terminateSection.style.display = isTerminated ? 'none' : 'flex';
+            }
+
+            // Show/hide terminated banner
+            const banner = document.getElementById('terminated-banner');
+            if (banner) {
+                banner.style.display = isTerminated ? 'flex' : 'none';
+            }
+
+            // If terminated, disable edit button
+            if (isTerminated) {
+                const editBtn = document.getElementById('edit-toggle-btn');
+                if (editBtn) {
+                    editBtn.style.display = 'none';
+                }
+            }
+        }
+
+        function showTerminateWarning() {
+            const modal = document.getElementById('terminate-warning-modal');
+            modal.classList.add('open');
+        }
+
+        function closeTerminateWarning() {
+            const modal = document.getElementById('terminate-warning-modal');
+            modal.classList.remove('open');
+        }
+
+        async function confirmTerminate() {
+            const btn = document.getElementById('terminate-confirm-btn');
+            btn.disabled = true;
+            btn.textContent = 'Terminating...';
+
+            try {
+                const result = await api.put(`/agreements/${agreementId}/terminate`);
+                showToast(result.message || 'Agreement terminated successfully.', 'success');
+                closeTerminateWarning();
+                // Reload to reflect changes
+                setTimeout(() => window.location.href = '/dashboard', 1200);
+            } catch (err) {
+                showToast(err.message || 'Failed to terminate agreement.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'OK, Terminate';
+            }
+        }
     </script>
 </body>
+
 </html>

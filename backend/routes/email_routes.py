@@ -107,6 +107,7 @@ class CredentialsUpdate(BaseModel):
     gmail_client_secret: Optional[str] = None  # Plain text — will be encrypted
     gmail_refresh_token: Optional[str] = None   # Plain text — will be encrypted
     sender_email: Optional[str] = None
+    sender_name: Optional[str] = None           # Display name for From header
     cc_emails: Optional[str] = None
 
 
@@ -170,6 +171,7 @@ def get_email_settings(
             "gmail_client_secret": ("•" * 20 + client_secret[-4:]) if len(client_secret) > 4 else "",
             "gmail_refresh_token": ("•" * 20 + refresh_token[-4:]) if len(refresh_token) > 4 else "",
             "sender_email": s.get("sender_email") or "",
+            "sender_name": s.get("sender_name") or "",
             "cc_emails": s.get("cc_emails") or "",
             "email_subject": s.get("email_subject") or "Payment Reminder — {{company_name}}",
             "email_template_type": s.get("email_template_type") or "text",
@@ -216,6 +218,7 @@ def update_credentials(
                 gmail_client_secret_encrypted = ?,
                 gmail_refresh_token_encrypted = ?,
                 sender_email = ?,
+                sender_name = ?,
                 cc_emails = ?,
                 updated_at = ?
             WHERE id = ?
@@ -224,6 +227,7 @@ def update_credentials(
             encrypted_secret,
             encrypted_token,
             data.sender_email or "",
+            data.sender_name or "",
             data.cc_emails or "",
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             existing["id"]
@@ -232,14 +236,15 @@ def update_credentials(
         cursor.execute("""
             INSERT INTO email_settings (
                 gmail_client_id, gmail_client_secret_encrypted, gmail_refresh_token_encrypted,
-                sender_email, cc_emails, email_subject, email_template_type, email_template,
+                sender_email, sender_name, cc_emails, email_subject, email_template_type, email_template,
                 email_template_html, is_enabled, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             data.gmail_client_id or "",
             encrypted_secret,
             encrypted_token,
             data.sender_email or "",
+            data.sender_name or "",
             data.cc_emails or "",
             "Payment Reminder — {{company_name}}",
             "text",
@@ -425,7 +430,7 @@ def get_companies_for_email(
         JOIN agreements a ON p.agreement_id = a.id
         LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
         WHERE p.status = 'pending'
-          AND a.status != 'expired'
+          AND a.status NOT IN ('expired', 'terminated')
           AND p.due_date >= ? AND p.due_date < ?
         ORDER BY p.due_date ASC
     """, (date_start, date_end)).fetchall()
@@ -509,7 +514,7 @@ def get_companies_for_email(
         SELECT DISTINCT CAST(strftime('%Y', p.due_date) AS INTEGER) AS yr
         FROM payments p
         JOIN agreements a ON p.agreement_id = a.id
-        WHERE p.status = 'pending' AND a.status != 'expired'
+        WHERE p.status = 'pending' AND a.status NOT IN ('expired', 'terminated')
         ORDER BY yr
     """).fetchall()
     available_years = [dict(r)["yr"] for r in all_years_rows if dict(r)["yr"]]
@@ -550,6 +555,8 @@ def send_emails_to_companies(
     client_secret = decrypt_value(s.get("gmail_client_secret_encrypted") or "")
     refresh_token = decrypt_value(s.get("gmail_refresh_token_encrypted") or "")
     sender_email = s.get("sender_email") or ""
+    sender_name = s.get("sender_name") or ""
+    sender_from = f"{sender_name} <{sender_email}>" if sender_name else sender_email
 
     if not all([client_id, client_secret, refresh_token, sender_email]):
         raise HTTPException(status_code=400, detail="Gmail credentials are incomplete. Please fill in all credential fields.")
@@ -717,7 +724,7 @@ def send_emails_to_companies(
 
         # Send email with proforma attachment (always HTML now due to tracking pixel)
         result = send_email(
-            sender=sender_email,
+            sender=sender_from,
             to=recipient_email,
             subject=email_subject,
             body=email_body_with_pixel,
@@ -773,6 +780,8 @@ def send_test_email(
     client_secret = decrypt_value(s.get("gmail_client_secret_encrypted") or "")
     refresh_token = decrypt_value(s.get("gmail_refresh_token_encrypted") or "")
     sender_email = s.get("sender_email") or ""
+    sender_name = s.get("sender_name") or ""
+    sender_from = f"{sender_name} <{sender_email}>" if sender_name else sender_email
 
     if not all([client_id, client_secret, refresh_token, sender_email]):
         raise HTTPException(status_code=400, detail="Gmail credentials are incomplete. Please fill in all fields.")
@@ -816,7 +825,7 @@ def send_test_email(
     cc = sf.get("cc_emails") or ""
 
     result = send_email(
-        sender=sender_email,
+        sender=sender_from,
         to=data.recipient_email.strip(),
         subject=f"[TEST] {subject}",
         body=body,
@@ -1399,6 +1408,8 @@ def send_emails_to_consultants(
     client_secret = decrypt_value(s.get("gmail_client_secret_encrypted") or "")
     refresh_token = decrypt_value(s.get("gmail_refresh_token_encrypted") or "")
     sender_email = s.get("sender_email") or ""
+    sender_name = s.get("sender_name") or ""
+    sender_from = f"{sender_name} <{sender_email}>" if sender_name else sender_email
 
     if not all([client_id, client_secret, refresh_token, sender_email]):
         raise HTTPException(status_code=400, detail="Gmail credentials are incomplete. Please fill in all credential fields.")
@@ -1568,7 +1579,7 @@ def send_emails_to_consultants(
 
             # Send email (no CC for consultant reminders, always HTML due to pixel)
             result = send_email(
-                sender=sender_email,
+                sender=sender_from,
                 to=recipient_email,
                 subject=email_subject,
                 body=email_body_with_pixel,
@@ -2199,6 +2210,8 @@ def send_thankyou_email(
     client_secret = decrypt_value(s.get("gmail_client_secret_encrypted") or "")
     refresh_token = decrypt_value(s.get("gmail_refresh_token_encrypted") or "")
     sender_email = s.get("sender_email") or ""
+    sender_name = s.get("sender_name") or ""
+    sender_from = f"{sender_name} <{sender_email}>" if sender_name else sender_email
 
     if not all([client_id, client_secret, refresh_token, sender_email]):
         return {"status": "failed", "error": "Gmail credentials are incomplete"}
@@ -2248,7 +2261,7 @@ def send_thankyou_email(
 
     # Send email
     result = send_email(
-        sender=sender_email,
+        sender=sender_from,
         to=recipient_email,
         subject=email_subject,
         body=email_body,

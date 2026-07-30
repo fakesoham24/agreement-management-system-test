@@ -107,6 +107,7 @@
                         <button class="filter-tab" data-filter="active">Active</button>
                         <button class="filter-tab" data-filter="pending">Pending</button>
                         <button class="filter-tab" data-filter="expired">Expired</button>
+                        <button class="filter-tab" data-filter="terminated">Terminated</button>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px">
                         <div class="view-toggle" id="dashboard-view-toggle">
@@ -141,6 +142,7 @@
                                     <th>End Date</th>
                                     <th>Total Amount</th>
                                     <th>Paid Amount</th>
+                                    <th style="width:50px"></th>
                                 </tr>
                             </thead>
                             <tbody id="agreements-list-tbody"></tbody>
@@ -662,14 +664,20 @@
 
                     const currency = a.currency || '₹';
 
+                    const isTerminated = a.status === 'terminated';
                     return `
-                        <tr onclick="window.location.href='/agreement/${a.id}'" style="cursor:pointer">
+                        <tr class="${isTerminated ? 'terminated-row' : ''}" onclick="window.location.href='/agreement/${a.id}'" style="cursor:pointer">
                             <td class="plan-name">${a.company_name || a.file_name || 'Unnamed Agreement'}</td>
                             <td>${statusBadge(a.status)}</td>
                             <td>${formatDate(a.effective_date)}</td>
                             <td>${formatDate(a.expiry_date)}</td>
                             <td><strong>${totalAmount > 0 ? formatCurrency(totalAmount, currency) : '—'}</strong></td>
                             <td style="color:${paidAmount > 0 ? 'var(--color-success)' : 'var(--color-text-muted)'}">${paidAmount > 0 ? formatCurrency(paidAmount, currency) : '—'}</td>
+                            <td>
+                                <button class="list-remove-btn" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                </button>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -694,8 +702,10 @@
 
                     const currency = a.currency || '₹';
 
+                    const isTerminated = a.status === 'terminated';
+
                     return `
-                    <div class="agreement-card" onclick="window.location.href='/agreement/${a.id}'">
+                    <div class="agreement-card ${isTerminated ? 'terminated-card' : ''}" onclick="window.location.href='/agreement/${a.id}'">
                         ${a.is_viewed === 0 ? '<div class="badge-new">New</div>' : ''}
                         <button class="card-remove" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>

@@ -150,6 +150,13 @@
                         Payment due dates will be calculated at regular intervals (monthly/quarterly) from this date.
                     </span>
                 </div>
+                <div class="form-group" style="margin-bottom:16px">
+                    <label style="font-weight:600;margin-bottom:6px;display:block">Increment Percentage (%)</label>
+                    <input type="number" class="form-input" id="renewal-increment-percent" step="0.01" min="0" max="100" value="10.00" style="font-size:0.95rem;padding:10px 12px">
+                    <span style="font-size:0.78rem;color:var(--color-text-muted);margin-top:6px;display:block">
+                        The percentage increase to apply to the current fee upon renewal. Default is 10%.
+                    </span>
+                </div>
                 <div id="renewal-date-preview" style="display:none;padding:12px;background:var(--color-surface-secondary);border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:8px">
                     <div style="font-size:0.78rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:4px">Preview</div>
                     <div style="font-size:0.85rem;color:var(--color-text-primary)" id="renewal-date-preview-text"></div>
@@ -334,9 +341,10 @@
             // Open the calendar modal instead of a simple confirm
             pendingRenewal = { agreementId, companyName, increasePercent };
             document.getElementById('renewal-date-description').innerHTML = 
-                `Renewing agreement with <strong>"${companyName}"</strong> with a <strong>${increasePercent}%</strong> fee increase.<br><br>` +
-                `Please select the renewal starting date. All payment due dates will be calculated from this date.`;
+                `Renewing agreement with <strong>"${companyName}"</strong>.<br><br>` +
+                `Please select the renewal starting date and adjust the fee increase percentage if needed.`;
             document.getElementById('renewal-start-date').value = '';
+            document.getElementById('renewal-increment-percent').value = (increasePercent || 10).toFixed(2);
             document.getElementById('renewal-date-approve-btn').disabled = true;
             document.getElementById('renewal-date-preview').style.display = 'none';
             document.getElementById('renewal-date-modal').classList.add('open');
@@ -348,25 +356,29 @@
         }
 
         // Enable approve button when date is selected + show preview
-        document.getElementById('renewal-start-date').addEventListener('change', function() {
-            const dateVal = this.value;
+        function updateRenewalPreview() {
+            const dateVal = document.getElementById('renewal-start-date').value;
+            const pctVal = parseFloat(document.getElementById('renewal-increment-percent').value) || 0;
             const approveBtn = document.getElementById('renewal-date-approve-btn');
             const preview = document.getElementById('renewal-date-preview');
             
             if (dateVal) {
                 approveBtn.disabled = false;
-                // Show a preview of the selected date
                 const d = new Date(dateVal);
                 const formatted = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 document.getElementById('renewal-date-preview-text').innerHTML = 
                     `<strong>Effective Date:</strong> ${formatted}<br>` +
+                    `<strong>Fee Increment:</strong> ${pctVal.toFixed(2)}%<br>` +
                     `<span style="font-size:0.78rem;color:var(--color-text-muted)">Due dates will be set at regular intervals (monthly/quarterly) starting from this date.</span>`;
                 preview.style.display = 'block';
             } else {
                 approveBtn.disabled = true;
                 preview.style.display = 'none';
             }
-        });
+        }
+
+        document.getElementById('renewal-start-date').addEventListener('change', updateRenewalPreview);
+        document.getElementById('renewal-increment-percent').addEventListener('input', updateRenewalPreview);
 
         // Close modal on outside click
         document.getElementById('renewal-date-modal').addEventListener('click', function(e) {
@@ -385,8 +397,9 @@
             btn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block"></div> Approving...';
 
             try {
+                const incrementPercent = parseFloat(document.getElementById('renewal-increment-percent').value) || 10;
                 const result = await api.put(`/renewals/${pendingRenewal.agreementId}/approve`, {
-                    renewal_increase_percent: pendingRenewal.increasePercent,
+                    renewal_increase_percent: incrementPercent,
                     renewal_start_date: dateVal
                 });
                 showToast(result.message, 'success');

@@ -922,7 +922,7 @@ def _auto_expire_agreements(cursor, db, agreements_list):
     changed = False
 
     for a in agreements_list:
-        if a.get("status") == "expired":
+        if a.get("status") in ("expired", "terminated"):
             continue
 
         end_date_str = a.get("expiry_date") or ""
@@ -1202,6 +1202,46 @@ def update_status(
     cursor.execute("UPDATE agreements SET status = ? WHERE id = ?", (data.status, agreement_id))
     db.commit()
     return {"message": "Status updated"}
+
+
+@router.put("/{agreement_id}/terminate")
+def terminate_agreement(
+    agreement_id: int,
+    current_user: dict = Depends(get_current_user),
+    db=Depends(get_db)
+):
+    """Terminate an agreement — stops all payments, emails, and renewals."""
+    cursor = db.cursor()
+    agreement = cursor.execute("SELECT * FROM agreements WHERE id = ?", (agreement_id,)).fetchone()
+
+    if not agreement:
+        raise HTTPException(status_code=404, detail="Agreement not found")
+    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    if agreement["status"] == "terminated":
+        raise HTTPException(status_code=400, detail="Agreement is already terminated")
+
+    # Set status to terminated
+    cursor.execute("UPDATE agreements SET status = 'terminated' WHERE id = ?", (agreement_id,))
+
+    # Create notification
+    analysis = cursor.execute(
+        "SELECT company_name FROM agreement_analysis WHERE agreement_id = ?", (agreement_id,)
+    ).fetchone()
+    company = analysis["company_name"] if analysis else "Unknown"
+
+    cursor.execute(
+        "INSERT INTO notifications (user_id, agreement_id, title, message, type) VALUES (?, ?, ?, ?, ?)",
+        (
+            current_user["id"], agreement_id,
+            "Agreement Terminated",
+            f"Agreement with {company} has been terminated. All payments, emails, and renewals for this agreement have been stopped.",
+            "warning"
+        )
+    )
+
+    db.commit()
+    return {"message": f"Agreement with {company} has been terminated successfully."}
 
 
 @router.delete("/{agreement_id}")

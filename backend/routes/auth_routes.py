@@ -6,9 +6,6 @@ import re
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
-# Allowed email domain — only emails from this domain can log in
-ALLOWED_EMAIL_DOMAIN = "@dvconsulting.co.in"
-
 
 class LoginRequest(BaseModel):
     email: str
@@ -26,13 +23,6 @@ class LoginRequest(BaseModel):
 @router.post("/login")
 def login(data: LoginRequest, db=Depends(get_db)):
     email = data.email.lower().strip()
-
-    # Enforce domain restriction
-    if not email.endswith(ALLOWED_EMAIL_DOMAIN):
-        raise HTTPException(
-            status_code=403,
-            detail=f"Access restricted to {ALLOWED_EMAIL_DOMAIN} email addresses only"
-        )
 
     cursor = db.cursor()
     user = cursor.execute(

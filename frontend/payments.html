@@ -306,13 +306,16 @@
 
         // Render summary cards
         function renderSummary(filtered) {
-            const monthTotal = filtered.reduce((sum, p) => sum + (p.amount || 0), 0);
-            const monthPaid = filtered.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
-            const monthPending = filtered.filter(p => p.status !== 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
+            // Exclude only pending payments from terminated agreements (paid ones still count)
+            const activeFiltered = filtered.filter(p => !((p.agreement_status || 'active') === 'terminated' && p.status !== 'paid'));
+            const monthTotal = activeFiltered.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const monthPaid = activeFiltered.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
+            const monthPending = activeFiltered.filter(p => p.status !== 'paid').reduce((sum, p) => sum + (p.amount || 0), 0);
 
             // Year total (all months)
             const yearPayments = allPayments.filter(p => {
                 if (!p.due_date) return false;
+                if ((p.agreement_status || 'active') === 'terminated' && p.status !== 'paid') return false;
                 try { return new Date(p.due_date).getFullYear() === selectedYear; } catch(e) { return false; }
             });
             const yearTotal = yearPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -378,17 +381,21 @@
             let totalAmount = 0, totalGst = 0, totalTds = 0, totalNet = 0;
 
             const rows = filtered.map(p => {
+                const isTerminated = (p.agreement_status || 'active') === 'terminated';
+                const isPaid = p.status === 'paid';
                 const amount = p.amount || 0;
                 const gst = p.gst || 0;
                 const tds = p.tds || 0;
                 const net = p.net || amount;
-                totalAmount += amount;
-                totalGst += gst;
-                totalTds += tds;
-                totalNet += net;
+                // Only add to totals if not terminated, or if terminated but paid
+                if (!isTerminated || isPaid) {
+                    totalAmount += amount;
+                    totalGst += gst;
+                    totalTds += tds;
+                    totalNet += net;
+                }
 
                 const currency = p.currency || '₹';
-                const isPaid = p.status === 'paid';
 
                 const statusHtml = isPaid
                     ? `<span class="badge badge-paid">Paid</span>`
@@ -409,12 +416,17 @@
                     : `<button class="btn-mark-paid" onclick="markPaymentPaid(${p.payment_id}, event)">Mark Paid</button>`;
 
                 // Company name cell: clickable for admin/regular users, plain text for HR users
+                const terminatedLabel = isTerminated ? '<span class="terminated-label">Terminated</span>' : '';
                 const companyTd = isHrUser
-                    ? `<td class="plan-name" style="cursor:default;color:var(--color-text-primary)">${p.company_name}</td>`
-                    : `<td class="plan-name" onclick="window.location.href='/agreement/${p.agreement_id}'" style="cursor:pointer">${p.company_name}</td>`;
+                    ? `<td class="plan-name" style="cursor:default;color:var(--color-text-primary)">${p.company_name}${terminatedLabel}</td>`
+                    : `<td class="plan-name" onclick="window.location.href='/agreement/${p.agreement_id}'" style="cursor:pointer">${p.company_name}${terminatedLabel}</td>`;
+
+                const actionHtmlFinal = isTerminated
+                    ? `<span style="color:var(--color-text-muted);font-size:0.78rem">—</span>`
+                    : actionHtml;
 
                 return `
-                    <tr>
+                    <tr class="${isTerminated ? 'payment-row-terminated' : ''}">
                         ${companyTd}
                         <td>AG-${String(p.agreement_id).padStart(4, '0')}</td>
                         <td>${p.plan_name || '\u2014'}</td>
@@ -425,7 +437,7 @@
                         <td>${formatDate(p.due_date)}</td>
                         <td>${statusHtml}</td>
                         ${emailHtml}
-                        <td>${actionHtml}</td>
+                        <td>${actionHtmlFinal}</td>
                     </tr>
                 `;
             }).join('');

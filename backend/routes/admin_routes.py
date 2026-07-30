@@ -4,14 +4,245 @@ from typing import Optional
 import os
 import re
 import shutil
+import random
+import time
+import logging
 from backend.auth import require_admin, hash_password
 from backend.database import get_db
 from backend.config import UPLOAD_DIR
+from backend.email_service import (
+    encrypt_value, decrypt_value, get_access_token, send_email,
+)
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
-# Allowed email domain — must match auth_routes.py
-ALLOWED_EMAIL_DOMAIN = "@dvconsulting.co.in"
+# ==========================================
+# In-Memory OTP Store
+# ==========================================
+# Structure: { email: { "otp": "1234", "created_at": timestamp, "attempts": 0 } }
+_otp_store = {}
+# Structure: { email: { "verified_at": timestamp } }
+_verified_emails = {}
+
+OTP_EXPIRY_SECONDS = 300       # 5 minutes
+OTP_COOLDOWN_SECONDS = 30      # Rate limit: 1 OTP per 30 seconds per email
+VERIFIED_EXPIRY_SECONDS = 600  # Verified status valid for 10 minutes
+
+
+def _cleanup_expired():
+    """Remove expired OTPs and verified emails."""
+    now = time.time()
+    expired_otps = [e for e, d in _otp_store.items() if now - d["created_at"] > OTP_EXPIRY_SECONDS]
+    for e in expired_otps:
+        del _otp_store[e]
+    expired_verified = [e for e, d in _verified_emails.items() if now - d["verified_at"] > VERIFIED_EXPIRY_SECONDS]
+    for e in expired_verified:
+        del _verified_emails[e]
+
+
+def _is_email_verified(email: str) -> bool:
+    """Check if an email has been verified via OTP and is still valid."""
+    _cleanup_expired()
+    entry = _verified_emails.get(email)
+    if not entry:
+        return False
+    if time.time() - entry["verified_at"] > VERIFIED_EXPIRY_SECONDS:
+        del _verified_emails[email]
+        return False
+    return True
+
+
+def _get_gmail_credentials(db):
+    """Retrieve Gmail OAuth2 credentials from email_settings table."""
+    cursor = db.cursor()
+    settings = cursor.execute("SELECT * FROM email_settings LIMIT 1").fetchone()
+    if not settings:
+        return None
+
+    s = dict(settings)
+    client_id = s.get("gmail_client_id") or ""
+    client_secret = decrypt_value(s.get("gmail_client_secret_encrypted") or "")
+    refresh_token = decrypt_value(s.get("gmail_refresh_token_encrypted") or "")
+    sender_email = s.get("sender_email") or ""
+    sender_name = s.get("sender_name") or ""
+
+    if not all([client_id, client_secret, refresh_token, sender_email]):
+        return None
+
+    return {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "refresh_token": refresh_token,
+        "sender_email": sender_email,
+        "sender_name": sender_name,
+    }
+
+
+# ==========================================
+# OTP Request Models
+# ==========================================
+class SendOTPRequest(BaseModel):
+    email: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        v = v.strip().lower()
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
+            raise ValueError("Invalid email format")
+        return v
+
+
+class VerifyOTPRequest(BaseModel):
+    email: str
+    otp: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        return v.strip().lower()
+
+    @field_validator("otp")
+    @classmethod
+    def validate_otp(cls, v):
+        v = v.strip()
+        if not v.isdigit() or len(v) != 4:
+            raise ValueError("OTP must be a 4-digit number")
+        return v
+
+
+# ==========================================
+# OTP Endpoints
+# ==========================================
+@router.post("/send-otp")
+def send_otp(data: SendOTPRequest, admin: dict = Depends(require_admin), db=Depends(get_db)):
+    """Send a 4-digit OTP to the given email address for verification."""
+    _cleanup_expired()
+
+    # Check Gmail credentials are configured
+    creds = _get_gmail_credentials(db)
+    if not creds:
+        raise HTTPException(
+            status_code=400,
+            detail="Gmail credentials are not configured. Please configure Gmail OAuth2 credentials in Admin Panel → Email Settings → Credentials tab before creating users."
+        )
+
+    # Rate limiting: prevent spamming
+    existing = _otp_store.get(data.email)
+    if existing and time.time() - existing["created_at"] < OTP_COOLDOWN_SECONDS:
+        remaining = int(OTP_COOLDOWN_SECONDS - (time.time() - existing["created_at"]))
+        raise HTTPException(
+            status_code=429,
+            detail=f"Please wait {remaining} seconds before requesting another OTP."
+        )
+
+    # Generate 4-digit OTP
+    otp_code = str(random.randint(1000, 9999))
+
+    # Store OTP
+    _otp_store[data.email] = {
+        "otp": otp_code,
+        "created_at": time.time(),
+        "attempts": 0,
+    }
+
+    # Get access token
+    try:
+        access_token = get_access_token(creds["client_id"], creds["client_secret"], creds["refresh_token"])
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Failed to authenticate with Gmail: {str(e)}")
+
+    # Build OTP email
+    otp_subject = "Your OTP Verification Code — D&V Business Consulting"
+    otp_body = f"""
+    <html>
+    <body style="font-family: 'Segoe UI', Arial, sans-serif; margin:0; padding:0; background-color:#f5f5f5;">
+        <div style="max-width:480px; margin:30px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding:28px 32px; text-align:center;">
+                <h2 style="color:#ffffff; margin:0; font-size:20px; font-weight:600; letter-spacing:0.5px;">D&V Business Consulting</h2>
+                <p style="color:rgba(255,255,255,0.7); margin:6px 0 0; font-size:13px;">Email Verification</p>
+            </div>
+            <div style="padding:32px;">
+                <p style="color:#333; font-size:15px; margin:0 0 8px; line-height:1.5;">Hello,</p>
+                <p style="color:#555; font-size:14px; margin:0 0 24px; line-height:1.6;">Your one-time verification code is:</p>
+                <div style="text-align:center; margin:0 0 24px;">
+                    <div style="display:inline-block; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; font-size:32px; font-weight:700; letter-spacing:12px; padding:16px 32px; border-radius:10px; font-family:'Courier New', monospace;">
+                        {otp_code}
+                    </div>
+                </div>
+                <p style="color:#888; font-size:13px; margin:0 0 6px; text-align:center;">This code is valid for <strong>5 minutes</strong>.</p>
+                <p style="color:#888; font-size:13px; margin:0; text-align:center;">If you did not request this code, please ignore this email.</p>
+            </div>
+            <div style="background:#f8f9fa; padding:16px 32px; text-align:center; border-top:1px solid #eee;">
+                <p style="color:#aaa; font-size:11px; margin:0;">© D&V Business Consulting — Agreement Management System</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    # Send email
+    sender_from = f"{creds['sender_name']} <{creds['sender_email']}>" if creds.get("sender_name") else creds["sender_email"]
+    result = send_email(
+        sender=sender_from,
+        to=data.email,
+        subject=otp_subject,
+        body=otp_body,
+        is_html=True,
+        access_token=access_token,
+    )
+
+    if result["status"] != "sent":
+        # Remove OTP on send failure so user can retry immediately
+        _otp_store.pop(data.email, None)
+        raise HTTPException(status_code=500, detail=f"Failed to send OTP email: {result.get('error', 'Unknown error')}")
+
+    logger.info(f"OTP sent to {data.email}")
+    return {"message": "OTP sent successfully. Please check your email."}
+
+
+@router.post("/verify-otp")
+def verify_otp(data: VerifyOTPRequest, admin: dict = Depends(require_admin), db=Depends(get_db)):
+    """Verify the 4-digit OTP for the given email address."""
+    _cleanup_expired()
+
+    entry = _otp_store.get(data.email)
+    if not entry:
+        raise HTTPException(status_code=400, detail="No OTP found for this email. Please request a new OTP.")
+
+    # Check expiry
+    if time.time() - entry["created_at"] > OTP_EXPIRY_SECONDS:
+        _otp_store.pop(data.email, None)
+        raise HTTPException(status_code=400, detail="OTP has expired. Please request a new OTP.")
+
+    # Check max attempts (prevent brute force)
+    if entry["attempts"] >= 5:
+        _otp_store.pop(data.email, None)
+        raise HTTPException(status_code=400, detail="Too many incorrect attempts. Please request a new OTP.")
+
+    # Verify OTP
+    if entry["otp"] != data.otp:
+        entry["attempts"] += 1
+        raise HTTPException(status_code=400, detail="OTP does not match. Please try again.")
+
+    # OTP is correct — mark email as verified
+    _otp_store.pop(data.email, None)
+    _verified_emails[data.email] = {"verified_at": time.time()}
+
+    logger.info(f"Email verified via OTP: {data.email}")
+    return {"message": "Email verified successfully.", "verified": True}
+
+
+# ==========================================
+# Check Gmail credentials status endpoint
+# ==========================================
+@router.get("/check-gmail-credentials")
+def check_gmail_credentials(admin: dict = Depends(require_admin), db=Depends(get_db)):
+    """Check if Gmail OAuth2 credentials are configured for OTP sending."""
+    creds = _get_gmail_credentials(db)
+    return {"configured": creds is not None}
 
 
 class UserUpdate(BaseModel):
@@ -37,8 +268,6 @@ class CreateUser(BaseModel):
         v = v.strip().lower()
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
             raise ValueError("Invalid email format")
-        if not v.endswith(ALLOWED_EMAIL_DOMAIN):
-            raise ValueError(f"Only {ALLOWED_EMAIL_DOMAIN} email addresses are allowed")
         return v
 
     @field_validator("full_name")
@@ -77,8 +306,6 @@ class UpdateCredentials(BaseModel):
         v = v.strip().lower()
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
             raise ValueError("Invalid email format")
-        if not v.endswith(ALLOWED_EMAIL_DOMAIN):
-            raise ValueError(f"Only {ALLOWED_EMAIL_DOMAIN} email addresses are allowed")
         return v
 
     @field_validator("password")
@@ -139,8 +366,15 @@ def list_users(admin: dict = Depends(require_admin), db=Depends(get_db)):
 
 @router.post("/users")
 def create_user(data: CreateUser, admin: dict = Depends(require_admin), db=Depends(get_db)):
-    """Admin-only: create a new user with a @dvconsulting.co.in email."""
+    """Admin-only: create a new user. Email must be OTP-verified first."""
     cursor = db.cursor()
+
+    # Enforce OTP email verification
+    if not _is_email_verified(data.email):
+        raise HTTPException(
+            status_code=400,
+            detail="Email address has not been verified. Please verify the email with OTP before creating a user."
+        )
 
     # Check duplicate email
     existing = cursor.execute("SELECT id FROM users WHERE email = ?", (data.email,)).fetchone()
@@ -218,16 +452,27 @@ def update_user_credentials(
     admin: dict = Depends(require_admin),
     db=Depends(get_db)
 ):
-    """Admin-only: update a user's email, full name, and/or password."""
+    """Admin-only: update a user's email, full name, and/or password.
+    If the email is being changed, it must be OTP-verified first."""
     cursor = db.cursor()
     user = cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    current_email = dict(user).get("email", "")
+
     updates = []
     params = []
 
     if data.email is not None:
+        # If email is changing, require OTP verification
+        if data.email.strip().lower() != current_email.strip().lower():
+            if not _is_email_verified(data.email):
+                raise HTTPException(
+                    status_code=400,
+                    detail="New email address has not been verified. Please verify the email with OTP before updating."
+                )
+
         # Check duplicate email (excluding the current user)
         existing = cursor.execute(
             "SELECT id FROM users WHERE email = ? AND id != ?", (data.email, user_id)

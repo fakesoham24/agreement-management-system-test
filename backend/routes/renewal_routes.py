@@ -36,7 +36,7 @@ def list_renewals(
                    aa.payment_plans, aa.currency, aa.contact_person
             FROM agreements a
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
-            WHERE 1=1
+            WHERE a.status != 'terminated'
         """
         params = []
     else:
@@ -46,7 +46,7 @@ def list_renewals(
                    aa.payment_plans, aa.currency, aa.contact_person
             FROM agreements a
             LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
-            WHERE a.user_id = ?
+            WHERE a.user_id = ? AND a.status != 'terminated'
         """
         params = [current_user["id"]]
 
