@@ -1577,12 +1577,14 @@ def send_emails_to_consultants(
             tracking_id = str(uuid.uuid4())
             email_body_with_pixel = _inject_tracking_pixel(email_body, tracking_id, is_html)
 
-            # Send email (no CC for consultant reminders, always HTML due to pixel)
+            # Send email (include CC for consultant reminders, always HTML due to pixel)
+            cc_emails = s.get("cc_emails") or ""
             result = send_email(
                 sender=sender_from,
                 to=recipient_email,
                 subject=email_subject,
                 body=email_body_with_pixel,
+                cc=cc_emails if cc_emails.strip() else None,
                 is_html=True,
                 access_token=access_token,
             )
@@ -2257,15 +2259,12 @@ def send_thankyou_email(
     email_body = render_template(template, variables)
     email_subject = render_template(subject_template, variables)
 
-    cc_emails = s.get("cc_emails") or ""
-
-    # Send email
+    # Send email (no CC for thank you emails — CC is only for client/consultant reminders)
     result = send_email(
         sender=sender_from,
         to=recipient_email,
         subject=email_subject,
         body=email_body,
-        cc=cc_emails if cc_emails.strip() else None,
         is_html=is_html,
         access_token=access_token,
     )
