@@ -1338,37 +1338,119 @@
             <h3 class="modal-title">Add Consultant</h3>
             <div class="modal-body">
                 <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem">Add a new consultant
-                    person who can be assigned to agreements.</p>
-                <div class="form-group">
-                    <label>Full Name <span style="color:var(--color-danger)">*</span></label>
-                    <input type="text" class="form-input" id="add-consultant-name" placeholder="Enter full name"
-                        required>
-                    <span class="field-error" id="add-consultant-name-error"></span>
+                    with login access. Verify the email address first.</p>
+
+                <!-- Gmail credentials warning (shown when not configured) -->
+                <div id="add-consultant-gmail-warning"
+                    style="display:none;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1px solid #ffb74d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;color:#e65100;line-height:1.5">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-weight:600">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="width:16px;height:16px;flex-shrink:0">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        Gmail Credentials Required
+                    </div>
+                    Gmail OAuth2 credentials are not configured. Please go to <strong>Email Settings →
+                        Credentials</strong> tab and save your Gmail credentials before adding consultants.
                 </div>
+
+                <!-- Step 1: Email + Send OTP -->
                 <div class="form-group">
-                    <label>Designation <span style="color:var(--color-danger)">*</span></label>
-                    <select class="form-input" id="add-consultant-designation">
-                        <option value="">Select designation</option>
-                        <option value="Project Manager">Project Manager</option>
-                        <option value="Lead Consultant">Lead Consultant</option>
-                        <option value="Senior Consultant">Senior Consultant</option>
-                        <option value="Lean Consultant">Lean Consultant</option>
-                        <option value="Consultant">Consultant</option>
-                        <option value="Junior Consultant">Junior Consultant</option>
-                        <option value="Associate Consultant">Associate Consultant</option>
-                    </select>
-                    <span class="field-error" id="add-consultant-designation-error"></span>
-                </div>
-                <div class="form-group">
-                    <label>Email Address <span style="color:var(--color-danger)">*</span></label>
-                    <input type="email" class="form-input" id="add-consultant-email"
-                        placeholder="consultant@example.com" required>
+                    <label>Email Address</label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <div style="flex:1">
+                            <input type="email" class="form-input" id="add-consultant-email"
+                                placeholder="consultant@example.com" required oninput="onAddConsultantEmailInput()">
+                        </div>
+                        <button class="btn btn-sm" id="add-consultant-send-otp-btn"
+                            onclick="addConsultantSendOTP()"
+                            style="opacity: 0.5; min-width: 95px; height: 38px; font-size: 0.8rem; white-space: nowrap; color: #fff; background-color: var(--color-accent); cursor: not-allowed;"
+                            disabled>Send OTP</button>
+                    </div>
                     <span class="field-error" id="add-consultant-email-error"></span>
+                    <!-- Email verified indicator -->
+                    <div id="add-consultant-email-verified"
+                        style="display:none;color:#2e7d32;font-size:0.82rem;margin-top:6px;align-items:center;gap:4px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5"
+                            style="width:14px;height:14px">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Email verified successfully
+                    </div>
+                </div>
+
+                <!-- Step 2: OTP Input (hidden until OTP is sent) -->
+                <div class="form-group" id="add-consultant-otp-group" style="display:none">
+                    <label>Enter OTP <span style="color:var(--color-text-muted);font-weight:400">(check your
+                            email)</span></label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <input type="text" class="form-input" id="add-consultant-otp-input" placeholder="4-digit OTP"
+                            maxlength="4" pattern="[0-9]*" inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                            style="max-width:140px;letter-spacing:8px;font-weight:600;font-size:1.1rem;text-align:center">
+                        <button class="btn btn-sm btn-primary" id="add-consultant-verify-otp-btn"
+                            onclick="addConsultantVerifyOTP()"
+                            style="min-width:80px;height:38px;font-size:0.8rem">
+                            Verify
+                        </button>
+                    </div>
+                    <span class="field-error" id="add-consultant-otp-error"></span>
+                </div>
+
+                <!-- Step 3: Remaining fields (hidden until email is verified) -->
+                <div id="add-consultant-fields" style="display:none">
+                    <div class="form-group">
+                        <label>Full Name <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="add-consultant-name" placeholder="Enter full name"
+                            required>
+                        <span class="field-error" id="add-consultant-name-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Designation <span style="color:var(--color-danger)">*</span></label>
+                        <select class="form-input" id="add-consultant-designation">
+                            <option value="">Select designation</option>
+                            <option value="Project Manager">Project Manager</option>
+                            <option value="Lead Consultant">Lead Consultant</option>
+                            <option value="Senior Consultant">Senior Consultant</option>
+                            <option value="Lean Consultant">Lean Consultant</option>
+                            <option value="Consultant">Consultant</option>
+                            <option value="Junior Consultant">Junior Consultant</option>
+                            <option value="Associate Consultant">Associate Consultant</option>
+                        </select>
+                        <span class="field-error" id="add-consultant-designation-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Password <span style="color:var(--color-danger)">*</span></label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-input" id="add-consultant-password"
+                                placeholder="Min 6 characters" required minlength="6">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePasswordVisibility('add-consultant-password', this)"
+                                title="Show password">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" style="width:18px;height:18px">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" style="width:18px;height:18px;display:none">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span class="field-error" id="add-consultant-password-error"></span>
+                    </div>
                 </div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeAddConsultantModal()">Cancel</button>
-                <button class="btn btn-primary" id="add-consultant-btn" onclick="submitAddConsultant()">Add
+                <button class="btn btn-primary" id="add-consultant-btn" onclick="submitAddConsultant()"
+                    style="display:none">Add
                     Consultant</button>
             </div>
         </div>
@@ -1379,6 +1461,64 @@
         <div class="modal">
             <h3 class="modal-title">Edit Consultant</h3>
             <div class="modal-body">
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem" id="edit-consultant-label">
+                    Update consultant details. Email change requires OTP verification.</p>
+
+                <!-- Email field with (X) clear button -->
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <div style="flex:1;position:relative">
+                            <input type="email" class="form-input" id="edit-consultant-email"
+                                placeholder="consultant@example.com"
+                                disabled style="opacity:0.6;padding-right:36px">
+                            <!-- (X) clear button to change email -->
+                            <button type="button" id="edit-consultant-email-clear-btn" onclick="editConsultantEmailClearClick()"
+                                title="Change email address"
+                                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s"
+                                onmouseover="this.style.background='rgba(0,0,0,0.08)'"
+                                onmouseout="this.style.background='none'">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Send OTP button (hidden until email change is confirmed) -->
+                        <button class="btn btn-sm" id="edit-consultant-send-otp-btn" onclick="editConsultantSendOTP()" disabled
+                            style="display:none;opacity:0.5;min-width:95px;height:38px;font-size:0.8rem;white-space:nowrap;background:var(--color-accent);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                            Send OTP
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-consultant-email-error"></span>
+                    <!-- Email verified indicator for edit -->
+                    <div id="edit-consultant-email-verified"
+                        style="display:none;color:#2e7d32;font-size:0.82rem;margin-top:6px;align-items:center;gap:4px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5"
+                            style="width:14px;height:14px">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        New email verified successfully
+                    </div>
+                </div>
+
+                <!-- OTP Input for edit (hidden until OTP is sent) -->
+                <div class="form-group" id="edit-consultant-otp-group" style="display:none">
+                    <label>Enter OTP <span style="color:var(--color-text-muted);font-weight:400">(check your
+                            email)</span></label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <input type="text" class="form-input" id="edit-consultant-otp-input" placeholder="4-digit OTP"
+                            maxlength="4" pattern="[0-9]*" inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                            style="max-width:140px;letter-spacing:8px;font-weight:600;font-size:1.1rem;text-align:center">
+                        <button class="btn btn-sm btn-primary" id="edit-consultant-verify-otp-btn" onclick="editConsultantVerifyOTP()"
+                            style="min-width:80px;height:38px;font-size:0.8rem">
+                            Verify
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-consultant-otp-error"></span>
+                </div>
+
                 <div class="form-group">
                     <label>Full Name <span style="color:var(--color-danger)">*</span></label>
                     <input type="text" class="form-input" id="edit-consultant-name" placeholder="Enter full name">
@@ -1397,10 +1537,27 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Email Address <span style="color:var(--color-danger)">*</span></label>
-                    <input type="email" class="form-input" id="edit-consultant-email"
-                        placeholder="consultant@example.com">
-                    <span class="field-error" id="edit-consultant-email-error"></span>
+                    <label>New Password <span style="color:var(--color-text-muted);font-weight:400">(leave empty to keep
+                            current)</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" class="form-input" id="edit-consultant-password"
+                            placeholder="Enter new password (optional)">
+                        <button type="button" class="password-toggle"
+                            onclick="togglePasswordVisibility('edit-consultant-password', this)" title="Show password">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" style="width:18px;height:18px">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" style="width:18px;height:18px;display:none">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-consultant-password-error"></span>
                 </div>
             </div>
             <div class="modal-actions">
@@ -2029,6 +2186,12 @@
             if (createOtpErrorContext === 'create') {
                 // Reset the entire create user form
                 resetCreateUserForm();
+            } else if (createOtpErrorContext === 'add-consultant') {
+                // Reset the add consultant form
+                if (typeof resetAddConsultantForm === 'function') resetAddConsultantForm();
+            } else if (createOtpErrorContext === 'edit-consultant') {
+                // Close the edit consultant modal on OTP failure
+                if (typeof closeEditConsultantModal === 'function') closeEditConsultantModal();
             }
             createOtpErrorContext = '';
         }
@@ -3876,27 +4039,194 @@
             renderConsultants(filtered);
         }
 
-        function openAddConsultantModal() {
+        // ======= Add Consultant State =======
+        let addConsultantEmailVerified = false;
+        let addConsultantVerifiedEmail = '';
+        let addConsultantOtpSending = false;
+        let addConsultantGmailConfigured = false;
+
+        function onAddConsultantEmailInput() {
+            const email = (document.getElementById('add-consultant-email').value || '').trim();
+            const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+            const sendBtn = document.getElementById('add-consultant-send-otp-btn');
+
+            if (isValid && addConsultantGmailConfigured) {
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+                sendBtn.style.cursor = 'pointer';
+            } else {
+                sendBtn.disabled = true;
+                sendBtn.style.opacity = '0.5';
+                sendBtn.style.cursor = 'not-allowed';
+            }
+            document.getElementById('add-consultant-email-error').textContent = '';
+        }
+
+        async function openAddConsultantModal() {
+            // Reset all fields
+            document.getElementById('add-consultant-email').value = '';
+            document.getElementById('add-consultant-email').disabled = false;
+            document.getElementById('add-consultant-email').style.opacity = '1';
             document.getElementById('add-consultant-name').value = '';
             document.getElementById('add-consultant-designation').value = '';
-            document.getElementById('add-consultant-email').value = '';
+            document.getElementById('add-consultant-password').value = '';
+            document.getElementById('add-consultant-password').type = 'password';
             document.querySelectorAll('#add-consultant-modal .field-error').forEach(el => el.textContent = '');
+
+            // Reset OTP state
+            addConsultantEmailVerified = false;
+            addConsultantVerifiedEmail = '';
+            addConsultantOtpSending = false;
+
+            // Hide steps 2 and 3
+            document.getElementById('add-consultant-otp-group').style.display = 'none';
+            document.getElementById('add-consultant-fields').style.display = 'none';
+            document.getElementById('add-consultant-btn').style.display = 'none';
+            document.getElementById('add-consultant-email-verified').style.display = 'none';
+            const otpInput = document.getElementById('add-consultant-otp-input');
+            if (otpInput) otpInput.value = '';
+
+            // Reset Send OTP button
+            const sendBtn = document.getElementById('add-consultant-send-otp-btn');
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
+
+            // Reset password visibility toggle
+            const pwBtn = document.querySelector('#add-consultant-modal .password-toggle');
+            if (pwBtn) {
+                pwBtn.querySelector('.eye-icon').style.display = 'block';
+                pwBtn.querySelector('.eye-off-icon').style.display = 'none';
+                pwBtn.title = 'Show password';
+            }
+
+            // Check Gmail credentials
+            const gmailOk = await checkGmailCredentials();
+            addConsultantGmailConfigured = gmailOk;
+            const warningEl = document.getElementById('add-consultant-gmail-warning');
+            if (!gmailOk) {
+                warningEl.style.display = 'block';
+                sendBtn.style.display = 'none';
+            } else {
+                warningEl.style.display = 'none';
+                sendBtn.style.display = '';
+            }
+
             document.getElementById('add-consultant-modal').classList.add('open');
+        }
+
+        async function addConsultantSendOTP() {
+            const email = (document.getElementById('add-consultant-email').value || '').trim().toLowerCase();
+            if (!email || addConsultantOtpSending) return;
+
+            const sendBtn = document.getElementById('add-consultant-send-otp-btn');
+            addConsultantOtpSending = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.style.opacity = '0.7';
+
+            try {
+                await api.post('/admin/send-otp', { email });
+                showToast('OTP sent to ' + email, 'success');
+
+                document.getElementById('add-consultant-otp-group').style.display = 'block';
+                document.getElementById('add-consultant-otp-input').value = '';
+                document.getElementById('add-consultant-otp-input').focus();
+                document.getElementById('add-consultant-email').disabled = true;
+                sendBtn.textContent = 'OTP Sent';
+                sendBtn.style.opacity = '0.5';
+            } catch (err) {
+                showToast(err.message || 'Failed to send OTP', 'error');
+                sendBtn.textContent = 'Send OTP';
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+            } finally {
+                addConsultantOtpSending = false;
+            }
+        }
+
+        async function addConsultantVerifyOTP() {
+            const email = (document.getElementById('add-consultant-email').value || '').trim().toLowerCase();
+            const otp = (document.getElementById('add-consultant-otp-input').value || '').trim();
+
+            if (!otp || otp.length !== 4) {
+                document.getElementById('add-consultant-otp-error').textContent = 'Please enter the 4-digit OTP';
+                return;
+            }
+
+            const verifyBtn = document.getElementById('add-consultant-verify-otp-btn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                const res = await api.post('/admin/verify-otp', { email, otp });
+                if (res.verified) {
+                    addConsultantEmailVerified = true;
+                    addConsultantVerifiedEmail = email;
+
+                    document.getElementById('add-consultant-otp-group').style.display = 'none';
+                    document.getElementById('add-consultant-email-verified').style.display = 'flex';
+                    document.getElementById('add-consultant-email').disabled = true;
+                    document.getElementById('add-consultant-email').style.opacity = '1';
+                    document.getElementById('add-consultant-send-otp-btn').style.display = 'none';
+
+                    // Show remaining fields
+                    document.getElementById('add-consultant-fields').style.display = 'block';
+                    document.getElementById('add-consultant-btn').style.display = '';
+                    document.getElementById('add-consultant-name').focus();
+
+                    showToast('Email verified successfully!', 'success');
+                }
+            } catch (err) {
+                document.getElementById('otp-error-message').textContent = err.message || 'OTP verification failed. Please try again.';
+                document.getElementById('otp-error-modal').classList.add('open');
+                createOtpErrorContext = 'add-consultant';
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify';
+            }
         }
 
         function closeAddConsultantModal() {
             document.getElementById('add-consultant-modal').classList.remove('open');
         }
 
+        function resetAddConsultantForm() {
+            addConsultantEmailVerified = false;
+            addConsultantVerifiedEmail = '';
+
+            document.getElementById('add-consultant-email').value = '';
+            document.getElementById('add-consultant-email').disabled = false;
+            document.getElementById('add-consultant-email').style.opacity = '1';
+            document.getElementById('add-consultant-otp-group').style.display = 'none';
+            document.getElementById('add-consultant-fields').style.display = 'none';
+            document.getElementById('add-consultant-btn').style.display = 'none';
+            document.getElementById('add-consultant-email-verified').style.display = 'none';
+            const otpInput = document.getElementById('add-consultant-otp-input');
+            if (otpInput) otpInput.value = '';
+            document.querySelectorAll('#add-consultant-modal .field-error').forEach(el => el.textContent = '');
+
+            const sendBtn = document.getElementById('add-consultant-send-otp-btn');
+            if (addConsultantGmailConfigured) sendBtn.style.display = '';
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
+        }
+
         async function submitAddConsultant() {
+            const email = addConsultantVerifiedEmail || (document.getElementById('add-consultant-email').value || '').trim().toLowerCase();
             const name = (document.getElementById('add-consultant-name').value || '').trim();
             const designation = document.getElementById('add-consultant-designation').value;
-            const email = (document.getElementById('add-consultant-email').value || '').trim().toLowerCase();
+            const password = document.getElementById('add-consultant-password').value;
 
             // Validation
             let valid = true;
             document.querySelectorAll('#add-consultant-modal .field-error').forEach(el => el.textContent = '');
 
+            if (!addConsultantEmailVerified) {
+                document.getElementById('add-consultant-email-error').textContent = 'Please verify the email address first';
+                valid = false;
+            }
             if (!name || name.length < 2) {
                 document.getElementById('add-consultant-name-error').textContent = 'Name must be at least 2 characters';
                 valid = false;
@@ -3905,8 +4235,8 @@
                 document.getElementById('add-consultant-designation-error').textContent = 'Please select a designation';
                 valid = false;
             }
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                document.getElementById('add-consultant-email-error').textContent = 'Please enter a valid email address';
+            if (!password || password.length < 6) {
+                document.getElementById('add-consultant-password-error').textContent = 'Password must be at least 6 characters';
                 valid = false;
             }
             if (!valid) return;
@@ -3916,10 +4246,11 @@
             btn.textContent = 'Adding...';
 
             try {
-                await api.post('/consultants/', { name, designation, email });
+                await api.post('/consultants/', { name, designation, email, password });
                 showToast('Consultant added successfully', 'success');
                 closeAddConsultantModal();
                 loadConsultants();
+                loadDashboard();
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
@@ -3928,24 +4259,159 @@
             }
         }
 
+        // ======= Edit Consultant State =======
+        let editConsultantOriginalEmail = '';
+        let editConsultantEmailVerified = false;
+        let editConsultantVerifiedEmail = '';
+        let editConsultantOtpSending = false;
+        let editConsultantEmailChanging = false;
+
         function openEditConsultantModal(id, name, designation, email) {
             editConsultantId = id;
+            editConsultantOriginalEmail = email;
+            editConsultantEmailVerified = false;
+            editConsultantVerifiedEmail = '';
+            editConsultantEmailChanging = false;
+            editConsultantOtpSending = false;
+
+            // Set field values
             document.getElementById('edit-consultant-name').value = name;
             document.getElementById('edit-consultant-designation').value = designation;
             document.getElementById('edit-consultant-email').value = email;
+            document.getElementById('edit-consultant-email').disabled = true;
+            document.getElementById('edit-consultant-email').style.opacity = '0.6';
+            document.getElementById('edit-consultant-password').value = '';
+            document.getElementById('edit-consultant-password').type = 'password';
+
+            // Reset OTP UI
+            document.getElementById('edit-consultant-email-clear-btn').style.display = 'flex';
+            document.getElementById('edit-consultant-send-otp-btn').style.display = 'none';
+            document.getElementById('edit-consultant-otp-group').style.display = 'none';
+            document.getElementById('edit-consultant-email-verified').style.display = 'none';
             document.querySelectorAll('#edit-consultant-modal .field-error').forEach(el => el.textContent = '');
+
+            // Reset password visibility toggle
+            const pwBtn = document.querySelector('#edit-consultant-modal .password-toggle');
+            if (pwBtn) {
+                pwBtn.querySelector('.eye-icon').style.display = 'block';
+                pwBtn.querySelector('.eye-off-icon').style.display = 'none';
+                pwBtn.title = 'Show password';
+            }
+
             document.getElementById('edit-consultant-modal').classList.add('open');
+        }
+
+        function editConsultantEmailClearClick() {
+            // Enable email editing
+            editConsultantEmailChanging = true;
+            const emailInput = document.getElementById('edit-consultant-email');
+            emailInput.disabled = false;
+            emailInput.style.opacity = '1';
+            emailInput.value = '';
+            emailInput.focus();
+
+            // Show send OTP button, hide (X) clear button
+            document.getElementById('edit-consultant-email-clear-btn').style.display = 'none';
+            const sendBtn = document.getElementById('edit-consultant-send-otp-btn');
+            sendBtn.style.display = '';
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
+
+            // Add input listener for email validation
+            emailInput.oninput = function () {
+                const val = (this.value || '').trim();
+                const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
+                if (isValid) {
+                    sendBtn.disabled = false;
+                    sendBtn.style.opacity = '1';
+                    sendBtn.style.cursor = 'pointer';
+                } else {
+                    sendBtn.disabled = true;
+                    sendBtn.style.opacity = '0.5';
+                    sendBtn.style.cursor = 'not-allowed';
+                }
+                document.getElementById('edit-consultant-email-error').textContent = '';
+            };
+        }
+
+        async function editConsultantSendOTP() {
+            const email = (document.getElementById('edit-consultant-email').value || '').trim().toLowerCase();
+            if (!email || editConsultantOtpSending) return;
+
+            const sendBtn = document.getElementById('edit-consultant-send-otp-btn');
+            editConsultantOtpSending = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            sendBtn.style.opacity = '0.7';
+
+            try {
+                await api.post('/admin/send-otp', { email });
+                showToast('OTP sent to ' + email, 'success');
+
+                document.getElementById('edit-consultant-otp-group').style.display = 'block';
+                document.getElementById('edit-consultant-otp-input').value = '';
+                document.getElementById('edit-consultant-otp-input').focus();
+                document.getElementById('edit-consultant-email').disabled = true;
+                sendBtn.textContent = 'OTP Sent';
+                sendBtn.style.opacity = '0.5';
+            } catch (err) {
+                showToast(err.message || 'Failed to send OTP', 'error');
+                sendBtn.textContent = 'Send OTP';
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+            } finally {
+                editConsultantOtpSending = false;
+            }
+        }
+
+        async function editConsultantVerifyOTP() {
+            const email = (document.getElementById('edit-consultant-email').value || '').trim().toLowerCase();
+            const otp = (document.getElementById('edit-consultant-otp-input').value || '').trim();
+
+            if (!otp || otp.length !== 4) {
+                document.getElementById('edit-consultant-otp-error').textContent = 'Please enter the 4-digit OTP';
+                return;
+            }
+
+            const verifyBtn = document.getElementById('edit-consultant-verify-otp-btn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            try {
+                const res = await api.post('/admin/verify-otp', { email, otp });
+                if (res.verified) {
+                    editConsultantEmailVerified = true;
+                    editConsultantVerifiedEmail = email;
+
+                    document.getElementById('edit-consultant-otp-group').style.display = 'none';
+                    document.getElementById('edit-consultant-email-verified').style.display = 'flex';
+                    document.getElementById('edit-consultant-email').disabled = true;
+                    document.getElementById('edit-consultant-email').style.opacity = '1';
+                    document.getElementById('edit-consultant-send-otp-btn').style.display = 'none';
+
+                    showToast('New email verified!', 'success');
+                }
+            } catch (err) {
+                document.getElementById('otp-error-message').textContent = err.message || 'OTP verification failed.';
+                document.getElementById('otp-error-modal').classList.add('open');
+                createOtpErrorContext = 'edit-consultant';
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify';
+            }
         }
 
         function closeEditConsultantModal() {
             document.getElementById('edit-consultant-modal').classList.remove('open');
             editConsultantId = null;
+            editConsultantEmailChanging = false;
         }
 
         async function submitEditConsultant() {
             const name = (document.getElementById('edit-consultant-name').value || '').trim();
             const designation = document.getElementById('edit-consultant-designation').value;
-            const email = (document.getElementById('edit-consultant-email').value || '').trim().toLowerCase();
+            const password = (document.getElementById('edit-consultant-password').value || '');
 
             let valid = true;
             document.querySelectorAll('#edit-consultant-modal .field-error').forEach(el => el.textContent = '');
@@ -3954,8 +4420,13 @@
                 document.getElementById('edit-consultant-name-error').textContent = 'Name must be at least 2 characters';
                 valid = false;
             }
-            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                document.getElementById('edit-consultant-email-error').textContent = 'Please enter a valid email address';
+            if (password && password.length < 6) {
+                document.getElementById('edit-consultant-password-error').textContent = 'Password must be at least 6 characters';
+                valid = false;
+            }
+            // If email was changed but not verified
+            if (editConsultantEmailChanging && !editConsultantEmailVerified) {
+                document.getElementById('edit-consultant-email-error').textContent = 'Please verify the new email address';
                 valid = false;
             }
             if (!valid) return;
@@ -3963,7 +4434,10 @@
             const updateData = {};
             if (name) updateData.name = name;
             if (designation) updateData.designation = designation;
-            if (email) updateData.email = email;
+            if (editConsultantEmailVerified && editConsultantVerifiedEmail) {
+                updateData.email = editConsultantVerifiedEmail;
+            }
+            if (password) updateData.password = password;
 
             const btn = document.getElementById('edit-consultant-btn');
             btn.disabled = true;
@@ -3985,7 +4459,7 @@
         async function deleteConsultant(id, name) {
             const confirmed = await showConfirm(
                 'Delete Consultant',
-                `Are you sure you want to delete consultant "${name}"? They will be removed from all agreement assignments.`
+                `Are you sure you want to delete consultant "${name}"? They will be removed from all agreement assignments and their login account will be deleted.`
             );
             if (!confirmed) return;
 
@@ -4906,6 +5380,37 @@
         initUI();
         loadDashboard();
         loadUsers();
+
+        // ==========================================
+        // WebSocket — Real-Time Updates
+        // ==========================================
+        const _liveSocket = new LiveSocket({
+            agreement_uploaded: () => {
+                showToast('New agreement uploaded — refreshing...', 'info');
+                loadDashboard();
+            },
+            agreement_updated: () => {
+                loadDashboard();
+            },
+            agreement_deleted: () => {
+                loadDashboard();
+            },
+            payment_updated: () => {
+                loadDashboard();
+            },
+            user_created: () => {
+                loadDashboard();
+                loadUsers();
+            },
+            user_updated: () => {
+                loadUsers();
+            },
+            user_deleted: () => {
+                loadDashboard();
+                loadUsers();
+            },
+        });
+        _liveSocket.connect();
     </script>
 </body>
 

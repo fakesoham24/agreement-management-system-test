@@ -7,7 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, field_validator
 from typing import List, Optional
-from backend.auth import get_current_user, require_admin
+from backend.auth import get_current_user, require_admin, hash_password
 from backend.database import get_db
 
 router = APIRouter(prefix="/api/consultants", tags=["Consultants"])
@@ -31,6 +31,7 @@ class ConsultantCreate(BaseModel):
     name: str
     designation: str
     email: str
+    password: str
 
     @field_validator("name")
     @classmethod
@@ -66,11 +67,19 @@ class ConsultantCreate(BaseModel):
             raise ValueError("Please enter a valid email domain")
         return v
 
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v):
+        if not v or len(v) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        return v
+
 
 class ConsultantUpdate(BaseModel):
     name: Optional[str] = None
     designation: Optional[str] = None
     email: Optional[str] = None
+    password: Optional[str] = None
 
     @field_validator("name")
     @classmethod
@@ -101,6 +110,13 @@ class ConsultantUpdate(BaseModel):
             local_part = v.split("@")[0]
             if len(local_part) < 2:
                 raise ValueError("Email local part is too short")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v):
+        if v is not None and v != "" and len(v) < 6:
+            raise ValueError("Password must be at least 6 characters")
         return v
 
 
@@ -134,7 +150,16 @@ def list_consultants(
         FROM consultants c
         ORDER BY c.created_at DESC
     """).fetchall()
-    return {"consultants": [dict(c) for c in consultants]}
+    result = []
+    for c in consultants:
+        cd = dict(c)
+        # Check if this consultant has a linked user account (has login capability)
+        linked_user = cursor.execute(
+            "SELECT id FROM users WHERE consultant_id = ? AND role = 'consultant'", (cd["id"],)
+        ).fetchone()
+        cd["has_login"] = linked_user is not None
+        result.append(cd)
+    return {"consultants": result}
 
 
 @router.post("/")
@@ -143,27 +168,61 @@ def create_consultant(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """Create a new consultant (admin only)."""
+    """Create a new consultant with login account (admin only). Email must be OTP-verified."""
+    # Import OTP verification from admin_routes
+    from backend.routes.admin_routes import _is_email_verified
+
     cursor = db.cursor()
 
-    # Check duplicate email
+    # Verify email via OTP
+    if not _is_email_verified(data.email):
+        raise HTTPException(status_code=400, detail="Email must be verified via OTP before creating a consultant account")
+
+    # Check duplicate email in consultants
     existing = cursor.execute(
         "SELECT id FROM consultants WHERE email = ?", (data.email,)
     ).fetchone()
     if existing:
         raise HTTPException(status_code=400, detail="A consultant with this email already exists")
 
+    # Check duplicate email in users table
+    existing_user = cursor.execute(
+        "SELECT id FROM users WHERE email = ?", (data.email,)
+    ).fetchone()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="A user with this email already exists")
+
+    # Hash password
+    pw_hash = hash_password(data.password)
+
+    # Insert into consultants table
     cursor.execute(
-        "INSERT INTO consultants (name, designation, email) VALUES (?, ?, ?)",
-        (data.name, data.designation, data.email),
+        "INSERT INTO consultants (name, designation, email, password_hash) VALUES (?, ?, ?, ?)",
+        (data.name, data.designation, data.email, pw_hash),
+    )
+    db.commit()
+    consultant_id = cursor.lastrowid
+
+    # Create linked user account for login
+    # Generate unique username from email
+    username = data.email.split("@")[0].lower()
+    base_username = username
+    counter = 1
+    while cursor.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone():
+        username = f"{base_username}{counter}"
+        counter += 1
+
+    cursor.execute(
+        """INSERT INTO users (username, email, full_name, password_hash, role, consultant_id)
+           VALUES (?, ?, ?, ?, 'consultant', ?)""",
+        (username, data.email, data.name, pw_hash, consultant_id),
     )
     db.commit()
 
-    new_id = cursor.lastrowid
     return {
         "message": "Consultant added successfully",
         "consultant": {
-            "id": new_id,
+            "id": consultant_id,
             "name": data.name,
             "designation": data.designation,
             "email": data.email,
@@ -178,7 +237,7 @@ def update_consultant(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """Update consultant details (admin only)."""
+    """Update consultant details (admin only). Syncs changes to linked user account."""
     cursor = db.cursor()
     existing = cursor.execute(
         "SELECT * FROM consultants WHERE id = ?", (consultant_id,)
@@ -186,9 +245,51 @@ def update_consultant(
     if not existing:
         raise HTTPException(status_code=404, detail="Consultant not found")
 
+    existing_dict = dict(existing)
+    update_data = data.model_dump(exclude_unset=True)
+
+    # Find linked user account
+    linked_user = cursor.execute(
+        "SELECT * FROM users WHERE consultant_id = ? AND role = 'consultant'", (consultant_id,)
+    ).fetchone()
+
+    # --- Handle email change with OTP verification ---
+    email_changed = False
+    new_email = None
+    if "email" in update_data and update_data["email"] is not None:
+        new_email = update_data["email"]
+        if new_email != existing_dict.get("email"):
+            email_changed = True
+            # Verify new email via OTP
+            from backend.routes.admin_routes import _is_email_verified
+            if not _is_email_verified(new_email):
+                raise HTTPException(status_code=400, detail="New email must be verified via OTP before updating")
+
+            # Check duplicate email in consultants
+            dup = cursor.execute(
+                "SELECT id FROM consultants WHERE email = ? AND id != ?",
+                (new_email, consultant_id),
+            ).fetchone()
+            if dup:
+                raise HTTPException(status_code=400, detail="A consultant with this email already exists")
+
+            # Check duplicate email in users
+            if linked_user:
+                dup_user = cursor.execute(
+                    "SELECT id FROM users WHERE email = ? AND id != ?",
+                    (new_email, linked_user["id"]),
+                ).fetchone()
+            else:
+                dup_user = cursor.execute(
+                    "SELECT id FROM users WHERE email = ?",
+                    (new_email,),
+                ).fetchone()
+            if dup_user:
+                raise HTTPException(status_code=400, detail="A user with this email already exists")
+
+    # --- Build consultant table updates ---
     updates = []
     params = []
-    update_data = data.model_dump(exclude_unset=True)
 
     if "name" in update_data and update_data["name"] is not None:
         updates.append("name = ?")
@@ -196,16 +297,15 @@ def update_consultant(
     if "designation" in update_data and update_data["designation"] is not None:
         updates.append("designation = ?")
         params.append(update_data["designation"])
-    if "email" in update_data and update_data["email"] is not None:
-        # Check duplicate email (excluding current)
-        dup = cursor.execute(
-            "SELECT id FROM consultants WHERE email = ? AND id != ?",
-            (update_data["email"], consultant_id),
-        ).fetchone()
-        if dup:
-            raise HTTPException(status_code=400, detail="A consultant with this email already exists")
+    if email_changed:
         updates.append("email = ?")
-        params.append(update_data["email"])
+        params.append(new_email)
+    if "password" in update_data and update_data["password"] is not None and update_data["password"] != "":
+        pw_hash = hash_password(update_data["password"])
+        updates.append("password_hash = ?")
+        params.append(pw_hash)
+
+    has_password_update = "password" in update_data and update_data["password"] is not None and update_data["password"] != ""
 
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -213,10 +313,74 @@ def update_consultant(
     updates.append("updated_at = ?")
     params.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     params.append(consultant_id)
-
     cursor.execute(
         f"UPDATE consultants SET {', '.join(updates)} WHERE id = ?", params
     )
+
+    # --- Sync changes to linked user account ---
+    if linked_user:
+        user_updates = []
+        user_params = []
+
+        if "name" in update_data and update_data["name"] is not None:
+            user_updates.append("full_name = ?")
+            user_params.append(update_data["name"])
+        if email_changed:
+            user_updates.append("email = ?")
+            user_params.append(new_email)
+            # Update username too
+            new_username = new_email.split("@")[0].lower()
+            base_username = new_username
+            counter = 1
+            while True:
+                dup = cursor.execute(
+                    "SELECT id FROM users WHERE username = ? AND id != ?", (new_username, linked_user["id"])
+                ).fetchone()
+                if not dup:
+                    break
+                new_username = f"{base_username}{counter}"
+                counter += 1
+            user_updates.append("username = ?")
+            user_params.append(new_username)
+        if has_password_update:
+            user_updates.append("password_hash = ?")
+            user_params.append(hash_password(update_data["password"]))
+
+        if user_updates:
+            user_updates.append("updated_at = ?")
+            user_params.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            user_params.append(linked_user["id"])
+            cursor.execute(
+                f"UPDATE users SET {', '.join(user_updates)} WHERE id = ?", user_params
+            )
+    else:
+        # No linked user yet — if password is provided, create one now
+        if has_password_update:
+            pw_hash = hash_password(update_data["password"])
+            email_for_user = new_email if email_changed else existing_dict.get("email")
+            name_for_user = update_data.get("name") or existing_dict.get("name")
+
+            # Check if email already exists in users
+            dup_user = cursor.execute(
+                "SELECT id FROM users WHERE email = ?", (email_for_user,)
+            ).fetchone()
+            if dup_user:
+                raise HTTPException(status_code=400, detail="A user with this email already exists. Cannot create login account.")
+
+            # Generate unique username
+            username = email_for_user.split("@")[0].lower()
+            base_username = username
+            counter = 1
+            while cursor.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            cursor.execute(
+                """INSERT INTO users (username, email, full_name, password_hash, role, consultant_id)
+                   VALUES (?, ?, ?, ?, 'consultant', ?)""",
+                (username, email_for_user, name_for_user, pw_hash, consultant_id),
+            )
+
     db.commit()
     return {"message": "Consultant updated successfully"}
 
@@ -227,7 +391,7 @@ def delete_consultant(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """Delete a consultant (admin only)."""
+    """Delete a consultant and their linked user account (admin only)."""
     cursor = db.cursor()
     existing = cursor.execute(
         "SELECT * FROM consultants WHERE id = ?", (consultant_id,)
@@ -239,6 +403,11 @@ def delete_consultant(
     cursor.execute(
         "DELETE FROM agreement_consultants WHERE consultant_id = ?", (consultant_id,)
     )
+    # Delete linked user account
+    cursor.execute(
+        "DELETE FROM users WHERE consultant_id = ? AND role = 'consultant'", (consultant_id,)
+    )
+    # Delete consultant
     cursor.execute("DELETE FROM consultants WHERE id = ?", (consultant_id,))
     db.commit()
     return {"message": "Consultant deleted successfully"}
@@ -286,8 +455,17 @@ def get_agreement_consultants(
     ).fetchone()
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
+    # Allow access for admin, owner, or assigned consultant
     if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+        if current_user["role"] == "consultant" and current_user.get("consultant_id"):
+            assigned = cursor.execute(
+                "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
+                (agreement_id, current_user["consultant_id"])
+            ).fetchone()
+            if not assigned:
+                raise HTTPException(status_code=403, detail="Access denied")
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
 
     consultants = cursor.execute("""
         SELECT c.id, c.name, c.designation, ac.assigned_at
@@ -315,7 +493,15 @@ def check_has_consultants(
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
     if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+        if current_user["role"] == "consultant" and current_user.get("consultant_id"):
+            assigned = cursor.execute(
+                "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
+                (agreement_id, current_user["consultant_id"])
+            ).fetchone()
+            if not assigned:
+                raise HTTPException(status_code=403, detail="Access denied")
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
 
     count = cursor.execute(
         "SELECT COUNT(*) as cnt FROM agreement_consultants WHERE agreement_id = ?",

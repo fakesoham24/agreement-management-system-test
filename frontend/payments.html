@@ -652,6 +652,33 @@
         initUI();
         loadPayments();
         loadNotifications();
+
+        // ==========================================
+        // WebSocket — Real-Time Updates
+        // ==========================================
+        const _liveSocket = new LiveSocket({
+            payment_updated: () => {
+                loadPayments();
+                loadNotifications();
+            },
+            agreement_updated: () => {
+                loadPayments();
+                loadNotifications();
+            },
+            agreement_deleted: () => {
+                loadPayments();
+                loadNotifications();
+            },
+            agreement_uploaded: () => {
+                showToast('New agreement uploaded — refreshing...', 'info');
+                loadPayments();
+                loadNotifications();
+            },
+            notification_updated: () => {
+                loadNotifications();
+            },
+        });
+        _liveSocket.connect();
     </script>
 </body>
 </html>

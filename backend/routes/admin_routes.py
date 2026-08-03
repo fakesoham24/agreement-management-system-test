@@ -13,6 +13,7 @@ from backend.config import UPLOAD_DIR
 from backend.email_service import (
     encrypt_value, decrypt_value, get_access_token, send_email,
 )
+from backend.websocket_manager import manager
 
 logger = logging.getLogger(__name__)
 
@@ -320,7 +321,7 @@ class UpdateCredentials(BaseModel):
 def admin_dashboard(admin: dict = Depends(require_admin), db=Depends(get_db)):
     cursor = db.cursor()
 
-    total_users = cursor.execute("SELECT COUNT(*) as count FROM users WHERE role = 'user'").fetchone()["count"]
+    total_users = cursor.execute("SELECT COUNT(*) as count FROM users WHERE role IN ('user', 'admin')").fetchone()["count"]
     total_agreements = cursor.execute("SELECT COUNT(*) as count FROM agreements").fetchone()["count"]
     active_agreements = cursor.execute("SELECT COUNT(*) as count FROM agreements WHERE status = 'active'").fetchone()["count"]
     expired_agreements = cursor.execute("SELECT COUNT(*) as count FROM agreements WHERE status = 'expired'").fetchone()["count"]
@@ -358,6 +359,7 @@ def list_users(admin: dict = Depends(require_admin), db=Depends(get_db)):
                COUNT(a.id) as agreement_count
         FROM users u
         LEFT JOIN agreements a ON u.id = a.user_id
+        WHERE u.role != 'consultant'
         GROUP BY u.id
         ORDER BY u.created_at DESC
     """).fetchall()
@@ -400,6 +402,9 @@ def create_user(data: CreateUser, admin: dict = Depends(require_admin), db=Depen
     )
     db.commit()
 
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("user_created", {})
+
     new_user_id = cursor.lastrowid
     return {
         "message": "User created successfully",
@@ -441,6 +446,8 @@ def update_user(user_id: int, data: UserUpdate, admin: dict = Depends(require_ad
         params.append(user_id)
         cursor.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", params)
         db.commit()
+        # Broadcast real-time update to all connected clients
+        manager.broadcast_sync("user_updated", {})
 
     return {"message": "User updated"}
 
@@ -554,5 +561,7 @@ def delete_user(user_id: int, admin: dict = Depends(require_admin), db=Depends(g
 
     cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("user_deleted", {})
 
     return {"message": "User deleted"}

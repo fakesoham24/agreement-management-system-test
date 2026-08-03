@@ -15,6 +15,7 @@ from backend.database import get_db
 from backend.config import UPLOAD_DIR, MAX_FILE_SIZE, MAX_SCANNED_FILE_SIZE, ALLOWED_EXTENSIONS
 from backend.file_utils import extract_text
 from backend.ai_service import analyze_agreement, validate_agreement_text
+from backend.websocket_manager import manager
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,28 @@ router = APIRouter(prefix="/api/agreements", tags=["Agreements"])
 # Structure: { agreement_id: { "status": "processing"|"completed"|"failed", "progress": 0-100, "message": "..." } }
 _analysis_status = {}
 _analysis_lock = threading.Lock()
+
+
+def _check_agreement_access(current_user: dict, agreement, db) -> bool:
+    """Check if the current user has access to the given agreement.
+    Returns True if access is allowed, raises HTTPException(403) otherwise.
+    Admins can access all. Users can access their own. Consultants can access
+    their own + agreements assigned to them.
+    """
+    if current_user["role"] == "admin":
+        return True
+    if agreement["user_id"] == current_user["id"]:
+        return True
+    # Consultants can access agreements assigned to them
+    if current_user["role"] == "consultant" and current_user.get("consultant_id"):
+        cursor = db.cursor()
+        assigned = cursor.execute(
+            "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
+            (agreement["id"], current_user["consultant_id"])
+        ).fetchone()
+        if assigned:
+            return True
+    raise HTTPException(status_code=403, detail="Access denied")
 
 
 class AnalysisUpdate(BaseModel):
@@ -259,6 +282,17 @@ async def upload_agreement(
             user_id=current_user["id"]
         )
 
+        # Auto-assign agreement to consultant if uploader is a consultant
+        if current_user.get("role") == "consultant" and current_user.get("consultant_id"):
+            try:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO agreement_consultants (agreement_id, consultant_id) VALUES (?, ?)",
+                    (agreement_id, current_user["consultant_id"])
+                )
+                db.commit()
+            except Exception:
+                pass  # Non-critical — don't fail upload if assignment fails
+
         return {
             "message": "Agreement uploaded, analysis in progress...",
             "agreement_id": agreement_id,
@@ -438,6 +472,9 @@ def _background_analyze(agreement_id: int, raw_text: str, file_path: str, user_i
                 "progress": 100,
                 "message": "Agreement analyzed successfully!"
             }
+
+        # Broadcast real-time update to all connected clients
+        manager.broadcast_sync("agreement_uploaded", {"agreement_id": agreement_id})
 
         logger.info(f"Background analysis completed for agreement {agreement_id}")
 
@@ -677,6 +714,20 @@ async def manual_upload_agreement(
         # Generate notifications
         _generate_notifications(cursor, db, current_user["id"], agreement_id, analysis)
 
+        # Broadcast real-time update to all connected clients
+        manager.broadcast_sync("agreement_uploaded", {"agreement_id": agreement_id})
+
+        # Auto-assign agreement to consultant if uploader is a consultant
+        if current_user.get("role") == "consultant" and current_user.get("consultant_id"):
+            try:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO agreement_consultants (agreement_id, consultant_id) VALUES (?, ?)",
+                    (agreement_id, current_user["consultant_id"])
+                )
+                db.commit()
+            except Exception:
+                pass  # Non-critical
+
         return {
             "message": "Agreement uploaded successfully (manual entry)",
             "agreement_id": agreement_id
@@ -881,6 +932,18 @@ def list_agreements(
             WHERE 1=1
         """
         params = []
+    elif current_user["role"] == "consultant" and current_user.get("consultant_id"):
+        # Consultants see: agreements assigned to them + agreements they uploaded
+        query = """
+            SELECT DISTINCT a.*, aa.company_name, aa.effective_date, aa.expiry_date,
+                   aa.payment_type, aa.payment_amount, aa.payment_frequency,
+                   aa.payment_plans, aa.renewal_due_date, aa.auto_renewal, aa.currency
+            FROM agreements a
+            LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
+            LEFT JOIN agreement_consultants ac ON a.id = ac.agreement_id
+            WHERE (a.user_id = ? OR ac.consultant_id = ?)
+        """
+        params = [current_user["id"], current_user["consultant_id"]]
     else:
         query = """
             SELECT a.*, aa.company_name, aa.effective_date, aa.expiry_date,
@@ -985,8 +1048,7 @@ def get_agreement(
         raise HTTPException(status_code=404, detail="Agreement not found")
 
     # Ownership check
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
 
     # Mark as viewed (remove "New" label)
     if not agreement["is_viewed"]:
@@ -1020,8 +1082,7 @@ def update_analysis(
 
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
 
     # Build dynamic update
     updates = []
@@ -1091,6 +1152,8 @@ def update_analysis(
             pass
 
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("agreement_updated", {"agreement_id": agreement_id})
     return {"message": "Analysis updated successfully"}
 
 
@@ -1107,8 +1170,7 @@ def mark_plan_paid(
 
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
 
     # Get current analysis
     analysis = cursor.execute(
@@ -1178,6 +1240,8 @@ def mark_plan_paid(
         )
 
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("payment_updated", {"agreement_id": agreement_id, "payment_id": matched_payment_id})
     return {"message": f"Payment plan marked as {new_status}", "status": new_status, "plans": plans, "payment_id": matched_payment_id}
 
 
@@ -1196,11 +1260,12 @@ def update_status(
 
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
 
     cursor.execute("UPDATE agreements SET status = ? WHERE id = ?", (data.status, agreement_id))
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("agreement_updated", {"agreement_id": agreement_id})
     return {"message": "Status updated"}
 
 
@@ -1216,8 +1281,7 @@ def terminate_agreement(
 
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
     if agreement["status"] == "terminated":
         raise HTTPException(status_code=400, detail="Agreement is already terminated")
 
@@ -1241,6 +1305,8 @@ def terminate_agreement(
     )
 
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("agreement_updated", {"agreement_id": agreement_id})
     return {"message": f"Agreement with {company} has been terminated successfully."}
 
 
@@ -1255,8 +1321,7 @@ def delete_agreement(
 
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
 
     # Delete file — resolve to absolute path for reliability
     file_path = agreement["file_path"]
@@ -1280,6 +1345,8 @@ def delete_agreement(
     # Database cascades handle remaining related records (analysis, payments)
     cursor.execute("DELETE FROM agreements WHERE id = ?", (agreement_id,))
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("agreement_deleted", {"agreement_id": agreement_id})
 
     return {"message": "Agreement deleted successfully"}
 
@@ -1296,8 +1363,7 @@ def get_agreement_document(
 
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
-    if current_user["role"] != "admin" and agreement["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+    _check_agreement_access(current_user, agreement, db)
 
     file_path = agreement["file_path"]
     if not file_path or not os.path.exists(file_path):
@@ -1331,7 +1397,15 @@ def update_payment_status(
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
     if current_user["role"] != "admin" and payment["user_id"] != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Access denied")
+        if current_user["role"] == "consultant" and current_user.get("consultant_id"):
+            assigned = cursor.execute(
+                "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
+                (payment["agreement_id"], current_user["consultant_id"])
+            ).fetchone()
+            if not assigned:
+                raise HTTPException(status_code=403, detail="Access denied")
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
 
     new_status = "pending" if payment["status"] == "paid" else "paid"
     paid_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S") if new_status == "paid" else None
@@ -1341,4 +1415,6 @@ def update_payment_status(
         (new_status, paid_at, payment_id)
     )
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("payment_updated", {"agreement_id": agreement["id"], "payment_id": payment_id})
     return {"message": f"Payment marked as {new_status}", "status": new_status}

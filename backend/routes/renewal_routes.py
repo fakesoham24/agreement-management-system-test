@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from typing import Optional
 from backend.auth import get_current_user
 from backend.database import get_db
+from backend.websocket_manager import manager
 from backend.ai_service import _assign_due_dates_from_plan_column, _sort_plans_by_due_date
 
 router = APIRouter(prefix="/api/renewals", tags=["Renewals"])
@@ -39,6 +40,17 @@ def list_renewals(
             WHERE a.status != 'terminated'
         """
         params = []
+    elif current_user["role"] == "consultant" and current_user.get("consultant_id"):
+        query = """
+            SELECT DISTINCT a.id, a.status, a.renewal_status, a.renewal_increase_percent,
+                   aa.company_name, aa.effective_date, aa.expiry_date,
+                   aa.payment_plans, aa.currency, aa.contact_person
+            FROM agreements a
+            LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
+            LEFT JOIN agreement_consultants ac ON a.id = ac.agreement_id
+            WHERE (a.user_id = ? OR ac.consultant_id = ?) AND a.status != 'terminated'
+        """
+        params = [current_user["id"], current_user["consultant_id"]]
     else:
         query = """
             SELECT a.id, a.status, a.renewal_status, a.renewal_increase_percent,
@@ -288,6 +300,9 @@ def approve_renewal(
 
     db.commit()
 
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("agreement_updated", {"agreement_id": agreement_id})
+
     return {
         "message": f"Renewal approved successfully. Agreement extended to {new_end.strftime('%Y-%m-%d')} with {increase_percent}% increase.",
         "new_start": new_start.strftime("%Y-%m-%d"),
@@ -334,6 +349,8 @@ def reject_renewal(
     )
 
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("agreement_updated", {"agreement_id": agreement_id})
     return {"message": "Renewal rejected. Agreement will expire naturally."}
 
 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from backend.auth import get_current_user
 from backend.database import get_db
+from backend.websocket_manager import manager
 
 router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
 
@@ -31,6 +32,8 @@ def mark_read(notification_id: int, current_user: dict = Depends(get_current_use
 
     cursor.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", (notification_id,))
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("notification_updated", {})
     return {"message": "Marked as read"}
 
 
@@ -39,6 +42,8 @@ def mark_all_read(current_user: dict = Depends(get_current_user), db=Depends(get
     cursor = db.cursor()
     cursor.execute("UPDATE notifications SET is_read = 1 WHERE user_id = ?", (current_user["id"],))
     db.commit()
+    # Broadcast real-time update to all connected clients
+    manager.broadcast_sync("notification_updated", {})
     return {"message": "All notifications marked as read"}
 
 

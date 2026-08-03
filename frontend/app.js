@@ -34,6 +34,10 @@ const Auth = {
         const user = this.getUser();
         return user && user.role === 'admin';
     },
+    isConsultant() {
+        const user = this.getUser();
+        return user && user.role === 'consultant';
+    },
     requireAuth() {
         if (!this.isLoggedIn()) {
             window.location.href = '/login';
@@ -304,3 +308,160 @@ const Icons = {
 // Sidebar Logo SVG
 // ==========================================
 const LogoSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>`;
+
+// ==========================================
+// LiveSocket — Real-Time WebSocket Client
+// ==========================================
+/**
+ * Reusable WebSocket client with:
+ * - JWT-authenticated connections
+ * - Auto-reconnect with exponential backoff (1s → 2s → 4s → max 30s)
+ * - Ping/pong keep-alive (every 30s)
+ * - Page visibility handling (pause when hidden, reconnect when visible)
+ * - Debounced event handling to prevent rapid re-renders
+ *
+ * Usage:
+ *   const ws = new LiveSocket({
+ *       agreement_uploaded: () => { loadAgreements(); },
+ *       payment_updated: (data) => { loadPayments(); },
+ *   });
+ *   ws.connect();
+ */
+class LiveSocket {
+    constructor(handlers = {}) {
+        this._handlers = handlers;
+        this._ws = null;
+        this._reconnectDelay = 1000;       // Start at 1 second
+        this._maxReconnectDelay = 30000;    // Max 30 seconds
+        this._reconnectTimer = null;
+        this._pingInterval = null;
+        this._connected = false;
+        this._intentionalClose = false;
+        this._debounceTimers = {};
+        this._debounceMs = 500;             // Debounce rapid events (500ms)
+    }
+
+    connect() {
+        const token = Auth.getToken();
+        if (!token) return;
+
+        // Build WebSocket URL (ws:// for http, wss:// for https)
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${protocol}//${window.location.host}/ws?token=${encodeURIComponent(token)}`;
+
+        try {
+            this._ws = new WebSocket(url);
+        } catch (e) {
+            this._scheduleReconnect();
+            return;
+        }
+
+        this._ws.onopen = () => {
+            this._connected = true;
+            this._reconnectDelay = 1000; // Reset backoff on successful connect
+            this._startPing();
+        };
+
+        this._ws.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.event === 'pong') return; // Keep-alive response
+                this._handleEvent(msg.event, msg.data || {});
+            } catch (e) {
+                // Ignore malformed messages
+            }
+        };
+
+        this._ws.onclose = (event) => {
+            this._connected = false;
+            this._stopPing();
+            // 4001 = invalid token → don't reconnect (session expired popup will handle it)
+            if (event.code === 4001) return;
+            if (!this._intentionalClose) {
+                this._scheduleReconnect();
+            }
+        };
+
+        this._ws.onerror = () => {
+            // Error will trigger onclose, which handles reconnection
+        };
+
+        // Handle page visibility changes
+        if (!this._visibilityHandler) {
+            this._visibilityHandler = () => {
+                if (document.hidden) {
+                    // Tab hidden — stop ping to save resources
+                    this._stopPing();
+                } else {
+                    // Tab visible again — reconnect if needed
+                    if (!this._connected) {
+                        clearTimeout(this._reconnectTimer);
+                        this._reconnectDelay = 1000;
+                        this._scheduleReconnect();
+                    } else {
+                        this._startPing();
+                    }
+                }
+            };
+            document.addEventListener('visibilitychange', this._visibilityHandler);
+        }
+    }
+
+    disconnect() {
+        this._intentionalClose = true;
+        this._stopPing();
+        clearTimeout(this._reconnectTimer);
+        if (this._ws) {
+            this._ws.close();
+            this._ws = null;
+        }
+        this._connected = false;
+    }
+
+    _handleEvent(event, data) {
+        const handler = this._handlers[event];
+        if (!handler) return;
+
+        // Debounce: if the same event fires multiple times within _debounceMs,
+        // only execute the handler once (prevents rapid UI re-renders)
+        clearTimeout(this._debounceTimers[event]);
+        this._debounceTimers[event] = setTimeout(() => {
+            try {
+                handler(data);
+            } catch (e) {
+                // Handler errors should not crash the WebSocket
+            }
+        }, this._debounceMs);
+    }
+
+    _scheduleReconnect() {
+        if (this._intentionalClose) return;
+        clearTimeout(this._reconnectTimer);
+        this._reconnectTimer = setTimeout(() => {
+            this.connect();
+        }, this._reconnectDelay);
+        // Exponential backoff
+        this._reconnectDelay = Math.min(this._reconnectDelay * 2, this._maxReconnectDelay);
+    }
+
+    _startPing() {
+        this._stopPing();
+        this._pingInterval = setInterval(() => {
+            if (this._ws && this._ws.readyState === WebSocket.OPEN) {
+                try {
+                    this._ws.send('ping');
+                } catch (e) {
+                    // Send failed — connection is dead
+                    this._connected = false;
+                    this._stopPing();
+                    this._scheduleReconnect();
+                }
+            }
+        }, 30000); // Ping every 30 seconds
+    }
+
+    _stopPing() {
+        clearInterval(this._pingInterval);
+        this._pingInterval = null;
+    }
+}

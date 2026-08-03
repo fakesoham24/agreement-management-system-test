@@ -230,6 +230,43 @@ def init_db():
     except Exception:
         pass  # Column already exists
 
+    # ── Migrate users table — remove role CHECK constraint to allow 'consultant' role,
+    #    and add consultant_id foreign key column.
+    #    Uses table-recreation pattern (same as email_log migration below). ──
+    try:
+        # Check if migration is needed: look for consultant_id column
+        user_cols = [col[1] for col in cursor.execute("PRAGMA table_info(users)").fetchall()]
+        if "consultant_id" not in user_cols:
+            cursor.execute("PRAGMA foreign_keys=OFF")
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    full_name TEXT NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'user',
+                    is_active INTEGER DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    global_payment_access INTEGER DEFAULT 0,
+                    consultant_id INTEGER REFERENCES consultants(id)
+                )
+            """)
+            cursor.execute("""
+                INSERT INTO users_new (id, username, email, full_name, password_hash, role,
+                                       is_active, created_at, updated_at, global_payment_access)
+                SELECT id, username, email, full_name, password_hash, role,
+                       is_active, created_at, updated_at, global_payment_access
+                FROM users
+            """)
+            cursor.execute("DROP TABLE users")
+            cursor.execute("ALTER TABLE users_new RENAME TO users")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            conn.commit()
+    except Exception:
+        pass  # Migration already done or not needed
+
     # ── Consultants table ──
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS consultants (
@@ -255,6 +292,12 @@ def init_db():
             UNIQUE(agreement_id, consultant_id)
         )
     """)
+
+    # Migrate consultants table — add password_hash for login capability
+    try:
+        cursor.execute("ALTER TABLE consultants ADD COLUMN password_hash TEXT")
+    except Exception:
+        pass  # Column already exists
 
     # Migrate email_settings — add consultant email template columns
     consultant_email_cols = [

@@ -1932,6 +1932,25 @@
                 btn.textContent = 'OK, Terminate';
             }
         }
+
+        // ==========================================
+        // WebSocket — Real-Time Updates
+        // ==========================================
+        const _liveSocket = new LiveSocket({
+            agreement_updated: (data) => {
+                if (data.agreement_id === agreementId) {
+                    showToast('Refreshing...', 'info');
+                    loadAgreement();
+                }
+            },
+            payment_updated: (data) => {
+                if (data.agreement_id === agreementId) {
+                    showToast('Refreshing...', 'info');
+                    loadAgreement();
+                }
+            },
+        });
+        _liveSocket.connect();
     </script>
 </body>
 

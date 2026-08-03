@@ -1417,6 +1417,37 @@
         loadAgreements();
         loadNotifications();
         loadPaymentSummary();
+
+        // ==========================================
+        // WebSocket — Real-Time Updates
+        // ==========================================
+        const _liveSocket = new LiveSocket({
+            agreement_uploaded: () => {
+                showToast('New agreement uploaded — refreshing...', 'info');
+                loadAgreements();
+                loadPaymentSummary();
+                loadNotifications();
+            },
+            agreement_updated: () => {
+                loadAgreements();
+                loadPaymentSummary();
+                loadNotifications();
+            },
+            agreement_deleted: () => {
+                loadAgreements();
+                loadPaymentSummary();
+                loadNotifications();
+            },
+            payment_updated: () => {
+                loadAgreements();
+                loadPaymentSummary();
+                loadNotifications();
+            },
+            notification_updated: () => {
+                loadNotifications();
+            },
+        });
+        _liveSocket.connect();
     </script>
 </body>
 </html>

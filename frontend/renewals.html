@@ -520,6 +520,29 @@
         initUI();
         loadRenewals();
         loadNotifications();
+
+        // ==========================================
+        // WebSocket — Real-Time Updates
+        // ==========================================
+        const _liveSocket = new LiveSocket({
+            agreement_updated: () => {
+                loadRenewals();
+                loadNotifications();
+            },
+            agreement_deleted: () => {
+                loadRenewals();
+                loadNotifications();
+            },
+            agreement_uploaded: () => {
+                showToast('New agreement uploaded — refreshing...', 'info');
+                loadRenewals();
+                loadNotifications();
+            },
+            notification_updated: () => {
+                loadNotifications();
+            },
+        });
+        _liveSocket.connect();
     </script>
 </body>
 </html>

@@ -53,7 +53,11 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         raise HTTPException(status_code=401, detail="User not found")
     if not user["is_active"]:
         raise HTTPException(status_code=403, detail="Account is disabled")
-    return dict(user)
+    user_dict = dict(user)
+    # Ensure consultant_id is always present in the dict (None for non-consultants)
+    if "consultant_id" not in user_dict:
+        user_dict["consultant_id"] = None
+    return user_dict
 
 
 def require_admin(current_user: dict = Depends(get_current_user)):

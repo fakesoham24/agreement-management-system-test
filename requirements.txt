@@ -1,6 +1,8 @@
 # ── Core Framework ──
 fastapi==0.115.0
 uvicorn==0.30.6
+uvicorn[standard]
+websockets
 pydantic==2.9.2
 python-multipart==0.0.9
 aiofiles==24.1.0

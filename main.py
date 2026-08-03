@@ -2,11 +2,13 @@ import os
 import logging
 import uvicorn
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import HOST, PORT, UPLOAD_DIR, IS_DEFAULT_SECRET_KEY
+from backend.auth import decode_token
+from backend.websocket_manager import manager
 from backend.database import init_db
 from backend.routes.auth_routes import router as auth_router
 from backend.routes.agreement_routes import router as agreement_router
@@ -170,6 +172,43 @@ async def serve_admin():
 @app.get("/renewals")
 async def serve_renewals():
     return FileResponse("frontend/renewals.html")
+
+
+# ==========================================
+# WebSocket — Real-Time Updates
+# ==========================================
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
+    """Authenticated WebSocket endpoint for real-time updates.
+    Clients connect with: ws(s)://host/ws?token=<JWT>
+    """
+    # Validate JWT token before accepting the connection
+    try:
+        payload = decode_token(token)
+        user_id = int(payload.get("sub"))
+    except Exception:
+        await websocket.close(code=4001, reason="Invalid or expired token")
+        return
+
+    # Accept and register connection
+    await manager.connect(websocket, user_id)
+    try:
+        # Keep the connection alive — listen for client messages (pings)
+        while True:
+            # Wait for any message from the client (used as keep-alive ping)
+            data = await websocket.receive_text()
+            # Client sends "ping" → respond with "pong"
+            if data == "ping":
+                try:
+                    await websocket.send_text('{"event":"pong"}')
+                except Exception:
+                    break
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+    finally:
+        await manager.disconnect(websocket, user_id)
 
 
 
