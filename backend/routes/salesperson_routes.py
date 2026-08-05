@@ -1,6 +1,6 @@
 """
-Consultant Routes — CRUD for consultant persons and agreement-consultant assignments.
-Admin-only for managing consultants; all users can assign consultants to agreements.
+Sales Person Routes — CRUD for sales persons and agreement-salesperson assignments.
+Admin-only for managing salespersons; all users can assign salespersons to agreements.
 """
 import re
 from datetime import datetime
@@ -10,25 +10,20 @@ from typing import List, Optional
 from backend.auth import get_current_user, require_admin, hash_password
 from backend.database import get_db
 
-router = APIRouter(prefix="/api/consultants", tags=["Consultants"])
+router = APIRouter(prefix="/api/salespersons", tags=["SalesPersons"])
 
-# Valid designation options
+# Valid designation options for sales persons
 VALID_DESIGNATIONS = [
-    "Project Manager",
-    "Lead Consultant",
-    "Senior Consultant",
-    "Lean Consultant",
-    "Consultant",
-    "Junior Consultant",
-    "Associate Consultant",
-    "Opex Consultant",
+    "Sales Manager",
+    "Senior Sales Person",
+    "Sales Executive",
 ]
 
 
 # ==========================================
 # Request Models
 # ==========================================
-class ConsultantCreate(BaseModel):
+class SalesPersonCreate(BaseModel):
     name: str
     designation: str
     email: str
@@ -76,7 +71,7 @@ class ConsultantCreate(BaseModel):
         return v
 
 
-class ConsultantUpdate(BaseModel):
+class SalesPersonUpdate(BaseModel):
     name: Optional[str] = None
     designation: Optional[str] = None
     email: Optional[str] = None
@@ -121,55 +116,55 @@ class ConsultantUpdate(BaseModel):
         return v
 
 
-class AssignConsultants(BaseModel):
-    consultant_ids: List[int]
+class AssignSalesPersons(BaseModel):
+    salesperson_ids: List[int]
 
-    @field_validator("consultant_ids")
+    @field_validator("salesperson_ids")
     @classmethod
     def validate_ids(cls, v):
         if not v or len(v) == 0:
-            raise ValueError("At least one consultant must be selected")
+            raise ValueError("At least one sales person must be selected")
         return v
 
 
 # ==========================================
-# Admin-only: CRUD for Consultant Persons
+# Admin-only: CRUD for Sales Persons
 # ==========================================
 
 @router.get("/")
-def list_consultants(
+def list_salespersons(
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """List all consultants with full details (admin only)."""
+    """List all salespersons with full details (admin only)."""
     cursor = db.cursor()
-    consultants = cursor.execute("""
-        SELECT c.*,
-               (SELECT COUNT(*) FROM agreement_consultants ac
-                JOIN agreements a ON ac.agreement_id = a.id
-                WHERE ac.consultant_id = c.id AND a.status = 'active') as active_agreements
-        FROM consultants c
-        ORDER BY c.created_at DESC
+    salespersons = cursor.execute("""
+        SELECT s.*,
+               (SELECT COUNT(*) FROM agreement_salespersons asp
+                JOIN agreements a ON asp.agreement_id = a.id
+                WHERE asp.salesperson_id = s.id AND a.status = 'active') as active_agreements
+        FROM salespersons s
+        ORDER BY s.created_at DESC
     """).fetchall()
     result = []
-    for c in consultants:
-        cd = dict(c)
-        # Check if this consultant has a linked user account (has login capability)
+    for s in salespersons:
+        sd = dict(s)
+        # Check if this salesperson has a linked user account (has login capability)
         linked_user = cursor.execute(
-            "SELECT id FROM users WHERE consultant_id = ? AND role = 'consultant'", (cd["id"],)
+            "SELECT id FROM users WHERE salesperson_id = ? AND role = 'salesperson'", (sd["id"],)
         ).fetchone()
-        cd["has_login"] = linked_user is not None
-        result.append(cd)
-    return {"consultants": result}
+        sd["has_login"] = linked_user is not None
+        result.append(sd)
+    return {"salespersons": result}
 
 
 @router.post("/")
-def create_consultant(
-    data: ConsultantCreate,
+def create_salesperson(
+    data: SalesPersonCreate,
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """Create a new consultant with login account (admin only). Email must be OTP-verified."""
+    """Create a new salesperson with login account (admin only). Email must be OTP-verified."""
     # Import OTP verification from admin_routes
     from backend.routes.admin_routes import _is_email_verified
 
@@ -177,14 +172,14 @@ def create_consultant(
 
     # Verify email via OTP
     if not _is_email_verified(data.email):
-        raise HTTPException(status_code=400, detail="Email must be verified via OTP before creating a consultant account")
+        raise HTTPException(status_code=400, detail="Email must be verified via OTP before creating a sales person account")
 
-    # Check duplicate email in consultants
+    # Check duplicate email in salespersons
     existing = cursor.execute(
-        "SELECT id FROM consultants WHERE email = ?", (data.email,)
+        "SELECT id FROM salespersons WHERE email = ?", (data.email,)
     ).fetchone()
     if existing:
-        raise HTTPException(status_code=400, detail="A consultant with this email already exists")
+        raise HTTPException(status_code=400, detail="A sales person with this email already exists")
 
     # Check duplicate email in users table
     existing_user = cursor.execute(
@@ -196,13 +191,13 @@ def create_consultant(
     # Hash password
     pw_hash = hash_password(data.password)
 
-    # Insert into consultants table
+    # Insert into salespersons table
     cursor.execute(
-        "INSERT INTO consultants (name, designation, email, password_hash) VALUES (?, ?, ?, ?)",
+        "INSERT INTO salespersons (name, designation, email, password_hash) VALUES (?, ?, ?, ?)",
         (data.name, data.designation, data.email, pw_hash),
     )
     db.commit()
-    consultant_id = cursor.lastrowid
+    salesperson_id = cursor.lastrowid
 
     # Create linked user account for login
     # Generate unique username from email
@@ -214,16 +209,16 @@ def create_consultant(
         counter += 1
 
     cursor.execute(
-        """INSERT INTO users (username, email, full_name, password_hash, role, consultant_id)
-           VALUES (?, ?, ?, ?, 'consultant', ?)""",
-        (username, data.email, data.name, pw_hash, consultant_id),
+        """INSERT INTO users (username, email, full_name, password_hash, role, salesperson_id)
+           VALUES (?, ?, ?, ?, 'salesperson', ?)""",
+        (username, data.email, data.name, pw_hash, salesperson_id),
     )
     db.commit()
 
     return {
-        "message": "Consultant added successfully",
-        "consultant": {
-            "id": consultant_id,
+        "message": "Sales person added successfully",
+        "salesperson": {
+            "id": salesperson_id,
             "name": data.name,
             "designation": data.designation,
             "email": data.email,
@@ -231,27 +226,27 @@ def create_consultant(
     }
 
 
-@router.put("/{consultant_id}")
-def update_consultant(
-    consultant_id: int,
-    data: ConsultantUpdate,
+@router.put("/{salesperson_id}")
+def update_salesperson(
+    salesperson_id: int,
+    data: SalesPersonUpdate,
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """Update consultant details (admin only). Syncs changes to linked user account."""
+    """Update salesperson details (admin only). Syncs changes to linked user account."""
     cursor = db.cursor()
     existing = cursor.execute(
-        "SELECT * FROM consultants WHERE id = ?", (consultant_id,)
+        "SELECT * FROM salespersons WHERE id = ?", (salesperson_id,)
     ).fetchone()
     if not existing:
-        raise HTTPException(status_code=404, detail="Consultant not found")
+        raise HTTPException(status_code=404, detail="Sales person not found")
 
     existing_dict = dict(existing)
     update_data = data.model_dump(exclude_unset=True)
 
     # Find linked user account
     linked_user = cursor.execute(
-        "SELECT * FROM users WHERE consultant_id = ? AND role = 'consultant'", (consultant_id,)
+        "SELECT * FROM users WHERE salesperson_id = ? AND role = 'salesperson'", (salesperson_id,)
     ).fetchone()
 
     # --- Handle email change with OTP verification ---
@@ -266,13 +261,13 @@ def update_consultant(
             if not _is_email_verified(new_email):
                 raise HTTPException(status_code=400, detail="New email must be verified via OTP before updating")
 
-            # Check duplicate email in consultants
+            # Check duplicate email in salespersons
             dup = cursor.execute(
-                "SELECT id FROM consultants WHERE email = ? AND id != ?",
-                (new_email, consultant_id),
+                "SELECT id FROM salespersons WHERE email = ? AND id != ?",
+                (new_email, salesperson_id),
             ).fetchone()
             if dup:
-                raise HTTPException(status_code=400, detail="A consultant with this email already exists")
+                raise HTTPException(status_code=400, detail="A sales person with this email already exists")
 
             # Check duplicate email in users
             if linked_user:
@@ -288,7 +283,7 @@ def update_consultant(
             if dup_user:
                 raise HTTPException(status_code=400, detail="A user with this email already exists")
 
-    # --- Build consultant table updates ---
+    # --- Build salesperson table updates ---
     updates = []
     params = []
 
@@ -313,9 +308,9 @@ def update_consultant(
 
     updates.append("updated_at = ?")
     params.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    params.append(consultant_id)
+    params.append(salesperson_id)
     cursor.execute(
-        f"UPDATE consultants SET {', '.join(updates)} WHERE id = ?", params
+        f"UPDATE salespersons SET {', '.join(updates)} WHERE id = ?", params
     )
 
     # --- Sync changes to linked user account ---
@@ -377,77 +372,77 @@ def update_consultant(
                 counter += 1
 
             cursor.execute(
-                """INSERT INTO users (username, email, full_name, password_hash, role, consultant_id)
-                   VALUES (?, ?, ?, ?, 'consultant', ?)""",
-                (username, email_for_user, name_for_user, pw_hash, consultant_id),
+                """INSERT INTO users (username, email, full_name, password_hash, role, salesperson_id)
+                   VALUES (?, ?, ?, ?, 'salesperson', ?)""",
+                (username, email_for_user, name_for_user, pw_hash, salesperson_id),
             )
 
     db.commit()
-    return {"message": "Consultant updated successfully"}
+    return {"message": "Sales person updated successfully"}
 
 
-@router.delete("/{consultant_id}")
-def delete_consultant(
-    consultant_id: int,
+@router.delete("/{salesperson_id}")
+def delete_salesperson(
+    salesperson_id: int,
     admin: dict = Depends(require_admin),
     db=Depends(get_db),
 ):
-    """Delete a consultant and their linked user account (admin only)."""
+    """Delete a salesperson and their linked user account (admin only)."""
     cursor = db.cursor()
     existing = cursor.execute(
-        "SELECT * FROM consultants WHERE id = ?", (consultant_id,)
+        "SELECT * FROM salespersons WHERE id = ?", (salesperson_id,)
     ).fetchone()
     if not existing:
-        raise HTTPException(status_code=404, detail="Consultant not found")
+        raise HTTPException(status_code=404, detail="Sales person not found")
 
     # Remove all assignments first (CASCADE should handle but be explicit)
     cursor.execute(
-        "DELETE FROM agreement_consultants WHERE consultant_id = ?", (consultant_id,)
+        "DELETE FROM agreement_salespersons WHERE salesperson_id = ?", (salesperson_id,)
     )
     # Delete linked user account
     cursor.execute(
-        "DELETE FROM users WHERE consultant_id = ? AND role = 'consultant'", (consultant_id,)
+        "DELETE FROM users WHERE salesperson_id = ? AND role = 'salesperson'", (salesperson_id,)
     )
-    # Delete consultant
-    cursor.execute("DELETE FROM consultants WHERE id = ?", (consultant_id,))
+    # Delete salesperson
+    cursor.execute("DELETE FROM salespersons WHERE id = ?", (salesperson_id,))
     db.commit()
-    return {"message": "Consultant deleted successfully"}
+    return {"message": "Sales person deleted successfully"}
 
 
 # ==========================================
-# All-user: Consultant dropdown list (no email)
+# All-user: SalesPerson dropdown list (no email)
 # ==========================================
 
 @router.get("/list")
-def list_consultants_for_dropdown(
+def list_salespersons_for_dropdown(
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """List consultants for dropdown selection (no email shown)."""
+    """List salespersons for dropdown selection (no email shown)."""
     cursor = db.cursor()
-    consultants = cursor.execute(
-        "SELECT id, name, designation FROM consultants WHERE is_active = 1 ORDER BY name"
+    salespersons = cursor.execute(
+        "SELECT id, name, designation FROM salespersons WHERE is_active = 1 ORDER BY name"
     ).fetchall()
-    return {"consultants": [dict(c) for c in consultants]}
+    return {"salespersons": [dict(s) for s in salespersons]}
 
 
 @router.get("/designations")
 def get_designations(current_user: dict = Depends(get_current_user)):
-    """Return valid designation options."""
+    """Return valid designation options for sales persons."""
     return {"designations": VALID_DESIGNATIONS}
 
 
 # ==========================================
-# Agreement-Consultant Assignment Endpoints
+# Agreement-SalesPerson Assignment Endpoints
 # ==========================================
 
 @router.get("/agreement/{agreement_id}")
-def get_agreement_consultants(
+def get_agreement_salespersons(
     agreement_id: int,
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """Get consultants assigned to an agreement."""
+    """Get salespersons assigned to an agreement."""
     cursor = db.cursor()
 
     # Verify agreement exists and user has access
@@ -475,24 +470,24 @@ def get_agreement_consultants(
         else:
             raise HTTPException(status_code=403, detail="Access denied")
 
-    consultants = cursor.execute("""
-        SELECT c.id, c.name, c.designation, ac.assigned_at
-        FROM agreement_consultants ac
-        JOIN consultants c ON ac.consultant_id = c.id
-        WHERE ac.agreement_id = ?
-        ORDER BY c.name
+    salespersons = cursor.execute("""
+        SELECT s.id, s.name, s.designation, asp.assigned_at
+        FROM agreement_salespersons asp
+        JOIN salespersons s ON asp.salesperson_id = s.id
+        WHERE asp.agreement_id = ?
+        ORDER BY s.name
     """, (agreement_id,)).fetchall()
 
-    return {"consultants": [dict(c) for c in consultants]}
+    return {"salespersons": [dict(s) for s in salespersons]}
 
 
-@router.get("/agreement/{agreement_id}/has-consultants")
-def check_has_consultants(
+@router.get("/agreement/{agreement_id}/has-salespersons")
+def check_has_salespersons(
     agreement_id: int,
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """Check if an agreement has consultants assigned."""
+    """Check if an agreement has salespersons assigned."""
     cursor = db.cursor()
 
     agreement = cursor.execute(
@@ -519,21 +514,21 @@ def check_has_consultants(
             raise HTTPException(status_code=403, detail="Access denied")
 
     count = cursor.execute(
-        "SELECT COUNT(*) as cnt FROM agreement_consultants WHERE agreement_id = ?",
+        "SELECT COUNT(*) as cnt FROM agreement_salespersons WHERE agreement_id = ?",
         (agreement_id,),
     ).fetchone()["cnt"]
 
-    return {"has_consultants": count > 0, "count": count}
+    return {"has_salespersons": count > 0, "count": count}
 
 
 @router.post("/agreement/{agreement_id}")
-def assign_consultants(
+def assign_salespersons(
     agreement_id: int,
-    data: AssignConsultants,
+    data: AssignSalesPersons,
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """Assign consultants to an agreement (replaces existing assignments)."""
+    """Assign salespersons to an agreement (replaces existing assignments)."""
     cursor = db.cursor()
 
     agreement = cursor.execute(
@@ -559,37 +554,37 @@ def assign_consultants(
         else:
             raise HTTPException(status_code=403, detail="Access denied")
 
-    # Validate all consultant IDs exist
-    for cid in data.consultant_ids:
+    # Validate all salesperson IDs exist
+    for sid in data.salesperson_ids:
         exists = cursor.execute(
-            "SELECT id FROM consultants WHERE id = ? AND is_active = 1", (cid,)
+            "SELECT id FROM salespersons WHERE id = ? AND is_active = 1", (sid,)
         ).fetchone()
         if not exists:
             raise HTTPException(
-                status_code=400, detail=f"Consultant with ID {cid} not found or inactive"
+                status_code=400, detail=f"Sales person with ID {sid} not found or inactive"
             )
 
     # Remove existing assignments and re-assign
     cursor.execute(
-        "DELETE FROM agreement_consultants WHERE agreement_id = ?", (agreement_id,)
+        "DELETE FROM agreement_salespersons WHERE agreement_id = ?", (agreement_id,)
     )
-    for cid in data.consultant_ids:
+    for sid in data.salesperson_ids:
         cursor.execute(
-            "INSERT INTO agreement_consultants (agreement_id, consultant_id) VALUES (?, ?)",
-            (agreement_id, cid),
+            "INSERT INTO agreement_salespersons (agreement_id, salesperson_id) VALUES (?, ?)",
+            (agreement_id, sid),
         )
 
     db.commit()
-    return {"message": f"{len(data.consultant_ids)} consultant(s) assigned successfully"}
+    return {"message": f"{len(data.salesperson_ids)} sales person(s) assigned successfully"}
 
 
 @router.put("/agreement/{agreement_id}")
-def update_agreement_consultants(
+def update_agreement_salespersons(
     agreement_id: int,
-    data: AssignConsultants,
+    data: AssignSalesPersons,
     current_user: dict = Depends(get_current_user),
     db=Depends(get_db),
 ):
-    """Update consultant assignments for an agreement."""
+    """Update salesperson assignments for an agreement."""
     # Same logic as assign — replace all
-    return assign_consultants(agreement_id, data, current_user, db)
+    return assign_salespersons(agreement_id, data, current_user, db)

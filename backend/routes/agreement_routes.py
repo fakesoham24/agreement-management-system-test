@@ -30,8 +30,8 @@ _analysis_lock = threading.Lock()
 def _check_agreement_access(current_user: dict, agreement, db) -> bool:
     """Check if the current user has access to the given agreement.
     Returns True if access is allowed, raises HTTPException(403) otherwise.
-    Admins can access all. Users can access their own. Consultants can access
-    their own + agreements assigned to them.
+    Admins can access all. Users can access their own. Consultants and
+    SalesPersons can access their own + agreements assigned to them.
     """
     if current_user["role"] == "admin":
         return True
@@ -43,6 +43,15 @@ def _check_agreement_access(current_user: dict, agreement, db) -> bool:
         assigned = cursor.execute(
             "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
             (agreement["id"], current_user["consultant_id"])
+        ).fetchone()
+        if assigned:
+            return True
+    # SalesPersons can access agreements assigned to them
+    if current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+        cursor = db.cursor()
+        assigned = cursor.execute(
+            "SELECT id FROM agreement_salespersons WHERE agreement_id = ? AND salesperson_id = ?",
+            (agreement["id"], current_user["salesperson_id"])
         ).fetchone()
         if assigned:
             return True
@@ -288,6 +297,17 @@ async def upload_agreement(
                 cursor.execute(
                     "INSERT OR IGNORE INTO agreement_consultants (agreement_id, consultant_id) VALUES (?, ?)",
                     (agreement_id, current_user["consultant_id"])
+                )
+                db.commit()
+            except Exception:
+                pass  # Non-critical — don't fail upload if assignment fails
+
+        # Auto-assign agreement to salesperson if uploader is a salesperson
+        if current_user.get("role") == "salesperson" and current_user.get("salesperson_id"):
+            try:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO agreement_salespersons (agreement_id, salesperson_id) VALUES (?, ?)",
+                    (agreement_id, current_user["salesperson_id"])
                 )
                 db.commit()
             except Exception:
@@ -728,6 +748,17 @@ async def manual_upload_agreement(
             except Exception:
                 pass  # Non-critical
 
+        # Auto-assign agreement to salesperson if uploader is a salesperson
+        if current_user.get("role") == "salesperson" and current_user.get("salesperson_id"):
+            try:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO agreement_salespersons (agreement_id, salesperson_id) VALUES (?, ?)",
+                    (agreement_id, current_user["salesperson_id"])
+                )
+                db.commit()
+            except Exception:
+                pass  # Non-critical
+
         return {
             "message": "Agreement uploaded successfully (manual entry)",
             "agreement_id": agreement_id
@@ -944,6 +975,18 @@ def list_agreements(
             WHERE (a.user_id = ? OR ac.consultant_id = ?)
         """
         params = [current_user["id"], current_user["consultant_id"]]
+    elif current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+        # SalesPersons see: agreements assigned to them + agreements they uploaded
+        query = """
+            SELECT DISTINCT a.*, aa.company_name, aa.effective_date, aa.expiry_date,
+                   aa.payment_type, aa.payment_amount, aa.payment_frequency,
+                   aa.payment_plans, aa.renewal_due_date, aa.auto_renewal, aa.currency
+            FROM agreements a
+            LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
+            LEFT JOIN agreement_salespersons asp ON a.id = asp.agreement_id
+            WHERE (a.user_id = ? OR asp.salesperson_id = ?)
+        """
+        params = [current_user["id"], current_user["salesperson_id"]]
     else:
         query = """
             SELECT a.*, aa.company_name, aa.effective_date, aa.expiry_date,
@@ -1401,6 +1444,13 @@ def update_payment_status(
             assigned = cursor.execute(
                 "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
                 (payment["agreement_id"], current_user["consultant_id"])
+            ).fetchone()
+            if not assigned:
+                raise HTTPException(status_code=403, detail="Access denied")
+        elif current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+            assigned = cursor.execute(
+                "SELECT id FROM agreement_salespersons WHERE agreement_id = ? AND salesperson_id = ?",
+                (payment["agreement_id"], current_user["salesperson_id"])
             ).fetchone()
             if not assigned:
                 raise HTTPException(status_code=403, detail="Access denied")

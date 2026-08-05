@@ -105,6 +105,8 @@
                     <button class="filter-tab active" data-tab="users" onclick="switchTab('users')">Users</button>
                     <button class="filter-tab" data-tab="consultants"
                         onclick="switchTab('consultants')">Consultants</button>
+                    <button class="filter-tab" data-tab="salespersons"
+                        onclick="switchTab('salespersons')">Sales Persons</button>
                     <button class="filter-tab" data-tab="email" onclick="switchTab('email')">Email Settings</button>
                 </div>
 
@@ -213,6 +215,67 @@
                         <p style="color:var(--color-text-muted);font-size:0.9rem;font-weight:500">No consultants added
                             yet</p>
                         <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px">Add consultant persons
+                            to assign them to agreements</p>
+                    </div>
+                </div>
+
+                <!-- Sales Persons Tab -->
+                <div id="tab-salespersons" style="display:none">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                        <h3 style="font-size:1rem;font-weight:600;color:var(--color-text-primary)">Sales Persons
+                        </h3>
+                        <button class="btn btn-primary btn-sm" onclick="openAddSalesPersonModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width:15px;height:15px">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                            </svg>
+                            Add Sales Person
+                        </button>
+                    </div>
+                    <!-- Sales Persons Search Bar -->
+                    <div style="margin-bottom:14px">
+                        <div
+                            style="display:flex;align-items:center;gap:8px;max-width:400px;background:var(--color-bg-secondary);border:1px solid var(--color-border);border-radius:8px;padding:0 12px">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width:15px;height:15px;opacity:0.5;flex-shrink:0">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="M21 21l-4.35-4.35" />
+                            </svg>
+                            <input type="text" class="form-input" id="salespersons-search-input"
+                                placeholder="Search by name, designation, or email..."
+                                oninput="filterSalesPersonsTable()"
+                                style="border:none;background:none;padding:10px 0;flex:1;outline:none;box-shadow:none">
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="data-table" id="salespersons-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Designation</th>
+                                    <th>Email</th>
+                                    <th>Active Agreements</th>
+                                    <th>Added</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salespersons-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="salespersons-empty" style="display:none;text-align:center;padding:48px 24px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.5"
+                            style="width:48px;height:48px;margin-bottom:12px;opacity:0.5">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        </svg>
+                        <p style="color:var(--color-text-muted);font-size:0.9rem;font-weight:500">No sales persons added
+                            yet</p>
+                        <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px">Add sales persons
                             to assign them to agreements</p>
                     </div>
                 </div>
@@ -1419,6 +1482,7 @@
                             <option value="Consultant">Consultant</option>
                             <option value="Junior Consultant">Junior Consultant</option>
                             <option value="Associate Consultant">Associate Consultant</option>
+                            <option value="Opex Consultant">Opex Consultant</option>
                         </select>
                         <span class="field-error" id="add-consultant-designation-error"></span>
                     </div>
@@ -1534,6 +1598,7 @@
                         <option value="Consultant">Consultant</option>
                         <option value="Junior Consultant">Junior Consultant</option>
                         <option value="Associate Consultant">Associate Consultant</option>
+                        <option value="Opex Consultant">Opex Consultant</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1568,6 +1633,229 @@
         </div>
     </div>
 
+
+    <!-- Add Sales Person Modal -->
+    <div class="modal-overlay" id="add-salesperson-modal">
+        <div class="modal">
+            <h3 class="modal-title">Add Sales Person</h3>
+            <div class="modal-body">
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem">Add a new sales person
+                    with login access. Verify the email address first.</p>
+
+                <!-- Gmail credentials warning -->
+                <div id="add-sp-gmail-warning"
+                    style="display:none;background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1px solid #ffb74d;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;color:#e65100;line-height:1.5">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-weight:600">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="width:16px;height:16px;flex-shrink:0">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        Gmail Credentials Required
+                    </div>
+                    Gmail OAuth2 credentials are not configured. Please go to <strong>Email Settings →
+                        Credentials</strong> tab and save your Gmail credentials before adding sales persons.
+                </div>
+
+                <!-- Step 1: Email + Send OTP -->
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <div style="flex:1">
+                            <input type="email" class="form-input" id="add-sp-email"
+                                placeholder="salesperson@example.com" required oninput="onAddSPEmailInput()">
+                        </div>
+                        <button class="btn btn-sm" id="add-sp-send-otp-btn"
+                            onclick="addSPSendOTP()"
+                            style="opacity: 0.5; min-width: 95px; height: 38px; font-size: 0.8rem; white-space: nowrap; color: #fff; background-color: var(--color-accent); cursor: not-allowed;"
+                            disabled>Send OTP</button>
+                    </div>
+                    <span class="field-error" id="add-sp-email-error"></span>
+                    <div id="add-sp-email-verified"
+                        style="display:none;color:#2e7d32;font-size:0.82rem;margin-top:6px;align-items:center;gap:4px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5"
+                            style="width:14px;height:14px">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Email verified successfully
+                    </div>
+                </div>
+
+                <!-- Step 2: OTP Input -->
+                <div class="form-group" id="add-sp-otp-group" style="display:none">
+                    <label>Enter OTP <span style="color:var(--color-text-muted);font-weight:400">(check your
+                            email)</span></label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <input type="text" class="form-input" id="add-sp-otp-input" placeholder="4-digit OTP"
+                            maxlength="4" pattern="[0-9]*" inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                            style="max-width:140px;letter-spacing:8px;font-weight:600;font-size:1.1rem;text-align:center">
+                        <button class="btn btn-sm btn-primary" id="add-sp-verify-otp-btn"
+                            onclick="addSPVerifyOTP()"
+                            style="min-width:80px;height:38px;font-size:0.8rem">
+                            Verify
+                        </button>
+                    </div>
+                    <span class="field-error" id="add-sp-otp-error"></span>
+                </div>
+
+                <!-- Step 3: Remaining fields -->
+                <div id="add-sp-fields" style="display:none">
+                    <div class="form-group">
+                        <label>Full Name <span style="color:var(--color-danger)">*</span></label>
+                        <input type="text" class="form-input" id="add-sp-name" placeholder="Enter full name" required>
+                        <span class="field-error" id="add-sp-name-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Designation <span style="color:var(--color-danger)">*</span></label>
+                        <select class="form-input" id="add-sp-designation">
+                            <option value="">Select designation</option>
+                            <option value="Sales Manager">Sales Manager</option>
+                            <option value="Senior Sales Person">Senior Sales Person</option>
+                            <option value="Sales Executive">Sales Executive</option>
+                        </select>
+                        <span class="field-error" id="add-sp-designation-error"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Password <span style="color:var(--color-danger)">*</span></label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-input" id="add-sp-password"
+                                placeholder="Min 6 characters" required minlength="6">
+                            <button type="button" class="password-toggle"
+                                onclick="togglePasswordVisibility('add-sp-password', this)"
+                                title="Show password">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" style="width:18px;height:18px">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" style="width:18px;height:18px;display:none">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span class="field-error" id="add-sp-password-error"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeAddSalesPersonModal()">Cancel</button>
+                <button class="btn btn-primary" id="add-sp-btn" onclick="submitAddSalesPerson()"
+                    style="display:none">Add
+                    Sales Person</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Sales Person Modal -->
+    <div class="modal-overlay" id="edit-salesperson-modal">
+        <div class="modal">
+            <h3 class="modal-title">Edit Sales Person</h3>
+            <div class="modal-body">
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem" id="edit-sp-label">
+                    Update sales person details. Email change requires OTP verification.</p>
+
+                <!-- Email field with (X) clear button -->
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <div style="flex:1;position:relative">
+                            <input type="email" class="form-input" id="edit-sp-email"
+                                placeholder="salesperson@example.com"
+                                disabled style="opacity:0.6;padding-right:36px">
+                            <button type="button" id="edit-sp-email-clear-btn" onclick="editSPEmailClearClick()"
+                                title="Change email address"
+                                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:background 0.2s"
+                                onmouseover="this.style.background='rgba(0,0,0,0.08)'"
+                                onmouseout="this.style.background='none'">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="btn btn-sm" id="edit-sp-send-otp-btn" onclick="editSPSendOTP()" disabled
+                            style="display:none;opacity:0.5;min-width:95px;height:38px;font-size:0.8rem;white-space:nowrap;background:var(--color-accent);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                            Send OTP
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-sp-email-error"></span>
+                    <div id="edit-sp-email-verified"
+                        style="display:none;color:#2e7d32;font-size:0.82rem;margin-top:6px;align-items:center;gap:4px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5"
+                            style="width:14px;height:14px">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        New email verified successfully
+                    </div>
+                </div>
+
+                <!-- OTP Input for edit -->
+                <div class="form-group" id="edit-sp-otp-group" style="display:none">
+                    <label>Enter OTP <span style="color:var(--color-text-muted);font-weight:400">(check your
+                            email)</span></label>
+                    <div style="display:flex;gap:8px;align-items:flex-start">
+                        <input type="text" class="form-input" id="edit-sp-otp-input" placeholder="4-digit OTP"
+                            maxlength="4" pattern="[0-9]*" inputmode="numeric"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                            style="max-width:140px;letter-spacing:8px;font-weight:600;font-size:1.1rem;text-align:center">
+                        <button class="btn btn-sm btn-primary" id="edit-sp-verify-otp-btn" onclick="editSPVerifyOTP()"
+                            style="min-width:80px;height:38px;font-size:0.8rem">
+                            Verify
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-sp-otp-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name <span style="color:var(--color-danger)">*</span></label>
+                    <input type="text" class="form-input" id="edit-sp-name" placeholder="Enter full name">
+                    <span class="field-error" id="edit-sp-name-error"></span>
+                </div>
+                <div class="form-group">
+                    <label>Designation <span style="color:var(--color-danger)">*</span></label>
+                    <select class="form-input" id="edit-sp-designation">
+                        <option value="Sales Manager">Sales Manager</option>
+                        <option value="Senior Sales Person">Senior Sales Person</option>
+                        <option value="Sales Executive">Sales Executive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>New Password <span style="color:var(--color-text-muted);font-weight:400">(leave empty to keep
+                            current)</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" class="form-input" id="edit-sp-password"
+                            placeholder="Enter new password (optional)">
+                        <button type="button" class="password-toggle"
+                            onclick="togglePasswordVisibility('edit-sp-password', this)" title="Show password">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" style="width:18px;height:18px">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" style="width:18px;height:18px;display:none">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                                <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span class="field-error" id="edit-sp-password-error"></span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeEditSalesPersonModal()">Cancel</button>
+                <button class="btn btn-primary" id="edit-sp-btn" onclick="submitEditSalesPerson()">Save
+                    Changes</button>
+            </div>
+        </div>
+    </div>
     <!-- Pro Forma Invoice Form Modal (Non-dismissible) -->
     <div class="modal-overlay proforma-modal-overlay" id="proforma-form-modal">
         <div class="modal proforma-modal">
@@ -2555,9 +2843,11 @@
 
             document.getElementById('tab-users').style.display = tab === 'users' ? 'block' : 'none';
             document.getElementById('tab-consultants').style.display = tab === 'consultants' ? 'block' : 'none';
+            document.getElementById('tab-salespersons').style.display = tab === 'salespersons' ? 'block' : 'none';
             document.getElementById('tab-email').style.display = tab === 'email' ? 'block' : 'none';
 
             if (tab === 'consultants') { loadConsultants(); }
+            if (tab === 'salespersons') { loadSalesPersons(); }
             if (tab === 'email') { loadCompanies(); loadEmailLogs(); loadThankYouLogs(); loadConsultantTemplate(); loadThankYouTemplate(); }
         }
 
@@ -4478,6 +4768,396 @@
         });
         document.getElementById('edit-consultant-modal').addEventListener('click', (e) => {
             if (e.target.id === 'edit-consultant-modal') closeEditConsultantModal();
+        });
+
+        // ========================
+        // Sales Person Management
+        // ========================
+        let allSalesPersons = [];
+
+        async function loadSalesPersons() {
+            try {
+                const data = await api.get('/salespersons/');
+                allSalesPersons = data.salespersons || [];
+                renderSalesPersons();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function renderSalesPersons(list) {
+            const tbody = document.getElementById('salespersons-tbody');
+            const empty = document.getElementById('salespersons-empty');
+            const table = document.getElementById('salespersons-table');
+            list = list || allSalesPersons;
+
+            if (list.length === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            table.style.display = 'table';
+            empty.style.display = 'none';
+
+            tbody.innerHTML = list.map(s => `
+                <tr>
+                    <td>${s.id}</td>
+                    <td><strong>${s.name}</strong></td>
+                    <td><span class="badge badge-pending">${s.designation}</span></td>
+                    <td>${s.email}</td>
+                    <td>${s.active_agreements || 0}</td>
+                    <td>${formatDate(s.created_at)}</td>
+                    <td>
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+                            <button class="btn btn-sm btn-secondary" onclick="openEditSalesPersonModal(${s.id}, '${escapeAttr(s.name)}', '${escapeAttr(s.designation)}', '${escapeAttr(s.email)}')">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSalesPerson(${s.id}, '${escapeAttr(s.name)}')">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterSalesPersonsTable() {
+            const query = (document.getElementById('salespersons-search-input').value || '').trim().toLowerCase();
+            if (!query) {
+                renderSalesPersons(allSalesPersons);
+                return;
+            }
+            const filtered = allSalesPersons.filter(s => {
+                return (s.name || '').toLowerCase().includes(query)
+                    || (s.designation || '').toLowerCase().includes(query)
+                    || (s.email || '').toLowerCase().includes(query);
+            });
+            renderSalesPersons(filtered);
+        }
+
+        // ======= Add Sales Person State =======
+        let addSPEmailVerified = false;
+        let addSPVerifiedEmail = '';
+        let addSPOtpSending = false;
+        let addSPGmailConfigured = false;
+
+        function onAddSPEmailInput() {
+            const email = (document.getElementById('add-sp-email').value || '').trim();
+            const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+            const sendBtn = document.getElementById('add-sp-send-otp-btn');
+            if (isValid && addSPGmailConfigured) {
+                sendBtn.disabled = false;
+                sendBtn.style.opacity = '1';
+                sendBtn.style.cursor = 'pointer';
+            } else {
+                sendBtn.disabled = true;
+                sendBtn.style.opacity = '0.5';
+                sendBtn.style.cursor = 'not-allowed';
+            }
+            document.getElementById('add-sp-email-error').textContent = '';
+        }
+
+        async function openAddSalesPersonModal() {
+            document.getElementById('add-sp-email').value = '';
+            document.getElementById('add-sp-email').disabled = false;
+            document.getElementById('add-sp-email').style.opacity = '1';
+            document.getElementById('add-sp-name').value = '';
+            document.getElementById('add-sp-designation').value = '';
+            document.getElementById('add-sp-password').value = '';
+            document.getElementById('add-sp-password').type = 'password';
+            document.querySelectorAll('#add-salesperson-modal .field-error').forEach(el => el.textContent = '');
+
+            addSPEmailVerified = false;
+            addSPVerifiedEmail = '';
+            addSPOtpSending = false;
+
+            document.getElementById('add-sp-otp-group').style.display = 'none';
+            document.getElementById('add-sp-fields').style.display = 'none';
+            document.getElementById('add-sp-btn').style.display = 'none';
+            document.getElementById('add-sp-email-verified').style.display = 'none';
+            const otpInput = document.getElementById('add-sp-otp-input');
+            if (otpInput) otpInput.value = '';
+
+            const sendBtn = document.getElementById('add-sp-send-otp-btn');
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.5';
+            sendBtn.textContent = 'Send OTP';
+
+            // Check Gmail credentials
+            try {
+                const res = await api.get('/admin/check-gmail-credentials');
+                addSPGmailConfigured = res.configured;
+                document.getElementById('add-sp-gmail-warning').style.display = res.configured ? 'none' : 'block';
+            } catch {
+                addSPGmailConfigured = false;
+                document.getElementById('add-sp-gmail-warning').style.display = 'block';
+            }
+
+            document.getElementById('add-salesperson-modal').classList.add('open');
+        }
+
+        function closeAddSalesPersonModal() {
+            document.getElementById('add-salesperson-modal').classList.remove('open');
+        }
+
+        async function addSPSendOTP() {
+            const email = (document.getElementById('add-sp-email').value || '').trim().toLowerCase();
+            if (!email) return;
+            if (addSPOtpSending) return;
+            addSPOtpSending = true;
+            const btn = document.getElementById('add-sp-send-otp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                await api.post('/admin/send-otp', { email });
+                showToast('OTP sent to ' + email, 'success');
+                document.getElementById('add-sp-otp-group').style.display = 'block';
+                document.getElementById('add-sp-otp-input').focus();
+                btn.textContent = 'Resend OTP';
+            } catch (err) {
+                document.getElementById('add-sp-email-error').textContent = err.message;
+                btn.textContent = 'Send OTP';
+            } finally {
+                addSPOtpSending = false;
+                btn.disabled = false;
+            }
+        }
+
+        async function addSPVerifyOTP() {
+            const email = (document.getElementById('add-sp-email').value || '').trim().toLowerCase();
+            const otp = (document.getElementById('add-sp-otp-input').value || '').trim();
+            if (!otp || otp.length !== 4) {
+                document.getElementById('add-sp-otp-error').textContent = 'Enter a 4-digit OTP';
+                return;
+            }
+            const btn = document.getElementById('add-sp-verify-otp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            try {
+                await api.post('/admin/verify-otp', { email, otp });
+                addSPEmailVerified = true;
+                addSPVerifiedEmail = email;
+                document.getElementById('add-sp-otp-group').style.display = 'none';
+                document.getElementById('add-sp-email-verified').style.display = 'flex';
+                document.getElementById('add-sp-email').disabled = true;
+                document.getElementById('add-sp-email').style.opacity = '0.6';
+                document.getElementById('add-sp-send-otp-btn').style.display = 'none';
+                document.getElementById('add-sp-fields').style.display = 'block';
+                document.getElementById('add-sp-btn').style.display = 'inline-flex';
+                document.getElementById('add-sp-name').focus();
+                showToast('Email verified', 'success');
+            } catch (err) {
+                document.getElementById('add-sp-otp-error').textContent = err.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify';
+            }
+        }
+
+        async function submitAddSalesPerson() {
+            const name = (document.getElementById('add-sp-name').value || '').trim();
+            const designation = document.getElementById('add-sp-designation').value;
+            const password = document.getElementById('add-sp-password').value;
+            const email = addSPVerifiedEmail;
+
+            let valid = true;
+            document.querySelectorAll('#add-salesperson-modal .field-error').forEach(el => el.textContent = '');
+            if (!name || name.length < 2) {
+                document.getElementById('add-sp-name-error').textContent = 'Name must be at least 2 characters';
+                valid = false;
+            }
+            if (!designation) {
+                document.getElementById('add-sp-designation-error').textContent = 'Please select a designation';
+                valid = false;
+            }
+            if (!password || password.length < 6) {
+                document.getElementById('add-sp-password-error').textContent = 'Password must be at least 6 characters';
+                valid = false;
+            }
+            if (!valid) return;
+
+            const btn = document.getElementById('add-sp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+            try {
+                await api.post('/salespersons/', { name, designation, email, password });
+                showToast('Sales person added successfully', 'success');
+                closeAddSalesPersonModal();
+                loadSalesPersons();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Add Sales Person';
+            }
+        }
+
+        // ======= Edit Sales Person State =======
+        let editSPId = null;
+        let editSPOriginalEmail = '';
+        let editSPEmailVerified = false;
+        let editSPVerifiedEmail = '';
+        let editSPEmailChanging = false;
+
+        function openEditSalesPersonModal(id, name, designation, email) {
+            editSPId = id;
+            editSPOriginalEmail = email;
+            editSPEmailVerified = false;
+            editSPVerifiedEmail = '';
+            editSPEmailChanging = false;
+
+            document.getElementById('edit-sp-email').value = email;
+            document.getElementById('edit-sp-email').disabled = true;
+            document.getElementById('edit-sp-email').style.opacity = '0.6';
+            document.getElementById('edit-sp-email-clear-btn').style.display = 'flex';
+            document.getElementById('edit-sp-send-otp-btn').style.display = 'none';
+            document.getElementById('edit-sp-email-verified').style.display = 'none';
+            document.getElementById('edit-sp-otp-group').style.display = 'none';
+            document.getElementById('edit-sp-name').value = name;
+            document.getElementById('edit-sp-designation').value = designation;
+            document.getElementById('edit-sp-password').value = '';
+            document.getElementById('edit-sp-password').type = 'password';
+            document.querySelectorAll('#edit-salesperson-modal .field-error').forEach(el => el.textContent = '');
+
+            document.getElementById('edit-salesperson-modal').classList.add('open');
+        }
+
+        function closeEditSalesPersonModal() {
+            document.getElementById('edit-salesperson-modal').classList.remove('open');
+        }
+
+        function editSPEmailClearClick() {
+            editSPEmailChanging = true;
+            const emailInput = document.getElementById('edit-sp-email');
+            emailInput.disabled = false;
+            emailInput.style.opacity = '1';
+            emailInput.value = '';
+            emailInput.focus();
+            document.getElementById('edit-sp-email-clear-btn').style.display = 'none';
+            document.getElementById('edit-sp-send-otp-btn').style.display = 'inline-flex';
+            document.getElementById('edit-sp-email-verified').style.display = 'none';
+
+            emailInput.addEventListener('input', function editSPEmailChange() {
+                const val = emailInput.value.trim();
+                const isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
+                const sendBtn = document.getElementById('edit-sp-send-otp-btn');
+                sendBtn.disabled = !isValid;
+                sendBtn.style.opacity = isValid ? '1' : '0.5';
+            });
+        }
+
+        async function editSPSendOTP() {
+            const email = (document.getElementById('edit-sp-email').value || '').trim().toLowerCase();
+            if (!email) return;
+            const btn = document.getElementById('edit-sp-send-otp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                await api.post('/admin/send-otp', { email });
+                showToast('OTP sent to ' + email, 'success');
+                document.getElementById('edit-sp-otp-group').style.display = 'block';
+                document.getElementById('edit-sp-otp-input').value = '';
+                document.getElementById('edit-sp-otp-input').focus();
+                btn.textContent = 'Resend';
+            } catch (err) {
+                document.getElementById('edit-sp-email-error').textContent = err.message;
+                btn.textContent = 'Send OTP';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function editSPVerifyOTP() {
+            const email = (document.getElementById('edit-sp-email').value || '').trim().toLowerCase();
+            const otp = (document.getElementById('edit-sp-otp-input').value || '').trim();
+            if (!otp || otp.length !== 4) {
+                document.getElementById('edit-sp-otp-error').textContent = 'Enter a 4-digit OTP';
+                return;
+            }
+            const btn = document.getElementById('edit-sp-verify-otp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            try {
+                await api.post('/admin/verify-otp', { email, otp });
+                editSPEmailVerified = true;
+                editSPVerifiedEmail = email;
+                document.getElementById('edit-sp-otp-group').style.display = 'none';
+                document.getElementById('edit-sp-email-verified').style.display = 'flex';
+                document.getElementById('edit-sp-email').disabled = true;
+                document.getElementById('edit-sp-email').style.opacity = '0.6';
+                document.getElementById('edit-sp-send-otp-btn').style.display = 'none';
+                showToast('New email verified', 'success');
+            } catch (err) {
+                document.getElementById('edit-sp-otp-error').textContent = err.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verify';
+            }
+        }
+
+        async function submitEditSalesPerson() {
+            const name = (document.getElementById('edit-sp-name').value || '').trim();
+            const designation = document.getElementById('edit-sp-designation').value;
+            const password = document.getElementById('edit-sp-password').value;
+
+            let valid = true;
+            document.querySelectorAll('#edit-salesperson-modal .field-error').forEach(el => el.textContent = '');
+            if (!name || name.length < 2) {
+                document.getElementById('edit-sp-name-error').textContent = 'Name must be at least 2 characters';
+                valid = false;
+            }
+            if (password && password.length > 0 && password.length < 6) {
+                document.getElementById('edit-sp-password-error').textContent = 'Password must be at least 6 characters';
+                valid = false;
+            }
+            if (!valid) return;
+
+            const updateData = {};
+            if (name) updateData.name = name;
+            if (designation) updateData.designation = designation;
+            if (editSPEmailVerified && editSPVerifiedEmail) {
+                updateData.email = editSPVerifiedEmail;
+            }
+            if (password) updateData.password = password;
+
+            const btn = document.getElementById('edit-sp-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                await api.put(`/salespersons/${editSPId}`, updateData);
+                showToast('Sales person updated successfully', 'success');
+                closeEditSalesPersonModal();
+                loadSalesPersons();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Changes';
+            }
+        }
+
+        async function deleteSalesPerson(id, name) {
+            const confirmed = await showConfirm(
+                'Delete Sales Person',
+                `Are you sure you want to delete sales person "${name}"? They will be removed from all agreement assignments and their login account will be deleted.`
+            );
+            if (!confirmed) return;
+
+            try {
+                await api.delete(`/salespersons/${id}`);
+                showToast('Sales person deleted successfully', 'success');
+                loadSalesPersons();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // Modal close on backdrop click for salesperson modals
+        document.getElementById('add-salesperson-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'add-salesperson-modal') closeAddSalesPersonModal();
+        });
+        document.getElementById('edit-salesperson-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-salesperson-modal') closeEditSalesPersonModal();
         });
 
         // ========================

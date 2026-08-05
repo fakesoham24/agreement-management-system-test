@@ -57,6 +57,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     # Ensure consultant_id is always present in the dict (None for non-consultants)
     if "consultant_id" not in user_dict:
         user_dict["consultant_id"] = None
+    # Ensure salesperson_id is always present in the dict (None for non-salespersons)
+    if "salesperson_id" not in user_dict:
+        user_dict["salesperson_id"] = None
     return user_dict
 
 

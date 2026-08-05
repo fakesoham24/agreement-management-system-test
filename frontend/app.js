@@ -38,6 +38,10 @@ const Auth = {
         const user = this.getUser();
         return user && user.role === 'consultant';
     },
+    isSalesPerson() {
+        const user = this.getUser();
+        return user && user.role === 'salesperson';
+    },
     requireAuth() {
         if (!this.isLoggedIn()) {
             window.location.href = '/login';

@@ -359,7 +359,7 @@ def list_users(admin: dict = Depends(require_admin), db=Depends(get_db)):
                COUNT(a.id) as agreement_count
         FROM users u
         LEFT JOIN agreements a ON u.id = a.user_id
-        WHERE u.role != 'consultant'
+        WHERE u.role NOT IN ('consultant', 'salesperson')
         GROUP BY u.id
         ORDER BY u.created_at DESC
     """).fetchall()

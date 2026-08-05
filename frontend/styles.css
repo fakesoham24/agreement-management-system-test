@@ -3809,6 +3809,35 @@ h4 {
     font-weight: 500;
 }
 
+/* Sales Person chip overrides */
+.salesperson-chip:hover {
+    border-color: #f59e0b;
+}
+
+.salesperson-chip-avatar {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+
+/* Section icon badge orange */
+.section-icon-badge.orange {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+/* Team Assignment Modal Grid Layout (Horizontal 2-column) */
+.team-assign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 680px) {
+    .team-assign-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
 /* Export Excel button in payments */
 .payments-filters .btn-export {
     margin-left: auto;

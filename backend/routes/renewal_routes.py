@@ -51,6 +51,17 @@ def list_renewals(
             WHERE (a.user_id = ? OR ac.consultant_id = ?) AND a.status != 'terminated'
         """
         params = [current_user["id"], current_user["consultant_id"]]
+    elif current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+        query = """
+            SELECT DISTINCT a.id, a.status, a.renewal_status, a.renewal_increase_percent,
+                   aa.company_name, aa.effective_date, aa.expiry_date,
+                   aa.payment_plans, aa.currency, aa.contact_person
+            FROM agreements a
+            LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
+            LEFT JOIN agreement_salespersons asp ON a.id = asp.agreement_id
+            WHERE (a.user_id = ? OR asp.salesperson_id = ?) AND a.status != 'terminated'
+        """
+        params = [current_user["id"], current_user["salesperson_id"]]
     else:
         query = """
             SELECT a.id, a.status, a.renewal_status, a.renewal_increase_percent,

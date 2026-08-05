@@ -19,6 +19,7 @@ from backend.routes.renewal_routes import router as renewal_router
 from backend.routes.email_routes import router as email_router
 from backend.routes.export_routes import router as export_router
 from backend.routes.consultant_routes import router as consultant_router
+from backend.routes.salesperson_routes import router as salesperson_router
 
 
 logger = logging.getLogger(__name__)
@@ -124,6 +125,7 @@ app.include_router(renewal_router)
 app.include_router(email_router)
 app.include_router(export_router)
 app.include_router(consultant_router)
+app.include_router(salesperson_router)
 
 # Create upload directory
 os.makedirs(UPLOAD_DIR, exist_ok=True)

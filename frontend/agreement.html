@@ -382,7 +382,7 @@
                         </div>
 
                         <!-- ======================== -->
-                        <!-- Section 6: Legal Clauses -->
+                        <!-- Section 6: Legal Clauses + Assigned Sales Persons (Merged) -->
                         <!-- ======================== -->
                         <div class="detail-section" id="section-legal">
                             <div class="section-title">
@@ -394,6 +394,32 @@
                                 Legal Clauses
                             </div>
                             <div class="clauses-grid" id="clauses-grid"></div>
+
+                            <!-- Assigned Sales Persons (inside Legal Clauses section) -->
+                            <div id="assigned-salespersons-container" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--color-border-light)">
+                                <div id="assigned-salespersons-section" style="display:none">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                                        <h4 style="font-size:0.9rem;font-weight:600;color:var(--color-text-primary);display:flex;align-items:center;gap:8px">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" style="width:16px;height:16px">
+                                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                            Assigned Sales Persons
+                                        </h4>
+                                        <button class="btn btn-sm btn-secondary" id="update-sp-team-btn" onclick="openUpdateSalesPersonPopup()" title="Update sales person assignments">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
+                                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                            Update Team
+                                        </button>
+                                    </div>
+                                    <div id="assigned-salespersons-list" class="consultant-chips"></div>
+                                </div>
+                                <div id="no-salespersons-assigned" style="display:none;font-size:0.85rem;color:var(--color-text-muted);padding:12px 0">
+                                    No sales persons assigned to this agreement yet.
+                                </div>
+                            </div>
                         </div>
 
                         <!-- ======================== -->
@@ -654,46 +680,120 @@
         </main>
     </div>
 
-    <!-- Consultant Assignment Popup (non-dismissible for new assignments) -->
-    <div class="modal-overlay" id="consultant-assign-modal">
-        <div class="modal" style="max-width:520px">
+    <!-- Combined Team Assignment Popup (non-dismissible for mandatory) -->
+    <div class="modal-overlay" id="team-assign-modal">
+        <div class="modal" style="max-width:580px">
             <h3 class="modal-title" style="display:flex;align-items:center;gap:10px">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8"
-                    style="width:22px;height:22px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" style="width:22px;height:22px">
                     <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
                 </svg>
-                Assign Consulting Team
+                <span id="team-assign-title">Assign Team</span>
             </h3>
             <div class="modal-body">
-                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem"
-                    id="consultant-assign-desc">
-                    Select the consultants responsible for this agreement. This is required before viewing agreement
-                    details.
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem" id="team-assign-desc">
+                    Select consultants and sales persons for this agreement. Both are required.
                 </p>
-                <div id="consultant-checklist" class="consultant-checklist">
-                    <div style="text-align:center;padding:20px;color:var(--color-text-muted)">
-                        <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px">
+
+                <!-- Horizontal Grid Wrapper for side-by-side layout -->
+                <div id="team-assign-grid" class="team-assign-grid">
+                    <!-- Consultant Section -->
+                    <div id="team-consultant-section">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--color-border-light)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" style="width:16px;height:16px">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                            </svg>
+                            <span style="font-size:0.88rem;font-weight:600;color:var(--color-text-primary)">Consultants</span>
+                            <span id="team-consultant-count" style="font-size:0.75rem;color:var(--color-text-muted);margin-left:auto">0 selected</span>
                         </div>
-                        Loading consultants...
+                        <div id="team-consultant-checklist" class="consultant-checklist" style="max-height:240px">
+                            <div style="text-align:center;padding:20px;color:var(--color-text-muted)">
+                                <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div>
+                                Loading consultants...
+                            </div>
+                        </div>
+                        <div id="team-consultant-empty" style="display:none;text-align:center;padding:16px;color:var(--color-text-muted);font-size:0.82rem">
+                            No consultants available. Please ask an admin to add consultants first.
+                        </div>
+                    </div>
+
+                    <!-- Sales Person Section -->
+                    <div id="team-sp-section">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--color-border-light)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" style="width:16px;height:16px">
+                                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            <span style="font-size:0.88rem;font-weight:600;color:var(--color-text-primary)">Sales Persons</span>
+                            <span id="team-sp-count" style="font-size:0.75rem;color:var(--color-text-muted);margin-left:auto">0 selected</span>
+                        </div>
+                        <div id="team-sp-checklist" class="consultant-checklist" style="max-height:240px">
+                            <div style="text-align:center;padding:20px;color:var(--color-text-muted)">
+                                <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div>
+                                Loading sales persons...
+                            </div>
+                        </div>
+                        <div id="team-sp-empty" style="display:none;text-align:center;padding:16px;color:var(--color-text-muted);font-size:0.82rem">
+                            No sales persons available. Please ask an admin to add sales persons first.
+                        </div>
                     </div>
                 </div>
-                <div id="consultant-assign-empty"
-                    style="display:none;text-align:center;padding:24px;color:var(--color-text-muted);font-size:0.85rem">
-                    No consultants available. Please ask an admin to add consultant persons first.
+
+                <!-- Validation message -->
+                <div id="team-assign-validation" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.15);border-radius:8px;color:var(--color-danger);font-size:0.82rem;display:flex;align-items:center;gap:8px">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="15" y1="9" x2="9" y2="15" />
+                        <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    <span>Please select at least one consultant and one sales person to proceed.</span>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-secondary" id="consultant-cancel-btn" style="display:none"
-                    onclick="closeConsultantPopup()">Cancel</button>
-                <button class="btn btn-primary" id="consultant-assign-btn" onclick="submitConsultantAssignment()"
-                    disabled>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        style="width:15px;height:15px">
+                <button class="btn btn-secondary" id="team-cancel-btn" style="display:none" onclick="closeTeamPopup()">Cancel</button>
+                <button class="btn btn-primary" id="team-assign-btn" onclick="submitTeamAssignment()" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Assign Consultants
+                    Assign Team
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Person Only Update Popup (for Update Team button) -->
+    <div class="modal-overlay" id="salesperson-assign-modal">
+        <div class="modal" style="max-width:520px">
+            <h3 class="modal-title" style="display:flex;align-items:center;gap:10px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" style="width:22px;height:22px">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Update Sales Team
+            </h3>
+            <div class="modal-body">
+                <p style="margin-bottom:16px;color:var(--color-text-secondary);font-size:0.85rem">
+                    Update the sales persons assigned to this agreement.
+                </p>
+                <div id="salesperson-checklist" class="consultant-checklist">
+                    <div style="text-align:center;padding:20px;color:var(--color-text-muted)">
+                        <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div>
+                        Loading sales persons...
+                    </div>
+                </div>
+                <div id="salesperson-assign-empty" style="display:none;text-align:center;padding:24px;color:var(--color-text-muted);font-size:0.85rem">
+                    No sales persons available. Please ask an admin to add sales persons first.
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeSalesPersonPopup()">Cancel</button>
+                <button class="btn btn-primary" id="salesperson-assign-btn" onclick="submitSalesPersonUpdate()" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Update Team
                 </button>
             </div>
         </div>
@@ -780,8 +880,8 @@
                 // Show view document button
                 document.getElementById('view-doc-btn').style.display = '';
 
-                // Check consultant assignment for active agreements
-                await checkConsultantAssignment();
+                // Check team assignment (consultants + sales persons) for active agreements
+                await checkTeamAssignment();
 
                 // Update termination UI (button/banner state)
                 updateTerminateUI();
@@ -1704,32 +1804,56 @@
         }
 
         // ========================
-        // Consultant Assignment
+        // Team Assignment (Consultants + Sales Persons)
         // ========================
-        let isUpdateMode = false;
+        let isUpdateMode = false; // false = mandatory (first time), true = update
+        let teamPopupMode = 'combined'; // 'combined' | 'consultant-only' | 'sp-only'
         let assignedConsultantIds = [];
+        let assignedSalesPersonIds = [];
 
-        async function checkConsultantAssignment() {
+        // Combined check: both consultants AND sales persons
+        async function checkTeamAssignment() {
             try {
                 const status = (agreementData.status || '').toLowerCase();
-                // Only show popup for active agreements
+
                 if (status === 'expired' || status === 'terminated') {
-                    // Still load and show assigned consultants if they exist
                     await loadAssignedConsultants();
+                    await loadAssignedSalesPersons();
                     return;
                 }
 
-                const result = await api.get(`/consultants/agreement/${agreementId}/has-consultants`);
-                if (result.has_consultants) {
-                    // Already assigned — show them in the section
-                    await loadAssignedConsultants();
-                } else {
-                    // Not assigned — show mandatory popup
+                let hasConsultants = false;
+                let hasSalesPersons = false;
+
+                try {
+                    const consultResult = await api.get(`/consultants/agreement/${agreementId}/has-consultants`);
+                    hasConsultants = !!consultResult.has_consultants;
+                } catch(e) {
+                    console.warn("Check consultants failed:", e);
+                }
+
+                try {
+                    const spResult = await api.get(`/salespersons/agreement/${agreementId}/has-salespersons`);
+                    hasSalesPersons = !!spResult.has_salespersons;
+                } catch(e) {
+                    console.warn("Check salespersons failed:", e);
+                }
+
+                // Always load and display assigned consultants & salespersons
+                await loadAssignedConsultants();
+                await loadAssignedSalesPersons();
+
+                if (!hasConsultants || !hasSalesPersons) {
+                    // At least one missing — show combined mandatory popup
                     isUpdateMode = false;
-                    showConsultantPopup();
+                    teamPopupMode = 'combined';
+                    showTeamPopup();
                 }
             } catch (err) {
-                console.error('Consultant check failed:', err);
+                console.error('Team assignment check failed:', err);
+                // Attempt loading anyway
+                await loadAssignedConsultants();
+                await loadAssignedSalesPersons();
             }
         }
 
@@ -1758,98 +1882,263 @@
             }
         }
 
-        async function showConsultantPopup() {
-            const modal = document.getElementById('consultant-assign-modal');
-            const checklist = document.getElementById('consultant-checklist');
-            const emptyState = document.getElementById('consultant-assign-empty');
-            const cancelBtn = document.getElementById('consultant-cancel-btn');
-            const assignBtn = document.getElementById('consultant-assign-btn');
+        async function loadAssignedSalesPersons() {
+            try {
+                const data = await api.get(`/salespersons/agreement/${agreementId}`);
+                const salespersons = data.salespersons || [];
+                assignedSalesPersonIds = salespersons.map(s => s.id);
 
-            // Show/hide cancel based on mode
+                // Show the container
+                document.getElementById('assigned-salespersons-container').style.display = 'block';
+
+                if (salespersons.length > 0) {
+                    const section = document.getElementById('assigned-salespersons-section');
+                    const list = document.getElementById('assigned-salespersons-list');
+                    section.style.display = 'block';
+                    document.getElementById('no-salespersons-assigned').style.display = 'none';
+                    list.innerHTML = salespersons.map(s => `
+                        <div class="consultant-chip salesperson-chip">
+                            <div class="consultant-chip-avatar salesperson-chip-avatar">${s.name.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="consultant-chip-name">${s.name}</div>
+                                <div class="consultant-chip-designation">${s.designation}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('assigned-salespersons-section').style.display = 'none';
+                    document.getElementById('no-salespersons-assigned').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Failed to load assigned salespersons:', err);
+            }
+        }
+
+        // ======= Combined Team Popup =======
+        async function showTeamPopup() {
+            const modal = document.getElementById('team-assign-modal');
+            const modalBox = modal.querySelector('.modal');
+            const gridEl = document.getElementById('team-assign-grid');
+            const cancelBtn = document.getElementById('team-cancel-btn');
+            const assignBtn = document.getElementById('team-assign-btn');
+            const titleEl = document.getElementById('team-assign-title');
+            const descEl = document.getElementById('team-assign-desc');
+            const consultSection = document.getElementById('team-consultant-section');
+            const spSection = document.getElementById('team-sp-section');
+            const validationEl = document.getElementById('team-assign-validation');
+            validationEl.style.display = 'none';
+
             if (isUpdateMode) {
                 cancelBtn.style.display = 'inline-flex';
-                document.getElementById('consultant-assign-desc').textContent =
-                    'Update the consultants assigned to this agreement.';
-                assignBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg> Update Team`;
+                if (teamPopupMode === 'consultant-only') {
+                    titleEl.textContent = 'Update Consulting Team';
+                    descEl.textContent = 'Update the consultants assigned to this agreement.';
+                    assignBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg> Update Team`;
+                    consultSection.style.display = 'block';
+                    spSection.style.display = 'none';
+                    if (gridEl) gridEl.style.gridTemplateColumns = '1fr';
+                    if (modalBox) modalBox.style.maxWidth = '520px';
+                } else if (teamPopupMode === 'sp-only') {
+                    titleEl.textContent = 'Update Sales Team';
+                    descEl.textContent = 'Update the sales persons assigned to this agreement.';
+                    assignBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg> Update Team`;
+                    consultSection.style.display = 'none';
+                    spSection.style.display = 'block';
+                    if (gridEl) gridEl.style.gridTemplateColumns = '1fr';
+                    if (modalBox) modalBox.style.maxWidth = '520px';
+                }
             } else {
                 cancelBtn.style.display = 'none';
-                document.getElementById('consultant-assign-desc').textContent =
-                    'Select the consultants responsible for this agreement. This is required before viewing agreement details.';
-                assignBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg> Assign Consultants`;
+                titleEl.textContent = 'Assign Team';
+                descEl.textContent = 'Select consultants and sales persons for this agreement. Both are required before proceeding.';
+                assignBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg> Assign Team`;
+                consultSection.style.display = 'block';
+                spSection.style.display = 'block';
+                if (gridEl) gridEl.style.gridTemplateColumns = '';
+                if (modalBox) modalBox.style.maxWidth = '820px';
             }
 
             modal.classList.add('open');
             assignBtn.disabled = true;
 
-            // Load consultants for dropdown
-            try {
-                const data = await api.get('/consultants/list');
-                const consultants = data.consultants || [];
+            // Load both lists
+            const showConsultants = consultSection.style.display !== 'none';
+            const showSP = spSection.style.display !== 'none';
 
-                if (consultants.length === 0) {
-                    checklist.style.display = 'none';
-                    emptyState.style.display = 'block';
-                    return;
+            if (showConsultants) {
+                try {
+                    const data = await api.get('/consultants/list');
+                    const consultants = data.consultants || [];
+                    const checklist = document.getElementById('team-consultant-checklist');
+                    const emptyEl = document.getElementById('team-consultant-empty');
+
+                    if (consultants.length === 0) {
+                        checklist.style.display = 'none';
+                        emptyEl.style.display = 'block';
+                    } else {
+                        checklist.style.display = 'block';
+                        emptyEl.style.display = 'none';
+                        checklist.innerHTML = consultants.map(c => {
+                            const checked = assignedConsultantIds.includes(c.id) ? 'checked' : '';
+                            return `
+                                <label class="consultant-checklist-item" for="tcsel-${c.id}">
+                                    <input type="checkbox" id="tcsel-${c.id}" value="${c.id}" ${checked}
+                                           onchange="updateTeamAssignBtnState()" class="consultant-checkbox">
+                                    <div class="consultant-checklist-avatar">${c.name.charAt(0).toUpperCase()}</div>
+                                    <div class="consultant-checklist-info">
+                                        <div class="consultant-checklist-name">${c.name}</div>
+                                        <span class="consultant-checklist-badge">${c.designation}</span>
+                                    </div>
+                                </label>
+                            `;
+                        }).join('');
+                    }
+                } catch (err) {
+                    document.getElementById('team-consultant-checklist').innerHTML = `<p style="color:var(--color-danger);text-align:center;padding:16px">${err.message}</p>`;
                 }
-
-                checklist.style.display = 'block';
-                emptyState.style.display = 'none';
-
-                checklist.innerHTML = consultants.map(c => {
-                    const checked = assignedConsultantIds.includes(c.id) ? 'checked' : '';
-                    return `
-                        <label class="consultant-checklist-item" for="csel-${c.id}">
-                            <input type="checkbox" id="csel-${c.id}" value="${c.id}" ${checked}
-                                   onchange="updateAssignBtnState()" class="consultant-checkbox">
-                            <div class="consultant-checklist-avatar">${c.name.charAt(0).toUpperCase()}</div>
-                            <div class="consultant-checklist-info">
-                                <div class="consultant-checklist-name">${c.name}</div>
-                                <span class="consultant-checklist-badge">${c.designation}</span>
-                            </div>
-                        </label>
-                    `;
-                }).join('');
-
-                updateAssignBtnState();
-            } catch (err) {
-                checklist.innerHTML = `<p style="color:var(--color-danger);text-align:center;padding:16px">${err.message}</p>`;
             }
+
+            if (showSP) {
+                try {
+                    const data = await api.get('/salespersons/list');
+                    const salespersons = data.salespersons || [];
+                    const checklist = document.getElementById('team-sp-checklist');
+                    const emptyEl = document.getElementById('team-sp-empty');
+
+                    if (salespersons.length === 0) {
+                        checklist.style.display = 'none';
+                        emptyEl.style.display = 'block';
+                    } else {
+                        checklist.style.display = 'block';
+                        emptyEl.style.display = 'none';
+                        checklist.innerHTML = salespersons.map(s => {
+                            const checked = assignedSalesPersonIds.includes(s.id) ? 'checked' : '';
+                            return `
+                                <label class="consultant-checklist-item" for="tspsel-${s.id}">
+                                    <input type="checkbox" id="tspsel-${s.id}" value="${s.id}" ${checked}
+                                           onchange="updateTeamAssignBtnState()" class="consultant-checkbox">
+                                    <div class="consultant-checklist-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">${s.name.charAt(0).toUpperCase()}</div>
+                                    <div class="consultant-checklist-info">
+                                        <div class="consultant-checklist-name">${s.name}</div>
+                                        <span class="consultant-checklist-badge">${s.designation}</span>
+                                    </div>
+                                </label>
+                            `;
+                        }).join('');
+                    }
+                } catch (err) {
+                    document.getElementById('team-sp-checklist').innerHTML = `<p style="color:var(--color-danger);text-align:center;padding:16px">${err.message}</p>`;
+                }
+            }
+
+            updateTeamAssignBtnState();
         }
 
-        function updateAssignBtnState() {
-            const checked = document.querySelectorAll('#consultant-checklist input[type="checkbox"]:checked');
-            document.getElementById('consultant-assign-btn').disabled = checked.length === 0;
+        function updateTeamAssignBtnState() {
+            const consultSection = document.getElementById('team-consultant-section');
+            const spSection = document.getElementById('team-sp-section');
+            const assignBtn = document.getElementById('team-assign-btn');
+            const validationEl = document.getElementById('team-assign-validation');
+
+            const showConsultants = consultSection.style.display !== 'none';
+            const showSP = spSection.style.display !== 'none';
+
+            let consultantsOK = true;
+            let spOK = true;
+
+            if (showConsultants) {
+                const checked = document.querySelectorAll('#team-consultant-checklist input[type="checkbox"]:checked');
+                consultantsOK = checked.length > 0;
+                document.getElementById('team-consultant-count').textContent = `${checked.length} selected`;
+                document.getElementById('team-consultant-count').style.color = consultantsOK ? 'var(--color-success)' : 'var(--color-text-muted)';
+            }
+            if (showSP) {
+                const checked = document.querySelectorAll('#team-sp-checklist input[type="checkbox"]:checked');
+                spOK = checked.length > 0;
+                document.getElementById('team-sp-count').textContent = `${checked.length} selected`;
+                document.getElementById('team-sp-count').style.color = spOK ? 'var(--color-success)' : 'var(--color-text-muted)';
+            }
+
+            const allOK = consultantsOK && spOK;
+            assignBtn.disabled = !allOK;
+            validationEl.style.display = (!allOK && !isUpdateMode) ? 'flex' : 'none';
         }
 
-        function closeConsultantPopup() {
-            document.getElementById('consultant-assign-modal').classList.remove('open');
+        function closeTeamPopup() {
+            document.getElementById('team-assign-modal').classList.remove('open');
         }
 
+        // Update Team for consultants only
         function openUpdateConsultantPopup() {
             isUpdateMode = true;
-            showConsultantPopup();
+            teamPopupMode = 'consultant-only';
+            showTeamPopup();
         }
 
-        async function submitConsultantAssignment() {
-            const checked = document.querySelectorAll('#consultant-checklist input[type="checkbox"]:checked');
-            const ids = Array.from(checked).map(cb => parseInt(cb.value));
+        // Update Team for sales persons only
+        function openUpdateSalesPersonPopup() {
+            isUpdateMode = true;
+            teamPopupMode = 'sp-only';
+            showTeamPopup();
+        }
 
-            if (ids.length === 0) {
-                showToast('Please select at least one consultant', 'warning');
-                return;
+        async function submitTeamAssignment() {
+            const consultSection = document.getElementById('team-consultant-section');
+            const spSection = document.getElementById('team-sp-section');
+            const showConsultants = consultSection.style.display !== 'none';
+            const showSP = spSection.style.display !== 'none';
+
+            let consultantIds = [];
+            let spIds = [];
+
+            if (showConsultants) {
+                const checked = document.querySelectorAll('#team-consultant-checklist input[type="checkbox"]:checked');
+                consultantIds = Array.from(checked).map(cb => parseInt(cb.value));
+                if (consultantIds.length === 0) {
+                    showToast('Please select at least one consultant', 'warning');
+                    return;
+                }
+            }
+            if (showSP) {
+                const checked = document.querySelectorAll('#team-sp-checklist input[type="checkbox"]:checked');
+                spIds = Array.from(checked).map(cb => parseInt(cb.value));
+                if (spIds.length === 0) {
+                    showToast('Please select at least one sales person', 'warning');
+                    return;
+                }
             }
 
-            const btn = document.getElementById('consultant-assign-btn');
+            const btn = document.getElementById('team-assign-btn');
             btn.disabled = true;
             const originalHTML = btn.innerHTML;
             btn.innerHTML = `<div class="loading-spinner" style="width:14px;height:14px;border-width:2px"></div> Saving...`;
 
             try {
-                await api.post(`/consultants/agreement/${agreementId}`, { consultant_ids: ids });
-                showToast(`${ids.length} consultant(s) assigned successfully`, 'success');
-                closeConsultantPopup();
-                assignedConsultantIds = ids;
-                await loadAssignedConsultants();
+                const promises = [];
+                if (showConsultants && consultantIds.length > 0) {
+                    promises.push(api.post(`/consultants/agreement/${agreementId}`, { consultant_ids: consultantIds }));
+                }
+                if (showSP && spIds.length > 0) {
+                    promises.push(api.post(`/salespersons/agreement/${agreementId}`, { salesperson_ids: spIds }));
+                }
+
+                await Promise.all(promises);
+
+                const parts = [];
+                if (consultantIds.length > 0) parts.push(`${consultantIds.length} consultant(s)`);
+                if (spIds.length > 0) parts.push(`${spIds.length} sales person(s)`);
+                showToast(`${parts.join(' and ')} assigned successfully`, 'success');
+
+                closeTeamPopup();
+
+                if (showConsultants) {
+                    assignedConsultantIds = consultantIds;
+                    await loadAssignedConsultants();
+                }
+                if (showSP) {
+                    assignedSalesPersonIds = spIds;
+                    await loadAssignedSalesPersons();
+                }
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
@@ -1859,11 +2148,100 @@
         }
 
         // Prevent closing mandatory popup by clicking backdrop
-        document.getElementById('consultant-assign-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'consultant-assign-modal' && isUpdateMode) {
-                closeConsultantPopup();
+        document.getElementById('team-assign-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'team-assign-modal' && isUpdateMode) {
+                closeTeamPopup();
             }
             // If not update mode (mandatory), do NOT close on backdrop click
+        });
+
+        // ======= Sales Person Only Update Popup (kept for separate Update Team) =======
+
+        function closeSalesPersonPopup() {
+            document.getElementById('salesperson-assign-modal').classList.remove('open');
+        }
+
+        async function showSalesPersonUpdatePopup() {
+            const modal = document.getElementById('salesperson-assign-modal');
+            const checklist = document.getElementById('salesperson-checklist');
+            const emptyState = document.getElementById('salesperson-assign-empty');
+            const assignBtn = document.getElementById('salesperson-assign-btn');
+
+            modal.classList.add('open');
+            assignBtn.disabled = true;
+
+            try {
+                const data = await api.get('/salespersons/list');
+                const salespersons = data.salespersons || [];
+
+                if (salespersons.length === 0) {
+                    checklist.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                checklist.style.display = 'block';
+                emptyState.style.display = 'none';
+
+                checklist.innerHTML = salespersons.map(s => {
+                    const checked = assignedSalesPersonIds.includes(s.id) ? 'checked' : '';
+                    return `
+                        <label class="consultant-checklist-item" for="spsel-${s.id}">
+                            <input type="checkbox" id="spsel-${s.id}" value="${s.id}" ${checked}
+                                   onchange="updateSPAssignBtnState()" class="consultant-checkbox">
+                            <div class="consultant-checklist-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">${s.name.charAt(0).toUpperCase()}</div>
+                            <div class="consultant-checklist-info">
+                                <div class="consultant-checklist-name">${s.name}</div>
+                                <span class="consultant-checklist-badge">${s.designation}</span>
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+
+                updateSPAssignBtnState();
+            } catch (err) {
+                checklist.innerHTML = `<p style="color:var(--color-danger);text-align:center;padding:16px">${err.message}</p>`;
+            }
+        }
+
+        function updateSPAssignBtnState() {
+            const checked = document.querySelectorAll('#salesperson-checklist input[type="checkbox"]:checked');
+            document.getElementById('salesperson-assign-btn').disabled = checked.length === 0;
+        }
+
+        async function submitSalesPersonUpdate() {
+            const checked = document.querySelectorAll('#salesperson-checklist input[type="checkbox"]:checked');
+            const ids = Array.from(checked).map(cb => parseInt(cb.value));
+
+            if (ids.length === 0) {
+                showToast('Please select at least one sales person', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('salesperson-assign-btn');
+            btn.disabled = true;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<div class="loading-spinner" style="width:14px;height:14px;border-width:2px"></div> Saving...`;
+
+            try {
+                await api.post(`/salespersons/agreement/${agreementId}`, { salesperson_ids: ids });
+                showToast(`${ids.length} sales person(s) updated successfully`, 'success');
+                closeSalesPersonPopup();
+                assignedSalesPersonIds = ids;
+                await loadAssignedSalesPersons();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // Backdrop click for salesperson update popup
+        document.getElementById('salesperson-assign-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'salesperson-assign-modal') {
+                closeSalesPersonPopup();
+            }
         });
 
         // Mobile sidebar

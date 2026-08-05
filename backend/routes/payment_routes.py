@@ -42,6 +42,18 @@ def get_payments_summary(
             ORDER BY p.due_date ASC
         """
         params = [current_user["id"], current_user["consultant_id"]]
+    elif current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+        query = """
+            SELECT DISTINCT p.id as payment_id, p.agreement_id, p.due_date, p.amount, p.status, p.paid_at,
+                   aa.company_name, aa.currency, aa.payment_plans, a.status as agreement_status
+            FROM payments p
+            JOIN agreements a ON p.agreement_id = a.id
+            LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
+            LEFT JOIN agreement_salespersons asp ON a.id = asp.agreement_id
+            WHERE (a.user_id = ? OR asp.salesperson_id = ?)
+            ORDER BY p.due_date ASC
+        """
+        params = [current_user["id"], current_user["salesperson_id"]]
     else:
         query = """
             SELECT p.id as payment_id, p.agreement_id, p.due_date, p.amount, p.status, p.paid_at,
@@ -182,6 +194,18 @@ def get_upcoming_payments(
             ORDER BY p.due_date ASC
         """
         params = [current_user["id"], current_user["consultant_id"], start_str, end_str]
+    elif current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+        query = """
+            SELECT DISTINCT p.id as payment_id, p.agreement_id, p.due_date, p.amount, p.status,
+                   aa.company_name, aa.currency
+            FROM payments p
+            JOIN agreements a ON p.agreement_id = a.id
+            LEFT JOIN agreement_analysis aa ON a.id = aa.agreement_id
+            LEFT JOIN agreement_salespersons asp ON a.id = asp.agreement_id
+            WHERE (a.user_id = ? OR asp.salesperson_id = ?) AND p.status = 'pending' AND a.status NOT IN ('terminated') AND p.due_date BETWEEN ? AND ?
+            ORDER BY p.due_date ASC
+        """
+        params = [current_user["id"], current_user["salesperson_id"], start_str, end_str]
     else:
         query = """
             SELECT p.id as payment_id, p.agreement_id, p.due_date, p.amount, p.status,
@@ -241,6 +265,13 @@ def mark_payment_paid(
             assigned = db.cursor().execute(
                 "SELECT id FROM agreement_consultants WHERE agreement_id = ? AND consultant_id = ?",
                 (agreement_id, current_user["consultant_id"])
+            ).fetchone()
+            if not assigned:
+                raise HTTPException(status_code=403, detail="Access denied")
+        elif current_user["role"] == "salesperson" and current_user.get("salesperson_id"):
+            assigned = db.cursor().execute(
+                "SELECT id FROM agreement_salespersons WHERE agreement_id = ? AND salesperson_id = ?",
+                (agreement_id, current_user["salesperson_id"])
             ).fetchone()
             if not assigned:
                 raise HTTPException(status_code=403, detail="Access denied")

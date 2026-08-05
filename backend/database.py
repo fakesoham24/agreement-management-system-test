@@ -299,6 +299,69 @@ def init_db():
     except Exception:
         pass  # Column already exists
 
+    # ── Sales Persons table ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS salespersons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            designation TEXT NOT NULL,
+            email TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            password_hash TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # ── Agreement-SalesPerson junction table ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS agreement_salespersons (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            agreement_id INTEGER NOT NULL,
+            salesperson_id INTEGER NOT NULL,
+            assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (agreement_id) REFERENCES agreements(id) ON DELETE CASCADE,
+            FOREIGN KEY (salesperson_id) REFERENCES salespersons(id) ON DELETE CASCADE,
+            UNIQUE(agreement_id, salesperson_id)
+        )
+    """)
+
+    # ── Migrate users table — add salesperson_id foreign key column ──
+    try:
+        user_cols2 = [col[1] for col in cursor.execute("PRAGMA table_info(users)").fetchall()]
+        if "salesperson_id" not in user_cols2:
+            cursor.execute("PRAGMA foreign_keys=OFF")
+            # Get current column list dynamically to preserve all existing columns
+            existing_cols = [col[1] for col in cursor.execute("PRAGMA table_info(users)").fetchall()]
+            cols_def = ', '.join(existing_cols)
+            cursor.execute(f"""
+                CREATE TABLE IF NOT EXISTS users_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    full_name TEXT NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'user',
+                    is_active INTEGER DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    global_payment_access INTEGER DEFAULT 0,
+                    consultant_id INTEGER REFERENCES consultants(id),
+                    salesperson_id INTEGER REFERENCES salespersons(id)
+                )
+            """)
+            cursor.execute(f"""
+                INSERT INTO users_new ({cols_def})
+                SELECT {cols_def}
+                FROM users
+            """)
+            cursor.execute("DROP TABLE users")
+            cursor.execute("ALTER TABLE users_new RENAME TO users")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            conn.commit()
+    except Exception:
+        pass  # Migration already done or not needed
+
     # Migrate email_settings — add consultant email template columns
     consultant_email_cols = [
         ("consultant_email_subject", "TEXT DEFAULT 'Payment Reminder — {{company_name}} (Internal)'"),
@@ -449,6 +512,8 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_agreement_consultants_aid ON agreement_consultants(agreement_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_agreement_consultants_cid ON agreement_consultants(consultant_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_agreement_salespersons_aid ON agreement_salespersons(agreement_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_agreement_salespersons_sid ON agreement_salespersons(salesperson_id)")
 
     conn.commit()
 

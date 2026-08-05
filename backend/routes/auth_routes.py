@@ -47,7 +47,8 @@ def login(data: LoginRequest, db=Depends(get_db)):
             "full_name": user["full_name"],
             "role": user["role"],
             "global_payment_access": bool(user["global_payment_access"]),
-            "consultant_id": user["consultant_id"] if "consultant_id" in user.keys() else None
+            "consultant_id": user["consultant_id"] if "consultant_id" in user.keys() else None,
+            "salesperson_id": user["salesperson_id"] if "salesperson_id" in user.keys() else None
         }
     }
 
@@ -62,5 +63,6 @@ def get_me(current_user: dict = Depends(get_current_user)):
         "role": current_user["role"],
         "global_payment_access": bool(current_user.get("global_payment_access", 0)),
         "consultant_id": current_user.get("consultant_id"),
+        "salesperson_id": current_user.get("salesperson_id"),
         "created_at": current_user["created_at"]
     }
