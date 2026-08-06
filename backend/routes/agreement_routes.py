@@ -30,11 +30,15 @@ _analysis_lock = threading.Lock()
 def _check_agreement_access(current_user: dict, agreement, db) -> bool:
     """Check if the current user has access to the given agreement.
     Returns True if access is allowed, raises HTTPException(403) otherwise.
-    Admins can access all. Users can access their own. Consultants and
-    SalesPersons can access their own + agreements assigned to them.
+    Admins can access all (including orphaned agreements with NULL user_id).
+    Users can access their own. Consultants and SalesPersons can access
+    their own + agreements assigned to them.
     """
     if current_user["role"] == "admin":
         return True
+    # Orphaned agreements (user deleted) — only admin can access
+    if agreement["user_id"] is None:
+        raise HTTPException(status_code=403, detail="Access denied")
     if agreement["user_id"] == current_user["id"]:
         return True
     # Consultants can access agreements assigned to them
@@ -1017,7 +1021,32 @@ def list_agreements(
     # Re-fetch after possible status changes
     agreements = cursor.execute(query, params).fetchall()
 
-    return {"agreements": [dict(a) for a in agreements]}
+    # Enrich each agreement with assigned consultant and salesperson data
+    result_list = []
+    for a in agreements:
+        a_dict = dict(a)
+        aid = a_dict["id"]
+        # Assigned consultants
+        consultants = cursor.execute("""
+            SELECT c.id, c.name, c.designation
+            FROM agreement_consultants ac
+            JOIN consultants c ON ac.consultant_id = c.id
+            WHERE ac.agreement_id = ?
+            ORDER BY c.id
+        """, (aid,)).fetchall()
+        a_dict["assigned_consultants"] = [dict(c) for c in consultants]
+        # Assigned salespersons
+        salespersons = cursor.execute("""
+            SELECT s.id, s.name, s.designation
+            FROM agreement_salespersons asp
+            JOIN salespersons s ON asp.salesperson_id = s.id
+            WHERE asp.agreement_id = ?
+            ORDER BY s.id
+        """, (aid,)).fetchall()
+        a_dict["assigned_salespersons"] = [dict(s) for s in salespersons]
+        result_list.append(a_dict)
+
+    return {"agreements": result_list}
 
 
 def _auto_expire_agreements(cursor, db, agreements_list):

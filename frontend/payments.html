@@ -31,7 +31,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                         Payments
                     </a>
-                    <a class="nav-item" href="/renewals">
+                    <a class="nav-item" href="/renewals" id="nav-renewals">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115.36-6.36L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15.36 6.36L3 16"/></svg>
                         Renewals
                     </a>
@@ -178,6 +178,11 @@
                 document.getElementById('export-excel-btn').style.display = '';
                 // Show email status column for admin
                 document.querySelectorAll('.email-col-header').forEach(el => el.style.display = '');
+            }
+            // ── Consultant restrictions ──
+            if (user.role === 'consultant') {
+                const renewalsNav = document.getElementById('nav-renewals');
+                if (renewalsNav) renewalsNav.style.display = 'none';
             }
         }
 
@@ -413,7 +418,7 @@
 
                 const actionHtml = isPaid
                     ? `<span style="color:var(--color-text-muted);font-size:0.78rem">\u2014</span>`
-                    : `<button class="btn-mark-paid" onclick="markPaymentPaid(${p.payment_id}, event)">Mark Paid</button>`;
+                    : (user.role === 'consultant' ? `<span style="color:var(--color-text-muted);font-size:0.78rem">\u2014</span>` : `<button class="btn-mark-paid" onclick="markPaymentPaid(${p.payment_id}, event)">Mark Paid</button>`);
 
                 // Company name cell: clickable for admin/regular users, plain text for HR users
                 const terminatedLabel = isTerminated ? '<span class="terminated-label">Terminated</span>' : '';

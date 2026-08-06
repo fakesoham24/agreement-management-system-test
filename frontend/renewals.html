@@ -179,6 +179,11 @@
         if (!Auth.requireAuth()) throw new Error('Not authenticated');
 
         const user = Auth.getUser();
+        // Consultant users don't have access to renewals
+        if (user.role === 'consultant') {
+            window.location.href = '/dashboard';
+            throw new Error('Consultants cannot access renewals');
+        }
         let allRenewals = [];
         let currentFilter = 'all';
 

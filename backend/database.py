@@ -165,6 +165,48 @@ def init_db():
     except Exception:
         pass  # Column already exists
 
+    # ── Migrate agreements table — change ON DELETE CASCADE to ON DELETE SET NULL ──
+    # This ensures agreements are preserved when a user account is deleted.
+    # Agreements should only be removed via manual deletion (the 'X' button).
+    try:
+        # Check if migration is needed by inspecting the table SQL
+        table_sql = cursor.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='agreements'"
+        ).fetchone()
+        if table_sql and 'ON DELETE CASCADE' in (table_sql[0] or ''):
+            cursor.execute("PRAGMA foreign_keys=OFF")
+            # Get all current columns dynamically
+            ag_cols_info = cursor.execute("PRAGMA table_info(agreements)").fetchall()
+            ag_col_names = [col[1] for col in ag_cols_info]
+            ag_cols_str = ', '.join(ag_col_names)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS agreements_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    file_name TEXT NOT NULL,
+                    file_path TEXT NOT NULL,
+                    file_type TEXT NOT NULL,
+                    file_size INTEGER NOT NULL,
+                    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'active', 'expired', 'terminated')),
+                    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    is_viewed INTEGER DEFAULT 0,
+                    renewal_status TEXT DEFAULT NULL,
+                    renewal_increase_percent REAL DEFAULT 10,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+                )
+            """)
+            cursor.execute(f"""
+                INSERT INTO agreements_new ({ag_cols_str})
+                SELECT {ag_cols_str}
+                FROM agreements
+            """)
+            cursor.execute("DROP TABLE agreements")
+            cursor.execute("ALTER TABLE agreements_new RENAME TO agreements")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            conn.commit()
+    except Exception:
+        pass  # Migration already done or not needed
+
     # Migrate agreement_analysis table — add new columns for deep analysis
     new_columns = [
         # Agreement Overview

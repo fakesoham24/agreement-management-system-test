@@ -550,14 +550,9 @@ def delete_user(user_id: int, admin: dict = Depends(require_admin), db=Depends(g
     if user_id == admin["id"]:
         raise HTTPException(status_code=400, detail="Cannot delete your own account")
 
-    # Delete user's uploaded files from disk
-    upload_dir = os.path.normpath(UPLOAD_DIR)
-    if not os.path.isabs(upload_dir):
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        upload_dir = os.path.join(project_root, upload_dir)
-    user_upload_dir = os.path.join(upload_dir, f"user_{user_id}")
-    if os.path.exists(user_upload_dir):
-        shutil.rmtree(user_upload_dir, ignore_errors=True)
+    # NOTE: Agreement files are NOT deleted here. Agreements are preserved
+    # (user_id set to NULL via ON DELETE SET NULL) and can only be removed
+    # manually via the agreement delete button (X).
 
     cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
     db.commit()

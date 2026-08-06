@@ -90,7 +90,7 @@
                             <div class="notification-list" id="notification-list"></div>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="showUploadModal()">
+                    <button class="btn btn-primary btn-sm" id="upload-agreement-btn" onclick="showUploadModal()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                         Upload Agreement
                     </button>
@@ -110,6 +110,12 @@
                         <button class="filter-tab" data-filter="terminated">Terminated</button>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px">
+                        <!-- Assigned Users Filter Button -->
+                        <button class="btn btn-sm btn-assigned-users-filter" id="assigned-users-filter-btn" onclick="toggleAssignedUsersPopup()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                            <span id="assigned-users-filter-label">Assigned Users</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
                         <div class="view-toggle" id="dashboard-view-toggle">
                             <button class="view-toggle-btn active" data-view="template" onclick="switchDashboardView('template')">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -137,6 +143,8 @@
                             <thead>
                                 <tr>
                                     <th>Company Name</th>
+                                    <th>Consultant</th>
+                                    <th>Sales Person</th>
                                     <th>Status</th>
                                     <th>Start Date</th>
                                     <th>End Date</th>
@@ -495,6 +503,16 @@
                 document.getElementById('dashboard-export-btn').style.display = '';
             }
 
+            // ── Consultant restrictions: hide upload, renewals, assigned users filter ──
+            if (user.role === 'consultant') {
+                const uploadBtn = document.getElementById('upload-agreement-btn');
+                if (uploadBtn) uploadBtn.style.display = 'none';
+                const renewalsNav = document.getElementById('nav-renewals');
+                if (renewalsNav) renewalsNav.style.display = 'none';
+                const filterBtn = document.getElementById('assigned-users-filter-btn');
+                if (filterBtn) filterBtn.style.display = 'none';
+            }
+
             // Restore view mode from localStorage
             if (dashboardViewMode === 'list') {
                 document.querySelectorAll('#dashboard-view-toggle .view-toggle-btn').forEach(b => b.classList.remove('active'));
@@ -629,6 +647,26 @@
                 );
             }
 
+            // Assigned Users team filter
+            if (_activeTeamFilter) {
+                if (_activeTeamFilter.isEmpty) {
+                    filtered = [];
+                } else {
+                    const pids = _activeTeamFilter.personIds;
+                    filtered = filtered.filter(a => {
+                        const consultants = a.assigned_consultants || [];
+                        const salespersons = a.assigned_salespersons || [];
+                        // Check if any assigned person matches
+                        const hasMatchingConsultant = consultants.some(c => pids.has('c_' + c.id));
+                        const hasMatchingSalesperson = salespersons.some(s => pids.has('s_' + s.id));
+                        if (hasMatchingConsultant || hasMatchingSalesperson) return true;
+                        // "Others" includes agreements with no team or uploaded by admin/user
+                        if (_activeTeamFilter.includeOthers && consultants.length === 0 && salespersons.length === 0) return true;
+                        return false;
+                    });
+                }
+            }
+
             const grid = document.getElementById('agreements-grid');
             const listView = document.getElementById('agreements-list-view');
             const empty = document.getElementById('empty-state');
@@ -665,18 +703,24 @@
                     const currency = a.currency || '₹';
 
                     const isTerminated = a.status === 'terminated';
+                    const consultantNames = formatTeamNames(a.assigned_consultants || [], 'consultant');
+                    const salespersonNames = formatTeamNames(a.assigned_salespersons || [], 'salesperson');
+                    const removeBtn = user.role === 'consultant' ? '' : `
+                                <button class="list-remove-btn" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                </button>`;
                     return `
                         <tr class="${isTerminated ? 'terminated-row' : ''}" onclick="window.location.href='/agreement/${a.id}'" style="cursor:pointer">
                             <td class="plan-name">${a.company_name || a.file_name || 'Unnamed Agreement'}</td>
+                            <td class="team-cell">${consultantNames}</td>
+                            <td class="team-cell">${salespersonNames}</td>
                             <td>${statusBadge(a.status)}</td>
                             <td>${formatDate(a.effective_date)}</td>
                             <td>${formatDate(a.expiry_date)}</td>
                             <td><strong>${totalAmount > 0 ? formatCurrency(totalAmount, currency) : '—'}</strong></td>
                             <td style="color:${paidAmount > 0 ? 'var(--color-success)' : 'var(--color-text-muted)'}">${paidAmount > 0 ? formatCurrency(paidAmount, currency) : '—'}</td>
                             <td>
-                                <button class="list-remove-btn" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                                </button>
+                                ${removeBtn}
                             </td>
                         </tr>
                     `;
@@ -707,11 +751,12 @@
                     return `
                     <div class="agreement-card ${isTerminated ? 'terminated-card' : ''}" onclick="window.location.href='/agreement/${a.id}'">
                         ${a.is_viewed === 0 ? '<div class="badge-new">New</div>' : ''}
-                        <button class="card-remove" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\'")}')" title="Remove agreement">
+                        ${user.role === 'consultant' ? '' : `<button class="card-remove" onclick="event.stopPropagation(); deleteAgreement(${a.id}, '${(a.company_name || a.file_name || '').replace(/'/g, "\\\\\\\'")}')" title="Remove agreement">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                        </button>
+                        </button>`}
                         <div class="card-company">${a.company_name || a.file_name || 'Unnamed Agreement'}</div>
                         <div>${statusBadge(a.status)}</div>
+                        ${renderCardTeamRow(a)}
                         <div class="card-meta">
                             <div class="card-meta-item">
                                 <span class="card-meta-label">Start Date</span>
@@ -1412,11 +1457,472 @@
             if (e.target.id === 'error-popup-modal') closeErrorPopup();
         });
 
+        // ==========================================
+        // Team Name Formatting (Hierarchical)
+        // ==========================================
+        const CONSULTANT_HIERARCHY = ['Project Manager', 'Lead Consultant', 'Lean Consultant', 'Senior Consultant', 'Junior Consultant'];
+        const SALESPERSON_HIERARCHY = ['Sales Manager', 'Senior Sales Person', 'Sales Executive'];
+
         // Init
         initUI();
         loadAgreements();
         loadNotifications();
         loadPaymentSummary();
+
+        function sortByHierarchy(people, type) {
+            const hierarchy = type === 'consultant' ? CONSULTANT_HIERARCHY : SALESPERSON_HIERARCHY;
+            return [...people].sort((a, b) => {
+                const ai = hierarchy.indexOf(a.designation);
+                const bi = hierarchy.indexOf(b.designation);
+                return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+            });
+        }
+
+        function formatTeamNames(people, type) {
+            if (!people || people.length === 0) return '<span style="color:var(--color-text-muted)">—</span>';
+            const sorted = sortByHierarchy(people, type);
+            const first = sorted[0];
+            const remaining = sorted.length - 1;
+            const tooltipText = sorted.map(p => p.designation ? `${p.name} (${p.designation})` : p.name).join('\n');
+            let html = `<div class="team-cell-wrap" title="${tooltipText.replace(/"/g, '&quot;')}">`;
+            html += `<span class="team-name-tag">${first.name}</span>`;
+            if (remaining > 0) {
+                html += `<span class="team-more-tag">+${remaining}</span>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function renderCardTeamRow(a) {
+            const consultants = a.assigned_consultants || [];
+            const salespersons = a.assigned_salespersons || [];
+            if (consultants.length === 0 && salespersons.length === 0) return '';
+
+            const personIconGreen = `<svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" style="width:16px;height:16px;flex-shrink:0"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+            const personIconBlue = `<svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" style="width:16px;height:16px;flex-shrink:0"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+
+            let html = '<div class="card-team-row">';
+            if (consultants.length > 0) {
+                const sorted = sortByHierarchy(consultants, 'consultant');
+                const shown = sorted.slice(0, 2);
+                const remaining = sorted.length - 2;
+                html += `<div class="card-team-item consultant-team">
+                    <div class="card-team-icon-wrap green">${personIconGreen}</div>
+                    <div class="card-team-info">
+                        <span class="card-team-label">Consultant</span>
+                        <span class="card-team-name">${shown.map(c => c.name).join(', ')}${remaining > 0 ? ` <span class="team-more-tag">+${remaining}</span>` : ''}</span>
+                    </div>
+                </div>`;
+            }
+            if (consultants.length > 0 && salespersons.length > 0) {
+                html += '<div class="card-team-divider"></div>';
+            }
+            if (salespersons.length > 0) {
+                const sorted = sortByHierarchy(salespersons, 'salesperson');
+                const shown = sorted.slice(0, 2);
+                const remaining = sorted.length - 2;
+                html += `<div class="card-team-item salesperson-team">
+                    <div class="card-team-icon-wrap blue">${personIconBlue}</div>
+                    <div class="card-team-info">
+                        <span class="card-team-label">Sales Person</span>
+                        <span class="card-team-name">${shown.map(s => s.name).join(', ')}${remaining > 0 ? ` <span class="team-more-tag">+${remaining}</span>` : ''}</span>
+                    </div>
+                </div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // ==========================================
+        // Assigned Users Filter Popup
+        // ==========================================
+        let _assignedUsersPopupOpen = false;
+        let _allFilterPersons = []; // Combined list of all consultants + salespersons
+        let _activeTeamFilter = null; // { userTypes: Set, roles: Set, personIds: Set }
+        let _filterSelectedPersonIds = new Set();
+        let _filterUserTypes = { consultant: true, salesperson: true, others: false };
+        let _filterRoles = new Set();
+        let _initialPopupStateSnapshot = '';
+
+        async function loadFilterPersons() {
+            if (_allFilterPersons.length > 0) return;
+            try {
+                const [consultantsRes, salespersonsRes] = await Promise.all([
+                    api.get('/consultants/'),
+                    api.get('/salespersons/')
+                ]);
+                _allFilterPersons = [];
+                (consultantsRes.consultants || consultantsRes || []).forEach(c => {
+                    _allFilterPersons.push({ id: 'c_' + c.id, realId: c.id, name: c.name, designation: c.designation, type: 'consultant' });
+                });
+                (salespersonsRes.salespersons || salespersonsRes || []).forEach(s => {
+                    _allFilterPersons.push({ id: 's_' + s.id, realId: s.id, name: s.name, designation: s.designation, type: 'salesperson' });
+                });
+            } catch (err) {
+                console.error('Failed to load filter persons:', err);
+            }
+        }
+
+        function toggleAssignedUsersPopup() {
+            if (user.role === 'consultant') return;
+            if (_assignedUsersPopupOpen) {
+                closeAssignedUsersPopup();
+            } else {
+                openAssignedUsersPopup();
+            }
+        }
+
+        function getPopupStateSnapshot() {
+            return JSON.stringify({
+                types: _filterUserTypes,
+                roles: Array.from(_filterRoles).sort(),
+                persons: Array.from(_filterSelectedPersonIds).sort()
+            });
+        }
+
+        function updateDirtyState() {
+            const current = getPopupStateSnapshot();
+            const isDirty = current !== _initialPopupStateSnapshot;
+            const applyBtn = document.getElementById('filter-apply-btn');
+            const resetBtn = document.getElementById('filter-reset-btn');
+            if (applyBtn) {
+                applyBtn.disabled = !isDirty;
+                if (!isDirty) applyBtn.classList.add('btn-faded');
+                else applyBtn.classList.remove('btn-faded');
+            }
+            if (resetBtn) {
+                resetBtn.disabled = !isDirty;
+                if (!isDirty) resetBtn.classList.add('btn-faded');
+                else resetBtn.classList.remove('btn-faded');
+            }
+        }
+
+        async function openAssignedUsersPopup() {
+            if (user.role === 'consultant') return; // Security check
+            await loadFilterPersons();
+            _assignedUsersPopupOpen = true;
+
+            const allDesignations = [...new Set(_allFilterPersons.map(p => p.designation))];
+
+            // Initialize state if first time or if no active team filter
+            if (!_activeTeamFilter && _filterRoles.size === 0) {
+                _filterUserTypes = { consultant: true, salesperson: true, others: false };
+                _filterRoles = new Set(allDesignations);
+                _filterSelectedPersonIds = new Set(_allFilterPersons.map(p => p.id));
+            }
+
+            // Remove existing overlay/popup if any
+            let existingOverlay = document.getElementById('assigned-users-modal-overlay');
+            if (existingOverlay) existingOverlay.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'assigned-users-modal-overlay';
+            overlay.className = 'assigned-users-modal-overlay';
+            overlay.innerHTML = `
+                <div class="assigned-users-popup" id="assigned-users-popup">
+                    <div class="assigned-users-popup-header">
+                        <h3>Assigned Users</h3>
+                        <button class="btn-ghost btn-icon" onclick="closeAssignedUsersPopup()" title="Close">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="assigned-users-popup-body">
+                        <!-- Section 1: User Type -->
+                        <div class="filter-section">
+                            <div class="filter-section-header">
+                                <div class="filter-section-title">1. User Type</div>
+                                <label class="filter-select-all">
+                                    <input type="checkbox" id="sec1-select-all-cb" onchange="toggleSec1SelectAll()">
+                                    <span id="sec1-select-all-lbl">Select All</span>
+                                </label>
+                            </div>
+                            <div class="filter-checkbox-grid">
+                                <label class="filter-checkbox-item">
+                                    <input type="checkbox" id="ut-consultant" ${_filterUserTypes.consultant ? 'checked' : ''} onchange="onUserTypeToggle('consultant')"> Consultant
+                                </label>
+                                <label class="filter-checkbox-item">
+                                    <input type="checkbox" id="ut-salesperson" ${_filterUserTypes.salesperson ? 'checked' : ''} onchange="onUserTypeToggle('salesperson')"> Sales Person
+                                </label>
+                                <label class="filter-checkbox-item">
+                                    <input type="checkbox" id="ut-others" ${_filterUserTypes.others ? 'checked' : ''} onchange="onUserTypeToggle('others')"> Others
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Section 2: Role -->
+                        <div class="filter-section">
+                            <div class="filter-section-header">
+                                <div class="filter-section-title">2. Role</div>
+                                <label class="filter-select-all">
+                                    <input type="checkbox" id="sec2-select-all-cb" onchange="toggleSec2SelectAll()">
+                                    <span id="sec2-select-all-lbl">Select All</span>
+                                </label>
+                            </div>
+                            <div class="filter-checkbox-grid" id="filter-roles-grid">
+                                ${allDesignations.map(d => `
+                                    <label class="filter-checkbox-item">
+                                        <input type="checkbox" data-role="${d}" ${_filterRoles.has(d) ? 'checked' : ''} onchange="onRoleToggle('${d.replace(/'/g, "\\'")}')"> ${d}
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <!-- Section 3: Assigned Users -->
+                        <div class="filter-section">
+                            <div class="filter-section-title">3. Assigned Users</div>
+                            <div class="filter-search-row">
+                                <div class="filter-search-bar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                                    <input type="text" id="filter-person-search" placeholder="Search users..." oninput="onFilterPersonSearch()">
+                                </div>
+                                <label class="filter-select-all">
+                                    <input type="checkbox" id="sec3-select-all-cb" onchange="toggleSec3SelectAll()">
+                                    <span id="sec3-select-all-lbl">Select All</span>
+                                </label>
+                            </div>
+                            <div class="filter-persons-list" id="filter-persons-list">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="assigned-users-popup-footer">
+                        <button class="btn btn-secondary btn-sm btn-faded" id="filter-reset-btn" disabled onclick="resetAssignedUsersFilter()">Reset</button>
+                        <button class="btn btn-primary btn-sm btn-faded" id="filter-apply-btn" disabled onclick="applyAssignedUsersFilter()">Apply</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Lock background scroll
+            document.body.style.overflow = 'hidden';
+
+            // Trigger animation
+            requestAnimationFrame(() => overlay.classList.add('open'));
+
+            // Render initial lists & headers
+            renderFilterPersonsList();
+            updateSec1Header();
+            updateSec2Header();
+
+            // Save initial snapshot & state
+            _initialPopupStateSnapshot = getPopupStateSnapshot();
+            updateDirtyState();
+        }
+
+        function closeAssignedUsersPopup() {
+            _assignedUsersPopupOpen = false;
+            document.body.style.overflow = ''; // Unlock scroll
+            const overlay = document.getElementById('assigned-users-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('open');
+                setTimeout(() => overlay.remove(), 150);
+            }
+            const btn = document.getElementById('assigned-users-filter-btn');
+            if (btn) btn.classList.remove('active');
+        }
+
+        function onUserTypeToggle(type) {
+            const cb = document.getElementById(`ut-${type}`);
+            _filterUserTypes[type] = cb.checked;
+            updateSec1Header();
+            renderFilterPersonsList();
+            updateDirtyState();
+        }
+
+        function toggleSec1SelectAll() {
+            const cb = document.getElementById('sec1-select-all-cb');
+            const targetState = cb.checked;
+            _filterUserTypes.consultant = targetState;
+            _filterUserTypes.salesperson = targetState;
+            _filterUserTypes.others = targetState;
+
+            document.getElementById('ut-consultant').checked = targetState;
+            document.getElementById('ut-salesperson').checked = targetState;
+            document.getElementById('ut-others').checked = targetState;
+
+            updateSec1Header();
+            renderFilterPersonsList();
+            updateDirtyState();
+        }
+
+        function updateSec1Header() {
+            const allChecked = _filterUserTypes.consultant && _filterUserTypes.salesperson && _filterUserTypes.others;
+            const cb = document.getElementById('sec1-select-all-cb');
+            const lbl = document.getElementById('sec1-select-all-lbl');
+            if (cb && lbl) {
+                cb.checked = allChecked;
+                lbl.textContent = allChecked ? 'Deselect All' : 'Select All';
+            }
+        }
+
+        function onRoleToggle(role) {
+            if (_filterRoles.has(role)) {
+                _filterRoles.delete(role);
+            } else {
+                _filterRoles.add(role);
+            }
+            updateSec2Header();
+            renderFilterPersonsList();
+            updateDirtyState();
+        }
+
+        function toggleSec2SelectAll() {
+            const cb = document.getElementById('sec2-select-all-cb');
+            const targetState = cb.checked;
+            const allDesignations = [...new Set(_allFilterPersons.map(p => p.designation))];
+
+            if (targetState) {
+                allDesignations.forEach(d => _filterRoles.add(d));
+            } else {
+                _filterRoles.clear();
+            }
+
+            document.querySelectorAll('#filter-roles-grid input[type="checkbox"]').forEach(input => {
+                input.checked = targetState;
+            });
+
+            updateSec2Header();
+            renderFilterPersonsList();
+            updateDirtyState();
+        }
+
+        function updateSec2Header() {
+            const allDesignations = [...new Set(_allFilterPersons.map(p => p.designation))];
+            const allChecked = allDesignations.length > 0 && allDesignations.every(d => _filterRoles.has(d));
+            const cb = document.getElementById('sec2-select-all-cb');
+            const lbl = document.getElementById('sec2-select-all-lbl');
+            if (cb && lbl) {
+                cb.checked = allChecked;
+                lbl.textContent = allChecked ? 'Deselect All' : 'Select All';
+            }
+        }
+
+        function onPersonItemToggle(personId) {
+            if (_filterSelectedPersonIds.has(personId)) {
+                _filterSelectedPersonIds.delete(personId);
+            } else {
+                _filterSelectedPersonIds.add(personId);
+            }
+            updateSec3Header();
+            updateDirtyState();
+        }
+
+        function getVisiblePersons() {
+            const searchVal = (document.getElementById('filter-person-search')?.value || '').toLowerCase();
+            return _allFilterPersons.filter(p => {
+                if (p.type === 'consultant' && !_filterUserTypes.consultant) return false;
+                if (p.type === 'salesperson' && !_filterUserTypes.salesperson) return false;
+                if (!_filterRoles.has(p.designation)) return false;
+                if (searchVal && !p.name.toLowerCase().includes(searchVal) && !p.designation.toLowerCase().includes(searchVal)) return false;
+                return true;
+            });
+        }
+
+        function toggleSec3SelectAll() {
+            const cb = document.getElementById('sec3-select-all-cb');
+            const targetState = cb.checked;
+            const visible = getVisiblePersons();
+
+            visible.forEach(p => {
+                if (targetState) _filterSelectedPersonIds.add(p.id);
+                else _filterSelectedPersonIds.delete(p.id);
+            });
+
+            document.querySelectorAll('#filter-persons-list input[data-person-id]').forEach(input => {
+                input.checked = targetState;
+            });
+
+            updateSec3Header();
+            updateDirtyState();
+        }
+
+        function updateSec3Header() {
+            const visible = getVisiblePersons();
+            const allChecked = visible.length > 0 && visible.every(p => _filterSelectedPersonIds.has(p.id));
+            const cb = document.getElementById('sec3-select-all-cb');
+            const lbl = document.getElementById('sec3-select-all-lbl');
+            if (cb && lbl) {
+                cb.checked = allChecked;
+                lbl.textContent = allChecked ? 'Deselect All' : 'Select All';
+            }
+        }
+
+        function onFilterPersonSearch() {
+            renderFilterPersonsList();
+            updateDirtyState();
+        }
+
+        function renderFilterPersonsList() {
+            const visible = getVisiblePersons();
+            const container = document.getElementById('filter-persons-list');
+            if (!container) return;
+
+            if (visible.length === 0) {
+                container.innerHTML = '<div class="filter-empty">No users match the selected filters.</div>';
+                updateSec3Header();
+                return;
+            }
+
+            const avatarColors = ['#f97316', '#059669', '#2563eb', '#d946ef', '#dc2626', '#0891b2', '#7c3aed', '#e11d48'];
+
+            container.innerHTML = '<div class="filter-persons-grid">' + visible.map((p, i) => {
+                const color = avatarColors[p.name.charCodeAt(0) % avatarColors.length];
+                const initial = p.name.charAt(0).toUpperCase();
+                const isChecked = _filterSelectedPersonIds.has(p.id);
+                return `
+                    <label class="filter-person-item">
+                        <input type="checkbox" data-person-id="${p.id}" ${isChecked ? 'checked' : ''} onchange="onPersonItemToggle('${p.id}')">
+                        <div class="filter-person-avatar" style="background:${color}">${initial}</div>
+                        <div class="filter-person-info">
+                            <span class="filter-person-name">${p.name}</span>
+                            <span class="filter-person-role">${p.designation}</span>
+                        </div>
+                    </label>
+                `;
+            }).join('') + '</div>';
+
+            updateSec3Header();
+        }
+
+        function resetAssignedUsersFilter() {
+            const allDesignations = [...new Set(_allFilterPersons.map(p => p.designation))];
+            _filterUserTypes = { consultant: true, salesperson: true, others: false };
+            _filterRoles = new Set(allDesignations);
+            _filterSelectedPersonIds = new Set(_allFilterPersons.map(p => p.id));
+            _activeTeamFilter = null;
+
+            // Update main button label
+            document.getElementById('assigned-users-filter-label').textContent = 'Assigned Users';
+            document.getElementById('assigned-users-filter-btn').classList.remove('filter-active');
+
+            closeAssignedUsersPopup();
+            renderAgreements();
+        }
+
+        function applyAssignedUsersFilter() {
+            const totalAll = _allFilterPersons.length;
+            const hasCustomPersons = _filterSelectedPersonIds.size < totalAll;
+            const hasCustomTypes = !_filterUserTypes.consultant || !_filterUserTypes.salesperson || _filterUserTypes.others;
+
+            if (_filterSelectedPersonIds.size === 0 && !_filterUserTypes.others) {
+                _activeTeamFilter = { personIds: new Set(), includeOthers: false, isEmpty: true };
+            } else {
+                _activeTeamFilter = {
+                    personIds: new Set(_filterSelectedPersonIds),
+                    includeOthers: _filterUserTypes.others
+                };
+            }
+
+            // Update main button label
+            if (hasCustomPersons || hasCustomTypes) {
+                document.getElementById('assigned-users-filter-label').textContent = `Assigned Users (${_filterSelectedPersonIds.size})`;
+                document.getElementById('assigned-users-filter-btn').classList.add('filter-active');
+            } else {
+                document.getElementById('assigned-users-filter-label').textContent = 'Assigned Users';
+                document.getElementById('assigned-users-filter-btn').classList.remove('filter-active');
+            }
+
+            closeAssignedUsersPopup();
+            renderAgreements();
+        }
+
 
         // ==========================================
         // WebSocket — Real-Time Updates
