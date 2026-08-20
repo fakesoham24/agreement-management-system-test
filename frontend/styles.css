@@ -1,5 +1,5 @@
 /* ============================================
-   Agreement Management System — Design System
+   Agreement Management System â€” Design System
    Enterprise-grade, clean, minimal, white-theme
    ============================================ */
 
@@ -9,7 +9,7 @@
 :root {
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-    /* Colors — corporate palette */
+    /* Colors â€” corporate palette */
     --color-bg: #f8f9fb;
     --color-surface: #ffffff;
     --color-border: #e2e5ea;
@@ -128,13 +128,13 @@ h4 {
     font-size: 0.75rem;
 }
 
-/* === Layout — Auth Pages (Split Panel) === */
+/* === Layout â€” Auth Pages (Split Panel) === */
 .auth-wrapper {
     display: flex;
     min-height: 100vh;
 }
 
-/* Left intro panel — dark background */
+/* Left intro panel â€” dark background */
 .auth-intro {
     flex: 1;
     background: #1A1D23;
@@ -664,7 +664,7 @@ h4 {
     background: var(--color-bg);
 }
 
-/* Email Status Dot — open tracking indicator */
+/* Email Status Dot â€” open tracking indicator */
 .email-status-dot {
     display: inline-block;
     width: 10px;
@@ -2269,7 +2269,7 @@ h4 {
 }
 
 /* ============================================
-   ANALYSIS PAGE — Deep Template Styles
+   ANALYSIS PAGE â€” Deep Template Styles
    ============================================ */
 
 /* === Badges Row (Agreement Overview) === */
@@ -2434,7 +2434,7 @@ h4 {
     font-weight: 400;
 }
 
-/* === Payment Table — Enhanced with GST/TDS === */
+/* === Payment Table â€” Enhanced with GST/TDS === */
 .payment-table-enhanced {
     width: 100%;
     border-collapse: collapse;
@@ -3553,7 +3553,7 @@ h4 {
 }
 
 /* ============================================
-   Dashboard — Monthly Payment Cards
+   Dashboard â€” Monthly Payment Cards
    ============================================ */
 .dashboard-payment-cards {
     display: grid;
@@ -3845,7 +3845,7 @@ h4 {
 }
 
 /* ============================================
-   Manual Upload — Full Screen Overlay
+   Manual Upload â€” Full Screen Overlay
    ============================================ */
 .manual-upload-overlay {
     position: fixed;
@@ -4421,7 +4421,7 @@ h4 {
     width: 85%;
 }
 
-/* Skeleton card — matches .agreement-card dimensions */
+/* Skeleton card â€” matches .agreement-card dimensions */
 .skeleton-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
@@ -4459,7 +4459,7 @@ h4 {
     width: 100px;
 }
 
-/* Skeleton payment summary cards — matches .dashboard-pay-card */
+/* Skeleton payment summary cards â€” matches .dashboard-pay-card */
 .skeleton-pay-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
@@ -4487,7 +4487,7 @@ h4 {
     width: 60%;
 }
 
-/* Skeleton table row — for payments and other tables */
+/* Skeleton table row â€” for payments and other tables */
 .skeleton-table-row {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -4715,7 +4715,7 @@ h4 {
 }
 
 /* ============================================
-   Responsive — Pro Forma Modal
+   Responsive â€” Pro Forma Modal
    ============================================ */
 @media (max-width: 768px) {
     .proforma-form-grid {
@@ -4872,7 +4872,7 @@ h4 {
 }
 
 /* ============================================
-   Email Timeout — Timed-out Payment Rows
+   Email Timeout â€” Timed-out Payment Rows
    ============================================ */
 tr.email-timed-out {
     opacity: 0.4;
@@ -4898,7 +4898,7 @@ tr.email-timed-out .company-more-info-btn {
    Terminated Agreement Styles
    ============================================ */
 
-/* Terminate Button — danger red, placed at bottom of agreement page */
+/* Terminate Button â€” danger red, placed at bottom of agreement page */
 .btn-terminate {
     display: inline-flex;
     align-items: center;
@@ -5042,7 +5042,7 @@ tr.email-timed-out .company-more-info-btn {
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
 }
 
-/* Terminated Banner — shown at top of agreement page when terminated */
+/* Terminated Banner â€” shown at top of agreement page when terminated */
 .terminated-banner {
     background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     border: 1.5px solid #fca5a5;
@@ -5135,7 +5135,7 @@ tr.payment-row-terminated td {
     vertical-align: middle;
 }
 
-/* Large badge for agreement overview — terminated */
+/* Large badge for agreement overview â€” terminated */
 .badge-lg.badge-terminated-lg {
     background: #fef2f2;
     color: #991b1b;
@@ -5524,4 +5524,2009 @@ tr.payment-row-terminated td {
     opacity: 0.45 !important;
     cursor: not-allowed !important;
     pointer-events: none !important;
+}
+
+/* ============================================
+   Email Chip Component
+   ============================================ */
+.email-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    min-height: 40px;
+    transition: border-color var(--transition-fast);
+    cursor: text;
+}
+
+.email-chips-container:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+}
+
+.email-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px 4px 10px;
+    background: #1e293b;
+    color: #fff;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    white-space: nowrap;
+    animation: chipIn 0.2s ease;
+}
+
+@keyframes chipIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.email-chip .remove-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.15s;
+}
+
+.email-chip .remove-chip:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.email-chips-input {
+    flex: 1;
+    min-width: 160px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-primary);
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
+    padding: 4px 0;
+}
+
+.email-chips-input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.email-add-btn {
+    padding: 4px 14px;
+    font-family: var(--font-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid var(--color-accent);
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: 50px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.email-add-btn:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.email-add-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   Email "+N more" Hover Tooltip
+   ============================================ */
+.email-display-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.email-more-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #475569;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+}
+
+.email-more-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 0.78rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    line-height: 1.6;
+}
+
+.email-more-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1e293b;
+}
+
+.email-more-badge:hover .email-more-tooltip {
+    display: block;
+}
+
+/* ============================================
+   Final Summary & Send Mail Modal
+   ============================================ */
+.final-summary-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10020;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+
+.final-summary-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.final-summary-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.final-summary-overlay.open .final-summary-modal {
+    transform: scale(1) translateY(0);
+}
+
+.final-summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.final-summary-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.final-summary-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.final-summary-close:hover {
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+}
+
+.final-summary-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.final-summary-company {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f0f4ff, #eef2ff);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius-md);
+}
+
+.final-summary-company-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.final-summary-company-info h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.final-summary-company-info p {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+}
+
+.final-summary-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.final-summary-field label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.final-summary-preview {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    background: #fff;
+    max-height: 250px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--color-text-primary);
+}
+
+.final-summary-warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    color: #92400e;
+}
+
+.final-summary-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border-light);
+    background: #f8fafc;
+    border-bottom-left-radius: var(--radius-xl);
+    border-bottom-right-radius: var(--radius-xl);
+}
+
+.btn-send-mail {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    font-family: var(--font-primary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--color-accent);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-send-mail:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-send-mail:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE OVERRIDES â€” v2
+   Strategy: max-width only, desktop untouched.
+   ============================================================ */
+
+/* â”€â”€â”€ CRITICAL: payments-table-container has overflow:hidden â€”
+   override it on mobile so the table scrolls horizontally â”€â”€â”€ */
+@media (max-width: 1024px) {
+    .payments-table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* â”€â”€â”€ TABLET (â‰¤ 1024px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 1024px) {
+    /* Admin stats: inline style is repeat(6,1fr) */
+    #admin-stats {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* â”€â”€â”€ MOBILE (â‰¤ 768px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 768px) {
+
+    /* SIDEBAR */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 200;
+    }
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 4px 0 32px rgba(0,0,0,0.18);
+    }
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 199;
+        display: none;
+    }
+    .sidebar-backdrop.open {
+        display: block;
+    }
+    .sidebar-header img {
+        width: 130px !important;
+        height: auto !important;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100%;
+    }
+
+    /* HAMBURGER BUTTON */
+    .mobile-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* CONTENT HEADER â€” one row, no wrap */
+    .content-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        gap: 8px;
+        flex-wrap: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+    }
+    .content-header > div:first-child {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        min-width: 0;
+    }
+    .content-header h1 {
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+    /* Search bar hidden from header on mobile (inside .header-actions) */
+    .header-actions .search-bar {
+        display: none;
+    }
+    /* Header actions â€” no wrap */
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+    }
+    /* Upload button compact */
+    #upload-agreement-btn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
+    /* Export PDF / other header buttons compact */
+    #export-pdf-btn,
+    #view-doc-btn,
+    #edit-toggle-btn {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+    /* Notification bell stays */
+    .notification-bell {
+        flex-shrink: 0;
+    }
+    .notification-dropdown {
+        width: min(88vw, 320px);
+        right: -8px;
+    }
+
+    /* CONTENT BODY */
+    .content-body {
+        padding: 12px;
+    }
+
+    /* FILTER TABS â€” single scrollable row, no wrapping */
+    .filter-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .filter-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 6px 12px;
+        font-size: 0.78rem;
+    }
+
+    /* STATS GRID */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+    #admin-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+    .renewal-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+
+    /* AGREEMENTS GRID */
+    .agreements-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* PAYMENTS FILTERS â€” stacked */
+    .payments-filters {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .payment-status-filter {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+    }
+    .payment-status-filter::-webkit-scrollbar { display: none; }
+
+    /* MONTH TABS */
+    .month-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 4px;
+    }
+    .month-tabs::-webkit-scrollbar { display: none; }
+    .month-tab { flex-shrink: 0; }
+
+    /* TABLES â€” horizontal scroll */
+    .payments-table-container {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .renewal-table-container,
+    .dashboard-list-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .payment-table-enhanced {
+        min-width: 640px;
+        font-size: 0.8rem;
+    }
+    .payment-table-enhanced th,
+    .payment-table-enhanced td {
+        padding: 8px 10px;
+        white-space: nowrap;
+    }
+    .data-table {
+        min-width: 560px;
+        font-size: 0.8rem;
+    }
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        white-space: nowrap;
+    }
+    .company-select-table {
+        min-width: 480px;
+        font-size: 0.8rem;
+    }
+    .email-log-table {
+        min-width: 600px;
+        font-size: 0.8rem;
+    }
+    /* Wrapper divs with overflow-x:auto */
+    div[style*="overflow-x:auto"],
+    div[style*="overflow-x: auto"] {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* DETAIL GRID */
+    .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    /* Agreement overview 2-col â†’ 1-col */
+    #section-overview > div[style*="grid-template-columns"],
+    #edit-form div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* CLAUSES GRID */
+    .clauses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* TEAM ASSIGN GRID */
+    .team-assign-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+        padding: 16px;
+        align-items: center;
+    }
+    .modal {
+        width: 100%;
+        max-width: calc(100vw - 32px);
+        margin: 0;
+        padding: 20px 16px;
+        border-radius: var(--radius-xl);
+    }
+
+    /* AUTH PAGES */
+    .auth-intro { display: none; }
+    .auth-wrapper { flex-direction: column; }
+    .auth-form-panel {
+        flex: 1;
+        padding: 24px 16px;
+    }
+    .auth-form-container {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* MANUAL UPLOAD */
+    .manual-form-grid { grid-template-columns: 1fr; }
+    .manual-upload-header { padding: 12px 16px; }
+    .manual-upload-body { padding: 16px 12px 100px; }
+    .manual-upload-footer { padding: 12px 16px; gap: 8px; }
+    .manual-section { padding: 14px; }
+    .upload-options-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* EMAIL SETTINGS */
+    .email-settings-grid { grid-template-columns: 1fr; }
+    .email-sub-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .email-sub-tabs::-webkit-scrollbar { display: none; }
+    .email-sub-tab {
+        flex-shrink: 0;
+        font-size: 0.78rem;
+        padding: 8px 10px;
+    }
+    /* Admin tab bar */
+    #admin-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    #admin-tabs::-webkit-scrollbar { display: none; }
+    #admin-tabs .filter-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    /* Email search bar */
+    .email-search-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .email-search-field { width: 100%; min-width: unset; }
+
+    /* COMPANY ACTION BAR */
+    .company-action-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    /* PAYMENT SUMMARY */
+    .payment-summary { grid-template-columns: repeat(2, 1fr); }
+
+    /* CARD TEAM ROW */
+    .card-team-row { flex-direction: column; gap: 6px; }
+    .card-team-divider { display: none; }
+
+    /* TERMINATE */
+    .terminate-section { align-items: stretch; }
+    .btn-terminate { width: 100%; justify-content: center; }
+
+    /* TOAST */
+    .toast-container {
+        top: auto;
+        bottom: 16px;
+        right: 12px;
+        left: 12px;
+    }
+    .toast { min-width: unset; max-width: 100%; width: 100%; }
+
+    /* PROFORMA */
+    .proforma-modal,
+    .proforma-preview-container {
+        max-width: 100%;
+        max-height: 95vh;
+        border-radius: var(--radius-lg);
+    }
+    .proforma-form-grid { grid-template-columns: 1fr; }
+
+    /* MISC */
+    .badges-row { flex-wrap: wrap; gap: 6px; }
+    .assigned-users-popup { max-width: 94vw; width: 94vw; }
+    .filter-persons-grid { grid-template-columns: 1fr; }
+    .back-link { font-size: 0.82rem; margin-bottom: 12px; }
+    .renewal-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .detail-row {
+        flex-direction: column;
+        gap: 2px;
+    }
+    .detail-value { text-align: left; }
+}
+
+/* â”€â”€â”€ SMALL MOBILE (â‰¤ 480px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 480px) {
+    html { font-size: 14px; }
+    .stats-grid { grid-template-columns: 1fr !important; }
+    #admin-stats { grid-template-columns: repeat(2, 1fr) !important; }
+    .payments-summary-grid { grid-template-columns: 1fr; }
+    .renewal-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .modal-overlay { align-items: flex-end; padding: 0; }
+    .modal {
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 24px 16px 32px;
+    }
+    .content-body { padding: 10px; }
+    .content-header { padding: 8px 12px; }
+    .content-header h1 { font-size: 0.95rem; }
+    .agreement-card { padding: 14px; }
+    .filter-tab { padding: 5px 10px; font-size: 0.73rem; }
+    .upload-options-grid { grid-template-columns: 1fr; }
+    .notification-dropdown { width: 90vw; right: -8px; }
+    .stat-value { font-size: 1.3rem; }
+    .payments-stat-value, .renewal-stat-value { font-size: 1.1rem; }
+    .btn { padding: 8px 14px; }
+    .btn-sm { padding: 5px 10px; }
+}
+
+/* â”€â”€â”€ VERY SMALL MOBILE (â‰¤ 360px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 360px) {
+    html { font-size: 13px; }
+    .sidebar { width: 240px; }
+    .content-header h1 { font-size: 0.88rem; }
+    .content-body { padding: 8px; }
+    #admin-stats { grid-template-columns: 1fr !important; }
+    .renewal-stats-grid { grid-template-columns: 1fr !important; }
+}
+
+/* â”€â”€â”€ TOUCH DEVICES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (hover: none) and (pointer: coarse) {
+    .nav-item { min-height: 44px; }
+    .btn { min-height: 40px; }
+    .btn-sm { min-height: 36px; }
+    .filter-tab, .month-tab, .view-toggle-btn, .status-filter-btn {
+        min-height: 36px;
+    }
+    .agreement-card .card-remove { opacity: 1 !important; }
+    .payments-table-container,
+    .renewal-table-container,
+    .month-tabs, .filter-tabs, #admin-tabs {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* â”€â”€â”€ LANDSCAPE MOBILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 768px) and (orientation: landscape) {
+    .auth-form-panel { min-height: 100vh; overflow-y: auto; }
+    .content-body { padding: 8px 14px; }
+    .sidebar { overflow-y: auto; }
+}
+
+
+/* Mobile search bar — shown on mobile, hidden on desktop */
+.mobile-search-bar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-search-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 12px;
+        width: 100%;
+    }
+    .mobile-search-bar svg {
+        width: 16px; height: 16px;
+        color: var(--color-text-muted);
+        flex-shrink: 0;
+        opacity: 0.6;
+    }
+    .mobile-search-bar input {
+        border: none; background: none; outline: none;
+        font-size: 0.88rem;
+        color: var(--color-text-primary);
+        width: 100%;
+        font-family: var(--font-primary);
+    }
+    .mobile-search-bar input::placeholder { color: var(--color-text-muted); }
+
+    /* Dashboard payments-filters: override inline flex style */
+    #dashboard-payments-filters {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+    #dashboard-payments-filters > div:last-child {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    #dashboard-payments-filters > div:last-child::-webkit-scrollbar { display: none; }
+}
+
+/* ============================================================
+   TARGETED MOBILE FIXES v3 — Based on actual screenshot analysis
+   Only max-width queries, desktop unchanged
+   ============================================================ */
+
+/* ─── FIX 1: Payments summary grid ─────────────────────────
+   Base style is repeat(4,1fr). On tablet/mobile make it 2-col
+   so cards look good instead of 1 tall column.             */
+@media (max-width: 900px) {
+    .payments-summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 480px) {
+    .payments-summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* ─── FIX 2: Payments page filters layout ───────────────────
+   On mobile: stack as column. Each row scrollable.
+   Export Excel button: full-width in its own row.         */
+@media (max-width: 768px) {
+    .payments-filters {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+    /* Year selector: full width */
+    .payments-filters .year-selector {
+        width: 100%;
+    }
+    /* View toggle + status filter in same row */
+    .payments-filters .view-toggle {
+        width: auto;
+        flex-shrink: 0;
+    }
+    .payments-filters .payment-status-filter {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+    }
+    .payments-filters .payment-status-filter::-webkit-scrollbar { display: none; }
+    /* Export Excel: align right in its row */
+    .payments-filters .btn-export {
+        align-self: flex-end;
+    }
+    /* Month tabs: scrollable */
+    .payments-filters .month-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+    .payments-filters .month-tabs::-webkit-scrollbar { display: none; }
+}
+
+/* ─── FIX 3: Dashboard controls row ────────────────────────
+   "Assigned Users" button must not wrap text.
+   The controls row (Assigned Users + Template/List/Export)
+   should be a single horizontally-scrollable row.          */
+@media (max-width: 768px) {
+    /* Prevent "Assigned Users" text from wrapping to 2 lines */
+    .btn-assigned-users-filter {
+        white-space: nowrap !important;
+        flex-shrink: 0;
+    }
+    /* The controls row inside #dashboard-payments-filters */
+    #dashboard-payments-filters > div:nth-child(2) {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+    #dashboard-payments-filters > div:nth-child(2)::-webkit-scrollbar { display: none; }
+    /* View toggle buttons inside controls row: no shrink */
+    #dashboard-payments-filters .view-toggle {
+        flex-shrink: 0;
+    }
+    #dashboard-view-toggle {
+        flex-shrink: 0;
+    }
+}
+
+/* ─── FIX 4: Agreement detail header buttons ────────────────
+   On mobile: 3 buttons (View Document, Export PDF, Edit Details)
+   are too cramped. Show only icons on very small screens.  */
+@media (max-width: 768px) {
+    /* Make header-actions scrollable so buttons dont wrap */
+    .header-actions {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-shrink: 0;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        gap: 4px;
+    }
+    .header-actions::-webkit-scrollbar { display: none; }
+    /* Compact all header action buttons */
+    .header-actions .btn {
+        padding: 5px 8px !important;
+        font-size: 0.72rem !important;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    /* Smaller icons in header buttons */
+    .header-actions .btn svg {
+        width: 13px !important;
+        height: 13px !important;
+    }
+}
+@media (max-width: 480px) {
+    /* On very small screens, hide button text, show only icons */
+    #view-doc-btn span,
+    #export-pdf-btn span,
+    #edit-toggle-btn span {
+        display: none;
+    }
+    /* Keep button compact with just icon */
+    #view-doc-btn,
+    #export-pdf-btn,
+    #edit-toggle-btn {
+        padding: 6px 8px !important;
+        gap: 0;
+    }
+}
+
+/* ─── FIX 5: Upload options grid ───────────────────────────
+   Base style is repeat(4,1fr). On mobile make it 2-col,
+   then 1-col on very small.                               */
+@media (max-width: 900px) {
+    .upload-options-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 480px) {
+    .upload-options-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ─── FIX 6: Modal actions (Cancel button) ─────────────────
+   On mobile: full-width Cancel button, properly aligned.  */
+@media (max-width: 768px) {
+    .modal-actions {
+        justify-content: stretch;
+    }
+    .modal-actions .btn {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+/* ─── FIX 7: Payments table container ──────────────────────
+   The outer container has overflow:hidden and inner div
+   has overflow-x:auto. Ensure scrolling works on all mobile. */
+@media (max-width: 768px) {
+    .payments-table-container {
+        overflow: visible !important;
+        border-radius: var(--radius-lg);
+    }
+    .payments-table-container > div[style*="overflow-x"] {
+        border-radius: var(--radius-lg);
+        -webkit-overflow-scrolling: touch;
+    }
+    /* Table inside: min-width to force scroll */
+    .payments-table-container .payment-table-enhanced {
+        min-width: 700px;
+    }
+}
+
+/* ─── FIX 8: Agreement detail section overview ──────────────
+   The inline 2-column grid on agreement detail sections
+   must collapse to 1 column on mobile.                   */
+@media (max-width: 768px) {
+    /* Payment structure table in agreement detail */
+    #section-payment .data-table,
+    .agreement-payment-table {
+        min-width: 600px;
+    }
+    /* Wrap table containers that exist in section content */
+    #section-payment,
+    #section-payment > div {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ─── FIX 9: Content header — prevent title overflow ────────
+   On mobile, h1 should truncate gracefully.              */
+@media (max-width: 768px) {
+    .content-header > div:first-child {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+    }
+    .content-header h1 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: calc(100vw - 200px);
+    }
+}
+
+/* ─── FIX 10: Dashboard payment cards ──────────────────────
+   .dashboard-payment-cards should be 2 cols on mobile.   */
+@media (max-width: 768px) {
+    .dashboard-payment-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+}
+@media (max-width: 400px) {
+    .dashboard-payment-cards {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ============================================================
+   TARGETED FIXES v4 — Payment table + agreement header
+   ============================================================ */
+
+/* FIX: Agreement payment structure table needs min-width */
+@media (max-width: 768px) {
+    #payment-plans-table {
+        min-width: 580px;
+    }
+    /* The wrapper div already has overflow-x:auto, 
+       but section may clip it — override */
+    #section-payment {
+        overflow: visible;
+    }
+    #section-payment > div[style*="overflow-x"] {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Agreement header — make buttons very compact on mobile */
+    #view-doc-btn,
+    #export-pdf-btn,
+    #edit-toggle-btn {
+        padding: 5px 7px !important;
+        font-size: 0.7rem !important;
+        gap: 3px !important;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    #view-doc-btn svg,
+    #export-pdf-btn svg,
+    #edit-toggle-btn svg {
+        width: 12px !important;
+        height: 12px !important;
+        flex-shrink: 0;
+    }
+
+    /* Payments page: view-toggle and status filter on same row */
+    .payments-filters .view-toggle,
+    .payments-filters #view-toggle {
+        flex-shrink: 0;
+    }
+}
+
+/* FIX: Dashboard stat cards 2-col on mobile */
+@media (max-width: 768px) {
+    .dashboard-payment-cards {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+}
+@media (max-width: 380px) {
+    .dashboard-payment-cards {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ==============================================================
+   FINAL TARGETED FIX — No horizontal scroll on mobile
+   Affects: payments.html, upload modal, agreement.html
+   Desktop: completely unchanged (all rules are max-width)
+   ============================================================== */
+
+/* ────────────────────────────────────────────────────────────────
+   PAYMENTS PAGE — Hide columns: GST(5), TDS(6), Net(7), Email(10)
+   Keep: Company(1), Agreement(2), Plan(3), Amount(4),
+         Due Date(8), Status(9), Action(11)
+   ──────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Remove overflow-x from ALL wrappers on payments table */
+    .payments-table-container,
+    .payments-table-container > div {
+        overflow: visible !important;
+        min-width: unset !important;
+    }
+
+    /* Make the table itself full-width (no min-width) */
+    .payments-table-container .payment-table-enhanced {
+        width: 100% !important;
+        min-width: unset !important;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+
+    /* Compact all cells */
+    .payments-table-container .payment-table-enhanced th,
+    .payments-table-container .payment-table-enhanced td {
+        padding: 6px 6px !important;
+        font-size: 0.72rem !important;
+        white-space: normal !important;
+        word-break: break-word;
+        overflow: hidden;
+    }
+
+    /* Column widths — distribute space wisely */
+    .payments-table-container .payment-table-enhanced th:nth-child(1),
+    .payments-table-container .payment-table-enhanced td:nth-child(1) { width: 22%; }   /* Company */
+    .payments-table-container .payment-table-enhanced th:nth-child(2),
+    .payments-table-container .payment-table-enhanced td:nth-child(2) { width: 18%; }   /* Agreement */
+    .payments-table-container .payment-table-enhanced th:nth-child(3),
+    .payments-table-container .payment-table-enhanced td:nth-child(3) { width: 14%; }   /* Plan */
+    .payments-table-container .payment-table-enhanced th:nth-child(4),
+    .payments-table-container .payment-table-enhanced td:nth-child(4) { width: 18%; }   /* Amount */
+
+    /* HIDE: GST (5), TDS (6), Net (7) */
+    .payments-table-container .payment-table-enhanced th:nth-child(5),
+    .payments-table-container .payment-table-enhanced td:nth-child(5),
+    .payments-table-container .payment-table-enhanced th:nth-child(6),
+    .payments-table-container .payment-table-enhanced td:nth-child(6),
+    .payments-table-container .payment-table-enhanced th:nth-child(7),
+    .payments-table-container .payment-table-enhanced td:nth-child(7) {
+        display: none !important;
+    }
+
+    .payments-table-container .payment-table-enhanced th:nth-child(8),
+    .payments-table-container .payment-table-enhanced td:nth-child(8) { width: 16%; }   /* Due Date */
+    .payments-table-container .payment-table-enhanced th:nth-child(9),
+    .payments-table-container .payment-table-enhanced td:nth-child(9) { width: 12%; }   /* Status */
+
+    /* HIDE: Email (10) */
+    .payments-table-container .payment-table-enhanced th:nth-child(10),
+    .payments-table-container .payment-table-enhanced td:nth-child(10) {
+        display: none !important;
+    }
+
+    .payments-table-container .payment-table-enhanced th:nth-child(11),
+    .payments-table-container .payment-table-enhanced td:nth-child(11) { width: auto; }  /* Action */
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   AGREEMENT DETAIL — Payment Structure table
+   Hide: GST(3), TDS(4), Net(5)
+   Keep: Plan(1), Amount(2), Due Date(6), Status(7)
+   Also fix the inline 2-col grid causing overflow.
+   ──────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Remove all overflow-x from the section and its wrapper */
+    #section-payment,
+    #section-payment > div[style*="overflow"] {
+        overflow: visible !important;
+        min-width: unset !important;
+    }
+
+    /* Table full-width, no scroll */
+    #payment-plans-table {
+        width: 100% !important;
+        min-width: unset !important;
+        table-layout: fixed !important;
+    }
+
+    #payment-plans-table th,
+    #payment-plans-table td {
+        padding: 6px 6px !important;
+        font-size: 0.72rem !important;
+        white-space: normal !important;
+        word-break: break-word;
+    }
+
+    /* Plan(1) */
+    #payment-plans-table th:nth-child(1),
+    #payment-plans-table td:nth-child(1) { width: 22%; }
+    /* Amount(2) */
+    #payment-plans-table th:nth-child(2),
+    #payment-plans-table td:nth-child(2) { width: 22%; }
+
+    /* HIDE: GST(3), TDS(4), Net(5) */
+    #payment-plans-table th:nth-child(3),
+    #payment-plans-table td:nth-child(3),
+    #payment-plans-table th:nth-child(4),
+    #payment-plans-table td:nth-child(4),
+    #payment-plans-table th:nth-child(5),
+    #payment-plans-table td:nth-child(5) {
+        display: none !important;
+    }
+
+    /* Due Date(6) */
+    #payment-plans-table th:nth-child(6),
+    #payment-plans-table td:nth-child(6) { width: 26%; }
+    /* Status(7) with Mark Paid button */
+    #payment-plans-table th:nth-child(7),
+    #payment-plans-table td:nth-child(7) { width: 30%; }
+
+    /* Make Mark Paid button smaller on mobile */
+    #payment-plans-table .btn-mark-paid {
+        padding: 3px 6px !important;
+        font-size: 0.68rem !important;
+        white-space: normal !important;
+        line-height: 1.2;
+    }
+
+    /* Fix the Agreement Overview 2-col inline grid → 1 col */
+    #section-overview > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
+    }
+
+    /* Fix any other inline 2-col grids inside detail sections */
+    .detail-section > div[style*="grid-template-columns"],
+    #detail-content div[style*="1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 0 !important;
+    }
+
+    /* Prevent the overall detail-grid from overflowing */
+    .detail-grid {
+        overflow: hidden;
+        width: 100%;
+    }
+
+    /* Detail rows: stack label above value */
+    .detail-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .detail-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .detail-value {
+        font-size: 0.85rem;
+        color: var(--color-text-primary);
+        text-align: left;
+        word-break: break-word;
+    }
+}
+
+
+/* ────────────────────────────────────────────────────────────────
+   UPLOAD MODAL — Compact 2×2 grid, reduced card size
+   The modal has inline style="max-width:850px".
+   Override the modal to be full-width with smaller cards.
+   ──────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Override the modal's inline max-width:850px */
+    #upload-modal .modal {
+        max-width: 100% !important;
+        width: calc(100vw - 24px) !important;
+        margin: 12px auto !important;
+        padding: 16px !important;
+        max-height: 92vh;
+        overflow-y: auto;
+    }
+
+    /* Make the modal overlay center properly */
+    #upload-modal {
+        align-items: center;
+        padding: 12px;
+    }
+
+    /* Upload options: 2×2 grid instead of 4×1 */
+    .upload-options-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    /* Reduce card padding significantly */
+    .upload-option-card {
+        padding: 12px 8px !important;
+        gap: 6px !important;
+    }
+
+    /* Smaller icon */
+    .upload-option-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+    }
+
+    .upload-option-icon svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    /* Smaller heading and text in card */
+    .upload-option-card h4 {
+        font-size: 0.82rem !important;
+        margin: 4px 0 2px !important;
+    }
+
+    .upload-option-card p {
+        font-size: 0.7rem !important;
+        line-height: 1.3 !important;
+        margin: 0 0 2px !important;
+    }
+
+    .upload-option-card .size-limit {
+        font-size: 0.65rem !important;
+        margin-bottom: 6px !important;
+    }
+
+    /* Upload button in card: compact */
+    .upload-option-btn {
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .upload-option-btn svg {
+        width: 13px !important;
+        height: 13px !important;
+    }
+
+    /* Modal title smaller */
+    #upload-modal .modal-title {
+        font-size: 1rem !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* Cancel button: full width */
+    #upload-modal .modal-actions {
+        margin-top: 10px;
+        justify-content: center;
+    }
+
+    #upload-modal .modal-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 400px) {
+    /* Very small phones: single column for upload options */
+    .upload-options-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .upload-option-card {
+        flex-direction: row !important;
+        align-items: center !important;
+        text-align: left !important;
+        padding: 10px !important;
+        gap: 10px !important;
+    }
+
+    .upload-option-icon {
+        flex-shrink: 0;
+    }
+
+    .upload-option-card > div:not(.upload-option-icon) {
+        flex: 1;
+    }
+
+    .upload-option-card h4 {
+        margin: 0 0 2px !important;
+    }
+
+    .upload-option-btn {
+        width: auto !important;
+        align-self: center;
+        padding: 5px 12px !important;
+    }
+}
+
+/* ==============================================================
+   DASHBOARD + PAYMENTS PAGE TARGETED FIXES
+   Only affects max-width media queries — desktop unchanged
+   ============================================================== */
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL FIX: Prevent horizontal overflow on all pages mobile
+   The notification-dropdown (position:absolute, 320px wide)
+   causes overflow when it extends beyond right edge of screen.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    /* Clip overflow at the app shell level */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    .app-shell {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+    .main-content {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    /* Notification dropdown: position from RIGHT edge, constrained to screen */
+    .notification-dropdown {
+        right: 0 !important;
+        left: auto !important;
+        width: min(88vw, 300px) !important;
+        max-width: calc(100vw - 16px) !important;
+        position: fixed !important;
+        top: 56px !important;
+    }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   PAYMENTS PAGE FIXES
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* 1. Payments summary: 2x2 grid (not 4 tall stacked cards) */
+    .payments-summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+    .payments-stat-card {
+        padding: 12px !important;
+    }
+    .payments-stat-card .stat-icon {
+        width: 30px !important;
+        height: 30px !important;
+        margin-bottom: 8px !important;
+    }
+    .payments-stat-card .payments-stat-label {
+        font-size: 0.65rem !important;
+    }
+    .payments-stat-card .payments-stat-value {
+        font-size: 1rem !important;
+    }
+
+    /* 2. Payments filters layout */
+    .payments-filters {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+    /* Year selector full width */
+    .payments-filters .year-selector,
+    #year-selector {
+        width: 100% !important;
+    }
+    /* View toggle (Month/Year) and status filters on same row */
+    #view-toggle {
+        flex-shrink: 0;
+    }
+    #payment-status-filter {
+        flex-shrink: 0;
+    }
+    /* Export Excel button */
+    #export-excel-btn {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    /* Month tabs: full width, scrollable */
+    #month-tabs {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 2px;
+    }
+    #month-tabs::-webkit-scrollbar { display: none; }
+
+    /* 3. Payments table: transform rows into mini-cards */
+    /* Remove wrapper overflow that creates horizontal scroll */
+    .payments-table-container {
+        overflow: visible !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    .payments-table-container > div[style*="overflow-x"] {
+        overflow: visible !important;
+    }
+
+    /* Hide the table header entirely */
+    .payments-table-container .payment-table-enhanced {
+        display: block !important;
+        width: 100% !important;
+        min-width: unset !important;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    .payments-table-container .payment-table-enhanced thead {
+        display: none !important;
+    }
+    /* Each row becomes a card */
+    .payments-table-container .payment-table-enhanced tbody {
+        display: block !important;
+    }
+    .payments-table-container .payment-table-enhanced tbody tr {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0 !important;
+        padding: 10px 12px !important;
+        margin-bottom: 8px !important;
+        background: var(--color-surface) !important;
+        border: 1px solid var(--color-border) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+        cursor: pointer;
+        position: relative;
+    }
+    /* Terminated rows */
+    .payments-table-container .payment-table-enhanced tbody tr.terminated-row {
+        opacity: 0.55;
+    }
+    /* All cells: block display */
+    .payments-table-container .payment-table-enhanced tbody td {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 3px 0 !important;
+        border: none !important;
+        font-size: 0.78rem !important;
+        white-space: normal !important;
+        word-break: break-word;
+        background: none !important;
+    }
+    /* Add labels via ::before pseudo-elements (nth-child matches header order) */
+    /* Col 1 = Company */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(1)::before {
+        content: "Company";
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+    /* Col 2 = Agreement */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(2)::before {
+        content: "Agreement";
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+    /* Col 3 = Plan — span 2 cols for prominence */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(3) {
+        grid-column: 1 / -1 !important;
+        border-bottom: 1px solid var(--color-border-light) !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 4px !important;
+    }
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(3)::before {
+        content: "Plan";
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+    /* Col 4 = Amount */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(4)::before {
+        content: "Amount";
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+    /* Col 5 = GST — HIDDEN */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(5) {
+        display: none !important;
+    }
+    /* Col 6 = TDS — HIDDEN */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(6) {
+        display: none !important;
+    }
+    /* Col 7 = Net — HIDDEN */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(7) {
+        display: none !important;
+    }
+    /* Col 8 = Due Date */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(8)::before {
+        content: "Due Date";
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+    /* Col 9 = Status */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(9)::before {
+        content: "Status";
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 2px;
+    }
+    /* Col 10 = Email — HIDDEN */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(10) {
+        display: none !important;
+    }
+    /* Col 11 = Action */
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(11) {
+        grid-column: 1 / -1 !important;
+        border-top: 1px solid var(--color-border-light) !important;
+        padding-top: 6px !important;
+        margin-top: 4px !important;
+        flex-direction: row !important;
+        gap: 6px !important;
+        align-items: center !important;
+        flex-wrap: wrap;
+    }
+    .payments-table-container .payment-table-enhanced tbody td:nth-child(11)::before {
+        display: none;
+    }
+    /* Compact action buttons */
+    .payments-table-container .payment-table-enhanced .btn-mark-paid {
+        padding: 4px 10px !important;
+        font-size: 0.72rem !important;
+    }
+    .payments-table-container .payment-table-enhanced .btn-proforma {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
+    }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   DASHBOARD CARD FIXES
+   Fix: consultant/sales person section inside agreement cards
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Card team row: column layout */
+    .card-team-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        padding: 8px 10px !important;
+    }
+
+    /* Each team item: row layout (icon | info) */
+    .card-team-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex: unset !important;
+        width: 100%;
+    }
+
+    /* Icon wrap: slightly smaller */
+    .card-team-icon-wrap {
+        width: 24px !important;
+        height: 24px !important;
+        flex-shrink: 0;
+    }
+
+    /* Info section: full width */
+    .card-team-info {
+        flex: 1;
+        min-width: 0;
+        display: flex !important;
+        flex-direction: row !important;  /* Label: Name on same line */
+        align-items: baseline !important;
+        gap: 4px !important;
+        flex-wrap: nowrap;
+    }
+
+    /* Label (CONSULTANT / SALES PERSON) */
+    .card-team-label {
+        font-size: 0.65rem !important;
+        white-space: nowrap;
+        flex-shrink: 0;
+        color: var(--color-text-muted) !important;
+    }
+
+    /* Name: truncate with ellipsis */
+    .card-team-name {
+        font-size: 0.78rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Team divider: hidden on mobile */
+    .card-team-divider {
+        display: none !important;
+    }
+
+    /* Card meta items: better spacing on mobile */
+    .card-meta {
+        gap: 4px !important;
+    }
+
+    .card-meta-item {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 2px 0 !important;
+    }
+
+    .card-meta-label {
+        font-size: 0.73rem !important;
+        flex-shrink: 0;
+    }
+
+    .card-meta-value {
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        text-align: right !important;
+    }
+
+    /* Card company name */
+    .card-company {
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+    }
+
+    /* Agreement card padding */
+    .agreement-card {
+        padding: 14px !important;
+    }
+}
+
+/* ==============================================================
+   PAYMENTS TABLE — COMPLETE REWRITE (overrides all previous)
+   Clean card layout: each row = block card
+   Each visible td = flex row  [LABEL ........ VALUE]
+   Labels via ::before with white-space:nowrap (no wrapping)
+   ============================================================== */
+@media (max-width: 768px) {
+
+    /* ── 1. Table container: allow internal scroll if needed ── */
+    .payments-table-container {
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+    }
+    .payments-table-container > div[style] {
+        overflow: visible !important;
+    }
+
+    /* ── 2. Table itself: block display ── */
+    #payments-table-container .payment-table-enhanced {
+        display: block !important;
+        width: 100% !important;
+        min-width: unset !important;
+        table-layout: auto !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
+
+    /* ── 3. Hide the thead ── */
+    #payments-table-container .payment-table-enhanced thead {
+        display: none !important;
+    }
+
+    /* ── 4. tbody as block ── */
+    #payments-table-container .payment-table-enhanced tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* ── 5. Each TR = card ── */
+    #payments-table-container .payment-table-enhanced tbody tr {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 0 10px 0 !important;
+        padding: 10px 12px !important;
+        background: var(--color-surface) !important;
+        border: 1px solid var(--color-border) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        cursor: pointer;
+        grid-template-columns: unset !important;
+    }
+
+    /* Terminated row style */
+    #payments-table-container .payment-table-enhanced tbody tr.terminated-row {
+        opacity: 0.55 !important;
+    }
+
+    /* ── 6. Each TD = horizontal label-value row ── */
+    #payments-table-container .payment-table-enhanced tbody td {
+        display: flex !important;
+        flex-direction: row !important;      /* KEY: row not column */
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 5px 0 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--color-border-light) !important;
+        font-size: 0.8rem !important;
+        width: 100% !important;
+        min-width: unset !important;
+        white-space: normal !important;
+        word-break: normal !important;
+        background: transparent !important;
+        grid-column: unset !important;
+    }
+
+    /* Last td: no bottom border */
+    #payments-table-container .payment-table-enhanced tbody td:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* ── 7. ::before labels — CRITICAL: nowrap so they never wrap ── */
+    #payments-table-container .payment-table-enhanced tbody td::before {
+        display: block !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;   /* PREVENTS "COMPA\nNY" */
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        color: var(--color-text-muted) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        margin-right: 10px !important;
+        line-height: 1 !important;
+    }
+
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(1)::before { content: "Company" !important; }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(2)::before { content: "Agreement" !important; }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(3)::before { content: "Plan" !important; }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(4)::before { content: "Amount" !important; }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(8)::before { content: "Due Date" !important; }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(9)::before { content: "Status" !important; }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(11)::before { content: "Action" !important; }
+
+    /* ── 8. Hidden columns: GST, TDS, Net, Email ── */
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(5),
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(6),
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(7),
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(10) {
+        display: none !important;
+    }
+
+    /* ── 9. FIX: Status badges — MUST be inline-flex row, not column ── */
+    #payments-table-container .payment-table-enhanced tbody td * {
+        flex-direction: row !important;   /* Reset any column direction on children */
+    }
+    /* Specifically target status/badge elements */
+    #payments-table-container .payment-table-enhanced .payment-status-badge,
+    #payments-table-container .payment-table-enhanced .status-badge,
+    #payments-table-container .payment-table-enhanced .badge,
+    #payments-table-container .payment-table-enhanced [class*="status"],
+    #payments-table-container .payment-table-enhanced [class*="badge"],
+    #payments-table-container .payment-table-enhanced [class*="paid"],
+    #payments-table-container .payment-table-enhanced [class*="pending"] {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+        padding: 2px 8px !important;
+        border-radius: 999px !important;
+        font-size: 0.7rem !important;
+        line-height: 1.4 !important;
+    }
+
+    /* ── 10. Action td: action buttons in a row ── */
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(11) {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        border-top: 1px solid var(--color-border-light) !important;
+        padding-top: 8px !important;
+        margin-top: 2px !important;
+        border-bottom: none !important;
+        justify-content: flex-start !important;
+    }
+    #payments-table-container .payment-table-enhanced tbody td:nth-child(11)::before {
+        display: none !important;  /* No label for action row */
+    }
+    /* Compact action buttons */
+    #payments-table-container .payment-table-enhanced .btn-mark-paid,
+    #payments-table-container .payment-table-enhanced .btn-proforma,
+    #payments-table-container .payment-table-enhanced .btn-email {
+        padding: 4px 10px !important;
+        font-size: 0.72rem !important;
+        white-space: nowrap !important;
+    }
+
+    /* ── 11. Value text alignment ── */
+    #payments-table-container .payment-table-enhanced tbody td > *:not(::before),
+    #payments-table-container .payment-table-enhanced tbody td > span,
+    #payments-table-container .payment-table-enhanced tbody td > strong {
+        text-align: right;
+    }
+}
+
+/* Extra safety: badges in payment table must always be inline-flex row */
+@media (max-width: 768px) {
+    #payments-table-container .badge {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+        padding: 2px 8px !important;
+        font-size: 0.7rem !important;
+        border-radius: 50px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.03em !important;
+        font-weight: 600 !important;
+        line-height: 1.5 !important;
+    }
+    #payments-table-container .badge-paid {
+        background: var(--color-success-light) !important;
+        color: var(--color-success) !important;
+    }
+    #payments-table-container .badge-pending {
+        background: var(--color-warning-light) !important;
+        color: var(--color-warning) !important;
+    }
 }

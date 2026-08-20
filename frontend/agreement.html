@@ -474,7 +474,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Agreement Title</label>
-                                    <input type="text" class="form-input" id="edit-agreement-title">
+                                    <input type="text" class="form-input" id="edit-agreement-title" list="dl-edit-agreement-title">
+                                    <datalist id="dl-edit-agreement-title"><option value="Consulting Agreement"></datalist>
                                 </div>
                                 <div class="form-group">
                                     <label>Contact Person</label>
@@ -511,10 +512,12 @@
                             <!-- Company Information -->
                             <div class="edit-section-title">Company Information</div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                                <div class="form-group">
-                                    <label>Email</label>
-                                    <input type="email" class="form-input" id="edit-email"
-                                        onblur="validateField('email')">
+                                <div class="form-group" style="grid-column:1/-1">
+                                    <label>Email(s)</label>
+                                    <div class="email-chips-container" id="edit-email-chips" onclick="document.getElementById('edit-email-input').focus()">
+                                        <input type="email" class="email-chips-input" id="edit-email-input" placeholder="Enter email and click Add" oninput="validateEditEmailInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();addEditEmailChip()}">
+                                        <button type="button" class="email-add-btn" id="edit-email-add-btn" onclick="addEditEmailChip()" disabled>Add</button>
+                                    </div>
                                     <span class="field-error" id="error-email"></span>
                                 </div>
                                 <div class="form-group">
@@ -952,7 +955,26 @@
         function renderCompanyInfo() {
             elOrMuted('ci-company', analysisData.company_name);
             elOrMuted('ci-contact', analysisData.contact_person);
-            elOrMuted('ci-email', analysisData.email);
+            // Multi-email display: show first email + "+N more" badge
+            const emailEl = document.getElementById('ci-email');
+            let emails = [];
+            try {
+                const parsed = JSON.parse(analysisData.email || '[]');
+                if (Array.isArray(parsed)) emails = parsed;
+            } catch(e) {
+                if (analysisData.email && analysisData.email.trim()) emails = [analysisData.email.trim()];
+            }
+            if (emails.length === 0) {
+                emailEl.textContent = 'Not mentioned';
+                emailEl.className = 'detail-value muted';
+            } else if (emails.length === 1) {
+                emailEl.textContent = emails[0];
+                emailEl.className = 'detail-value';
+            } else {
+                const extra = emails.length - 1;
+                emailEl.className = 'detail-value';
+                emailEl.innerHTML = `<span class="email-display-wrap">${emails[0]} <span class="email-more-badge">+${extra} more<span class="email-more-tooltip">${emails.slice(1).join('<br>')}</span></span></span>`;
+            }
             elOrMuted('ci-phone', analysisData.phone);
             elOrMuted('ci-alt-contact', analysisData.alternate_contact);
         }
@@ -1320,8 +1342,26 @@
                 setVal('edit-currency', analysisData.currency || '₹');
 
 
-
-                setVal('edit-email', analysisData.email);
+                // Populate email chips
+                const editEmailContainer = document.getElementById('edit-email-chips');
+                editEmailContainer.querySelectorAll('.email-chip').forEach(c => c.remove());
+                let editEmails = [];
+                try {
+                    const parsed = JSON.parse(analysisData.email || '[]');
+                    if (Array.isArray(parsed)) editEmails = parsed;
+                } catch(e) {
+                    if (analysisData.email && analysisData.email.trim()) editEmails = [analysisData.email.trim()];
+                }
+                const editEmailInput = document.getElementById('edit-email-input');
+                editEmails.forEach(em => {
+                    const chip = document.createElement('span');
+                    chip.className = 'email-chip';
+                    chip.dataset.email = em;
+                    chip.innerHTML = `${em}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+                    editEmailContainer.insertBefore(chip, editEmailInput);
+                });
+                editEmailInput.value = '';
+                validateEditEmailInput();
                 setVal('edit-phone', analysisData.phone);
                 setVal('edit-alt-contact', analysisData.alternate_contact);
 
@@ -1420,17 +1460,8 @@
         function validateField(fieldName) {
             let isValid = true;
             if (fieldName === 'email') {
-                const val = (document.getElementById('edit-email').value || '').trim();
-                const errorEl = document.getElementById('error-email');
-                const inputEl = document.getElementById('edit-email');
-                if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-                    errorEl.textContent = 'Please enter a valid email address';
-                    inputEl.classList.add('input-error');
-                    isValid = false;
-                } else {
-                    errorEl.textContent = '';
-                    inputEl.classList.remove('input-error');
-                }
+                // Multi-email: no single-field validation needed; chips are validated on add
+                document.getElementById('error-email').textContent = '';
             }
             if (fieldName === 'phone') {
                 const val = (document.getElementById('edit-phone').value || '').trim();
@@ -1576,19 +1607,73 @@
             }
         }
 
+        const EDIT_SERVICE_DESCRIPTIONS = {
+            'Sales Scope': 'Assessment and optimization of sales processes, pipeline management, and revenue growth strategies.',
+            'HR Scope': 'Human resources policy development, talent acquisition, performance management, and organizational development.',
+            'Finance Scope': 'Financial planning, budgeting, cash flow management, compliance, and accounting process improvement.',
+            'Operation Scope': 'Operational efficiency improvement, process optimization, supply chain management, and quality control.',
+            'Lead Generation': 'Lead identification, qualification, nurturing strategies, and conversion funnel optimization.'
+        };
+        let _editSvcIdx = 0;
         function addServiceRow(name = '', desc = '') {
             const container = document.getElementById('edit-services-container');
             const row = document.createElement('div');
             row.className = 'service-edit-row';
             row.style.cssText = 'display:grid;grid-template-columns:1fr 2fr auto;gap:8px;margin-bottom:8px;align-items:start';
+            const idx = _editSvcIdx++;
             row.innerHTML = `
-                <input type="text" class="form-input" placeholder="Service name" value="${escapeHtml(name)}">
-                <input type="text" class="form-input" placeholder="Description" value="${escapeHtml(desc)}">
+                <input type="text" class="form-input" placeholder="Service name" value="${escapeHtml(name)}" list="dl-edit-svc-${idx}" oninput="autoFillEditServiceDesc(this)">
+                <datalist id="dl-edit-svc-${idx}"><option value="Sales Scope"><option value="HR Scope"><option value="Finance Scope"><option value="Operation Scope"><option value="Lead Generation"></datalist>
+                <input type="text" class="form-input" placeholder="Description" value="${escapeHtml(desc)}" list="dl-edit-svc-desc-${idx}">
+                <datalist id="dl-edit-svc-desc-${idx}"><option value="Assessment and optimization of sales processes, pipeline management, and revenue growth strategies."><option value="Human resources policy development, talent acquisition, performance management, and organizational development."><option value="Financial planning, budgeting, cash flow management, compliance, and accounting process improvement."><option value="Operational efficiency improvement, process optimization, supply chain management, and quality control."><option value="Lead identification, qualification, nurturing strategies, and conversion funnel optimization."></datalist>
                 <button type="button" class="btn btn-ghost btn-icon" onclick="this.parentElement.remove()" title="Remove" style="color:var(--color-danger);padding:8px">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
             `;
             container.appendChild(row);
+        }
+
+        function autoFillEditServiceDesc(input) {
+            const name = input.value.trim();
+            if (EDIT_SERVICE_DESCRIPTIONS[name]) {
+                const row = input.closest('.service-edit-row');
+                const descInput = row.querySelectorAll('input')[1];
+                if (descInput && !descInput.value.trim()) {
+                    descInput.value = EDIT_SERVICE_DESCRIPTIONS[name];
+                }
+            }
+        }
+
+        // Multi-email chip helpers for edit form
+        function validateEditEmailInput() {
+            const input = document.getElementById('edit-email-input');
+            const btn = document.getElementById('edit-email-add-btn');
+            const val = (input.value || '').trim();
+            const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+            btn.disabled = !isValid;
+        }
+
+        function addEditEmailChip() {
+            const input = document.getElementById('edit-email-input');
+            const container = document.getElementById('edit-email-chips');
+            const val = (input.value || '').trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return;
+            const existing = container.querySelectorAll('.email-chip');
+            for (const chip of existing) {
+                if (chip.dataset.email === val) { input.value = ''; validateEditEmailInput(); return; }
+            }
+            const chip = document.createElement('span');
+            chip.className = 'email-chip';
+            chip.dataset.email = val;
+            chip.innerHTML = `${val}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+            container.insertBefore(chip, input);
+            input.value = '';
+            validateEditEmailInput();
+        }
+
+        function getEditEmailChips() {
+            const chips = document.querySelectorAll('#edit-email-chips .email-chip');
+            return Array.from(chips).map(c => c.dataset.email);
         }
 
         function getServicesFromEditor() {
@@ -1636,7 +1721,7 @@
                 currency: getVal('edit-currency'),
 
                 payment_plans: JSON.stringify(paymentPlans),
-                email: getVal('edit-email'),
+                email: JSON.stringify(getEditEmailChips()),
                 phone: getVal('edit-phone'),
                 alternate_contact: getVal('edit-alt-contact'),
 

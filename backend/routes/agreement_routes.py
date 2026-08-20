@@ -105,6 +105,18 @@ class AnalysisUpdate(BaseModel):
     @validator('email', pre=True, always=False)
     def validate_email(cls, v):
         if v is not None and v.strip():
+            # Accept JSON array of emails (e.g. '["a@b.com","c@d.com"]')
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+                    for email in parsed:
+                        if email and email.strip() and not re.match(pattern, email.strip()):
+                            raise ValueError(f'Invalid email format: {email}')
+                    return v  # Valid JSON array — pass through as-is
+            except (json.JSONDecodeError, TypeError):
+                pass
+            # Single email string
             pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
             if not re.match(pattern, v.strip()):
                 raise ValueError('Invalid email format')

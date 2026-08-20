@@ -579,7 +579,17 @@ def send_emails_to_companies(
         if template and ('<' in template and '>' in template):
             is_html = True
 
-    cc_emails = s.get("cc_emails") or ""
+    cc_emails_raw = s.get("cc_emails") or ""
+    # Parse CC emails — may be JSON array or comma-separated string
+    cc_emails_list = []
+    try:
+        parsed = json.loads(cc_emails_raw)
+        if isinstance(parsed, list):
+            cc_emails_list = [e.strip() for e in parsed if e.strip()]
+    except (json.JSONDecodeError, TypeError):
+        if cc_emails_raw.strip():
+            cc_emails_list = [e.strip() for e in cc_emails_raw.split(',') if e.strip()]
+    cc_emails = ', '.join(cc_emails_list)
     subject_template = s.get("email_subject") or "Payment Reminder — {{company_name}}"
 
     stats = {"sent": 0, "failed": 0, "errors": []}
@@ -1578,13 +1588,23 @@ def send_emails_to_consultants(
             email_body_with_pixel = _inject_tracking_pixel(email_body, tracking_id, is_html)
 
             # Send email (include CC for consultant reminders, always HTML due to pixel)
-            cc_emails = s.get("cc_emails") or ""
+            cc_emails_raw = s.get("cc_emails") or ""
+            # Parse CC emails — may be JSON array or comma-separated string
+            cc_emails_list = []
+            try:
+                parsed_cc = json.loads(cc_emails_raw)
+                if isinstance(parsed_cc, list):
+                    cc_emails_list = [e.strip() for e in parsed_cc if e.strip()]
+            except (json.JSONDecodeError, TypeError):
+                if cc_emails_raw.strip():
+                    cc_emails_list = [e.strip() for e in cc_emails_raw.split(',') if e.strip()]
+            cc_emails_str = ', '.join(cc_emails_list)
             result = send_email(
                 sender=sender_from,
                 to=recipient_email,
                 subject=email_subject,
                 body=email_body_with_pixel,
-                cc=cc_emails if cc_emails.strip() else None,
+                cc=cc_emails_str if cc_emails_str.strip() else None,
                 is_html=True,
                 access_token=access_token,
             )

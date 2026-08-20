@@ -748,9 +748,11 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>CC Emails (optional, comma-separated)</label>
-                                    <input type="text" class="form-input" id="email-cc"
-                                        placeholder="cc1@example.com, cc2@example.com">
+                                    <label>CC Emails (optional)</label>
+                                    <div class="email-chips-container" id="cc-email-chips" onclick="document.getElementById('cc-email-input').focus()">
+                                        <input type="email" class="email-chips-input" id="cc-email-input" placeholder="Enter CC email and click Add" oninput="validateCcEmailInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();addCcEmailChip()}">
+                                        <button type="button" class="email-add-btn" id="cc-email-add-btn" onclick="addCcEmailChip()" disabled>Add</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="email-actions" style="margin-top:16px">
@@ -2094,6 +2096,144 @@
             </div>
         </div>
     </div>
+    <!-- Consultant Final Summary Popup (review before sending to consultants) -->
+    <div class="final-summary-overlay" id="consultant-final-summary-overlay">
+        <div class="final-summary-modal" onclick="event.stopPropagation()">
+            <div class="final-summary-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" style="width:20px;height:20px">
+                        <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                    Consultant Email Summary
+                </h3>
+                <button class="final-summary-close" onclick="closeConsultantFinalSummary()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="final-summary-body">
+                <!-- Company Info Banner -->
+                <div class="final-summary-company">
+                    <div class="final-summary-company-icon" id="cfs-company-icon">C</div>
+                    <div class="final-summary-company-info">
+                        <h4 id="cfs-company-name">Company Name</h4>
+                        <p id="cfs-payment-info">Payment details</p>
+                    </div>
+                </div>
+
+                <!-- Consultants who will receive -->
+                <div class="final-summary-field">
+                    <label>Sending To (Consultants)</label>
+                    <div id="cfs-consultant-list" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 0;"></div>
+                </div>
+
+                <!-- Subject -->
+                <div class="final-summary-field">
+                    <label>Subject</label>
+                    <input type="text" class="form-input" id="cfs-subject" placeholder="Email subject" readonly style="background:var(--color-bg);color:var(--color-text-secondary);">
+                </div>
+
+                <!-- Message Preview -->
+                <div class="final-summary-field">
+                    <label>Message Preview</label>
+                    <div class="final-summary-preview" id="cfs-body-preview"></div>
+                </div>
+
+                <!-- Warning -->
+                <div class="final-summary-warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>This reminder email will be sent to the selected consultants listed above.</span>
+                </div>
+            </div>
+            <div class="final-summary-footer">
+                <button class="btn btn-secondary" onclick="closeConsultantFinalSummary()">Cancel</button>
+                <button class="btn-send-mail" id="cfs-send-btn" onclick="confirmConsultantFinalSend()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+                        <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                    Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Summary & Send Mail Popup (non-dismissible — no click-outside-to-close) -->
+    <div class="final-summary-overlay" id="final-summary-overlay">
+        <div class="final-summary-modal" onclick="event.stopPropagation()">
+            <div class="final-summary-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" style="width:20px;height:20px">
+                        <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                    Final Summary &amp; Send Mail
+                    <span id="fs-progress-badge" style="display:none;margin-left:10px;font-size:0.78rem;font-weight:600;background:var(--color-accent);color:#fff;border-radius:20px;padding:2px 10px;vertical-align:middle;"></span>
+                </h3>
+                <button class="final-summary-close" onclick="closeFinalSummary()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="final-summary-body">
+                <!-- Company Info Banner -->
+                <div class="final-summary-company">
+                    <div class="final-summary-company-icon" id="fs-company-icon">C</div>
+                    <div class="final-summary-company-info">
+                        <h4 id="fs-company-name">Company Name</h4>
+                        <p id="fs-company-title">Agreement Title</p>
+                    </div>
+                </div>
+
+                <!-- Client Email (Recipients) -->
+                <div class="final-summary-field">
+                    <label>Client Email (Recipients)</label>
+                    <div class="email-chips-container" id="fs-client-chips" onclick="document.getElementById('fs-client-email-input').focus()">
+                        <input type="email" class="email-chips-input" id="fs-client-email-input" placeholder="Add recipient email" oninput="validateFsClientEmail()" onkeydown="if(event.key==='Enter'){event.preventDefault();addFsClientChip()}">
+                        <button type="button" class="email-add-btn" id="fs-client-add-btn" onclick="addFsClientChip()" disabled>Add</button>
+                    </div>
+                </div>
+
+                <!-- Our CC -->
+                <div class="final-summary-field">
+                    <label>Our CC</label>
+                    <div class="email-chips-container" id="fs-ourcc-chips" onclick="document.getElementById('fs-ourcc-email-input').focus()">
+                        <input type="email" class="email-chips-input" id="fs-ourcc-email-input" placeholder="Add CC email" oninput="validateFsOurCcEmail()" onkeydown="if(event.key==='Enter'){event.preventDefault();addFsOurCcChip()}">
+                        <button type="button" class="email-add-btn" id="fs-ourcc-add-btn" onclick="addFsOurCcChip()" disabled>Add</button>
+                    </div>
+                </div>
+
+                <!-- Subject -->
+                <div class="final-summary-field">
+                    <label>Subject</label>
+                    <input type="text" class="form-input" id="fs-subject" placeholder="Email subject">
+                </div>
+
+                <!-- Message Preview -->
+                <div class="final-summary-field">
+                    <label>Message Preview</label>
+                    <div class="final-summary-preview" id="fs-body-preview"></div>
+                </div>
+
+                <!-- Warning -->
+                <div class="final-summary-warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span id="fs-warning-text">This email will be sent to every recipient added above (Client Email and Our CC).</span>
+                </div>
+            </div>
+            <div class="final-summary-footer">
+                <button class="btn btn-secondary" onclick="closeFinalSummary()">Cancel</button>
+                <button class="btn-send-mail" id="fs-send-btn" onclick="sendFromFinalSummary()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px">
+                        <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                    <span id="fs-send-btn-text">Send Mail</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/app.js"></script>
     <script>
@@ -2915,7 +3055,26 @@
                 document.getElementById('email-client-id').value = s.gmail_client_id || '';
                 document.getElementById('email-client-secret').value = s.gmail_client_secret || '';
                 document.getElementById('email-refresh-token').value = s.gmail_refresh_token || '';
-                document.getElementById('email-cc').value = s.cc_emails || '';
+                // Populate CC email chips
+                const ccContainer = document.getElementById('cc-email-chips');
+                ccContainer.querySelectorAll('.email-chip').forEach(c => c.remove());
+                let ccList = [];
+                try {
+                    const parsed = JSON.parse(s.cc_emails || '[]');
+                    if (Array.isArray(parsed)) ccList = parsed;
+                } catch(e) {
+                    if (s.cc_emails && s.cc_emails.trim()) ccList = s.cc_emails.split(',').map(e => e.trim()).filter(Boolean);
+                }
+                const ccInput = document.getElementById('cc-email-input');
+                ccList.forEach(em => {
+                    const chip = document.createElement('span');
+                    chip.className = 'email-chip';
+                    chip.dataset.email = em;
+                    chip.innerHTML = `${em}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+                    ccContainer.insertBefore(chip, ccInput);
+                });
+                ccInput.value = '';
+                validateCcEmailInput();
                 document.getElementById('email-subject').value = s.email_subject || 'Payment Reminder — {{company_name}}';
 
                 // Load both templates separately
@@ -3076,6 +3235,20 @@
             loadCompanies();
         }
 
+        // Parse email from JSON array or plain string
+        function _parseEmails(raw) {
+            if (!raw || !raw.trim()) return [];
+            try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed.filter(e => e && e.trim());
+            } catch(e) {}
+            return [raw.trim()];
+        }
+        function _firstEmail(raw) {
+            const list = _parseEmails(raw);
+            return list.length > 0 ? list[0] : '';
+        }
+
         function renderCompanyList() {
             const tbody = document.getElementById('company-select-tbody');
             const now = new Date();
@@ -3165,21 +3338,22 @@
                         </td>
                         <td>
                             ${(() => {
-                        const isConfirmed = (row.email && row.email.trim() !== '') && !unconfirmedAgreementEmails.has(row.agreement_id);
+                        const displayEmail = _firstEmail(row.email);
+                        const isConfirmed = (displayEmail !== '') && !unconfirmedAgreementEmails.has(row.agreement_id);
                         if (isConfirmed) {
                             return `
                                         <div class="company-email-container confirmed" data-aid="${row.agreement_id}" style="display:flex;align-items:center;gap:8px;">
-                                            <input type="email" class="form-input company-email-input" value="${row.email || ''}" disabled readonly style="flex:1;background:var(--color-bg);border-color:var(--color-border);color:var(--color-text-secondary);cursor:default;">
+                                            <input type="email" class="form-input company-email-input" value="${displayEmail}" disabled readonly style="flex:1;background:var(--color-bg);border-color:var(--color-border);color:var(--color-text-secondary);cursor:default;">
                                             <button class="btn btn-sm btn-danger email-action-btn remove-btn" onclick="handleRemoveEmail(${row.companyIndex}, ${row.agreement_id})" title="Remove or change email" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:6px;flex-shrink:0;background:var(--color-danger-light);color:var(--color-danger);border:1px solid rgba(220,38,38,0.2);cursor:pointer;transition:all 0.2s;" onmouseenter="this.style.background='var(--color-danger)';this.style.color='white';" onmouseleave="this.style.background='var(--color-danger-light)';this.style.color='var(--color-danger)';">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px"><path d="M18 6L6 18M6 6l12 12"/></svg>
                                             </button>
                                         </div>
                                     `;
                         } else {
-                            const isVal = isValidEmail(row.email || '');
+                            const isVal = isValidEmail(displayEmail);
                             return `
                                         <div class="company-email-container unconfirmed" data-aid="${row.agreement_id}" style="display:flex;align-items:center;gap:8px;">
-                                            <input type="email" class="form-input company-email-input" placeholder="Enter email address" value="${row.email || ''}" 
+                                            <input type="email" class="form-input company-email-input" placeholder="Enter email address" value="${displayEmail}" 
                                                 oninput="validateInlineEmailInput(this, ${row.agreement_id})"
                                                 onkeydown="if(event.key === 'Enter') handleConfirmEmail(${row.companyIndex}, ${row.agreement_id})"
                                                 style="flex:1;">
@@ -3256,6 +3430,34 @@
             document.getElementById('send-emails-btn').disabled = count === 0;
         }
 
+        // CC email chip helpers
+        function validateCcEmailInput() {
+            const input = document.getElementById('cc-email-input');
+            const btn = document.getElementById('cc-email-add-btn');
+            const val = (input.value || '').trim();
+            btn.disabled = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+        }
+        function addCcEmailChip() {
+            const input = document.getElementById('cc-email-input');
+            const container = document.getElementById('cc-email-chips');
+            const val = (input.value || '').trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return;
+            const existing = container.querySelectorAll('.email-chip');
+            for (const chip of existing) {
+                if (chip.dataset.email === val) { input.value = ''; validateCcEmailInput(); return; }
+            }
+            const chip = document.createElement('span');
+            chip.className = 'email-chip';
+            chip.dataset.email = val;
+            chip.innerHTML = `${val}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+            container.insertBefore(chip, input);
+            input.value = '';
+            validateCcEmailInput();
+        }
+        function getCcEmailChips() {
+            return Array.from(document.querySelectorAll('#cc-email-chips .email-chip')).map(c => c.dataset.email);
+        }
+
         function updateCompanyEmail(companyIndex, newEmail, agreementId) {
             if (companyIndex >= 0 && companyIndex < companiesList.length) {
                 companiesList[companyIndex].email = newEmail.trim();
@@ -3322,7 +3524,7 @@
             unconfirmedAgreementEmails.delete(agreementId);
 
             try {
-                await api.put(`/agreements/${agreementId}/analysis`, { email: newEmail });
+                await api.put(`/agreements/${agreementId}/analysis`, { email: JSON.stringify([newEmail]) });
                 showToast('Email address updated successfully', 'success');
             } catch (err) {
                 console.error('Failed to sync email to database:', err);
@@ -3337,7 +3539,7 @@
             updateCompanyEmail(companyIndex, '', agreementId);
 
             try {
-                await api.put(`/agreements/${agreementId}/analysis`, { email: '' });
+                await api.put(`/agreements/${agreementId}/analysis`, { email: JSON.stringify([]) });
                 showToast('Email address removed', 'info');
             } catch (err) {
                 console.error('Failed to clear email in database:', err);
@@ -3376,7 +3578,16 @@
                 companiesPayload.push({
                     agreement_id: c.agreement_id,
                     email: email,
-                    payment_ids: selectedPaymentIds
+                    payment_ids: selectedPaymentIds,
+                    company_name: c.company_name,
+                    agreement_title: c.agreement_title,
+                    currency: c.currency || '₹',
+                    contact_person: c.contact_person || '',
+                    total_amount: selectedPaymentIds.reduce((sum, pid) => {
+                        const pmt = (c.payments || []).find(p => p.payment_id === pid);
+                        return sum + (pmt ? pmt.amount || 0 : 0);
+                    }, 0),
+                    nearest_due_date: (c.payments || []).filter(p => selectedPaymentIds.includes(p.payment_id)).sort((a,b) => (a.due_date||'').localeCompare(b.due_date||''))[0]?.due_date || ''
                 });
             });
 
@@ -3390,37 +3601,265 @@
                 return;
             }
 
-            const confirmed = await showConfirm(
-                'Send Payment Reminders',
-                `Are you sure you want to send payment reminder emails to ${companiesPayload.length} ${companiesPayload.length === 1 ? 'company' : 'companies'}?`
-            );
-            if (!confirmed) return;
+            // Open Final Summary popup for the first company (if multiple, we send them sequentially)
+            openFinalSummaryPopup(companiesPayload);
+        }
 
-            const btn = document.getElementById('send-emails-btn');
+        // ========================
+        // Final Summary & Send Mail Popup — Sequential multi-company flow
+        // ========================
+        let _finalSummaryAllPayload = [];   // all companies in the batch
+        let _finalSummaryCurrentIndex = 0;  // which company we are currently showing
+        let _finalSummarySettings = {};     // cached email settings
+        let _finalSummarySentCount = 0;
+        let _finalSummaryFailedCount = 0;
+        let _finalSummaryErrors = [];
+
+        async function openFinalSummaryPopup(companiesPayload) {
+            _finalSummaryAllPayload = companiesPayload;
+            _finalSummaryCurrentIndex = 0;
+            _finalSummarySentCount = 0;
+            _finalSummaryFailedCount = 0;
+            _finalSummaryErrors = [];
+
+            // Load email settings once for the whole batch
+            try {
+                const data = await api.get('/email/settings');
+                _finalSummarySettings = data.settings || {};
+            } catch(e) {
+                showToast('Failed to load email settings', 'error');
+                return;
+            }
+
+            _showFinalSummaryForCurrent();
+        }
+
+        function _showFinalSummaryForCurrent() {
+            const overlay = document.getElementById('final-summary-overlay');
+            const settings = _finalSummarySettings;
+            const company = _finalSummaryAllPayload[_finalSummaryCurrentIndex];
+            const total = _finalSummaryAllPayload.length;
+
+            // Progress badge
+            const badge = document.getElementById('fs-progress-badge');
+            if (total > 1) {
+                badge.style.display = 'inline-block';
+                badge.textContent = `${_finalSummaryCurrentIndex + 1} / ${total}`;
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Send button label
+            const sendBtnText = document.getElementById('fs-send-btn-text');
+            if (total > 1 && _finalSummaryCurrentIndex < total - 1) {
+                sendBtnText.textContent = 'Send & Next';
+            } else {
+                sendBtnText.textContent = 'Send Mail';
+            }
+
+            // Company info
+            const companyInitial = (company.company_name || 'U').charAt(0).toUpperCase();
+            document.getElementById('fs-company-icon').textContent = companyInitial;
+            document.getElementById('fs-company-name').textContent = company.company_name || 'Unknown';
+            document.getElementById('fs-company-title').textContent = company.agreement_title || 'Agreement';
+
+            // Client email chips — use this company's email only
+            const clientChipContainer = document.getElementById('fs-client-chips');
+            clientChipContainer.querySelectorAll('.email-chip').forEach(c => c.remove());
+            const clientInput = document.getElementById('fs-client-email-input');
+            let emails = [];
+            try { const p = JSON.parse(company.email || '[]'); if(Array.isArray(p)) emails = p; } catch(e) { if(company.email) emails = [company.email]; }
+            emails.filter(Boolean).forEach(em => {
+                const chip = document.createElement('span');
+                chip.className = 'email-chip';
+                chip.dataset.email = em.trim().toLowerCase();
+                chip.innerHTML = `${em.trim().toLowerCase()}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+                clientChipContainer.insertBefore(chip, clientInput);
+            });
+            clientInput.value = '';
+            validateFsClientEmail();
+
+            // Our CC chips
+            const ourCcContainer = document.getElementById('fs-ourcc-chips');
+            ourCcContainer.querySelectorAll('.email-chip').forEach(c => c.remove());
+            const ourCcInput = document.getElementById('fs-ourcc-email-input');
+            let ccEmails = [];
+            try {
+                const parsed = JSON.parse(settings.cc_emails || '[]');
+                if (Array.isArray(parsed)) ccEmails = parsed;
+            } catch(e) {
+                if (settings.cc_emails && settings.cc_emails.trim()) ccEmails = settings.cc_emails.split(',').map(e => e.trim()).filter(Boolean);
+            }
+            ccEmails.forEach(em => {
+                const chip = document.createElement('span');
+                chip.className = 'email-chip';
+                chip.dataset.email = em;
+                chip.innerHTML = `${em}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+                ourCcContainer.insertBefore(chip, ourCcInput);
+            });
+            ourCcInput.value = '';
+            validateFsOurCcEmail();
+
+            // Template variables for this company
+            const daysRemaining = company.nearest_due_date ? Math.max(0, Math.ceil((new Date(company.nearest_due_date) - new Date()) / (1000*60*60*24))) : 0;
+            const variables = {
+                company_name: company.company_name || 'Valued Client',
+                payment_amount: (company.total_amount || 0).toLocaleString('en-IN', {minimumFractionDigits:2,maximumFractionDigits:2}),
+                payment_due_date: company.nearest_due_date || '',
+                days_remaining: String(daysRemaining),
+                currency: company.currency || '₹',
+                agreement_title: company.agreement_title || 'Consulting Agreement',
+                contact_person: company.contact_person || 'Sir/Madam',
+            };
+
+            // Resolve subject
+            let subjectTemplate = settings.email_subject || 'Payment Reminder — {{company_name}}';
+            document.getElementById('fs-subject').value = subjectTemplate.replace(/\{\{(\w+)\}\}/g, (m, key) => variables[key] || m);
+
+            // Resolve body preview
+            const templateType = settings.email_template_type || 'text';
+            let template = templateType === 'html' ? (settings.email_template_html || settings.email_template || '') : (settings.email_template || '');
+            let resolvedBody = template.replace(/\{\{(\w+)\}\}/g, (m, key) => variables[key] || m);
+            const preview = document.getElementById('fs-body-preview');
+            if (template.includes('<') && template.includes('>')) {
+                preview.innerHTML = resolvedBody;
+            } else {
+                preview.textContent = resolvedBody;
+            }
+
+            overlay.classList.add('open');
+        }
+
+        function closeFinalSummary() {
+            document.getElementById('final-summary-overlay').classList.remove('open');
+            _finalSummaryAllPayload = [];
+            _finalSummaryCurrentIndex = 0;
+        }
+
+        // Final summary email chip helpers
+        function validateFsClientEmail() {
+            const input = document.getElementById('fs-client-email-input');
+            const btn = document.getElementById('fs-client-add-btn');
+            btn.disabled = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((input.value||'').trim());
+        }
+        function addFsClientChip() {
+            const input = document.getElementById('fs-client-email-input');
+            const container = document.getElementById('fs-client-chips');
+            const val = (input.value||'').trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return;
+            for (const chip of container.querySelectorAll('.email-chip')) { if (chip.dataset.email === val) { input.value=''; validateFsClientEmail(); return; } }
+            const chip = document.createElement('span');
+            chip.className = 'email-chip';
+            chip.dataset.email = val;
+            chip.innerHTML = `${val}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+            container.insertBefore(chip, input);
+            input.value = '';
+            validateFsClientEmail();
+        }
+        function validateFsOurCcEmail() {
+            const input = document.getElementById('fs-ourcc-email-input');
+            const btn = document.getElementById('fs-ourcc-add-btn');
+            btn.disabled = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((input.value||'').trim());
+        }
+        function addFsOurCcChip() {
+            const input = document.getElementById('fs-ourcc-email-input');
+            const container = document.getElementById('fs-ourcc-chips');
+            const val = (input.value||'').trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return;
+            for (const chip of container.querySelectorAll('.email-chip')) { if (chip.dataset.email === val) { input.value=''; validateFsOurCcEmail(); return; } }
+            const chip = document.createElement('span');
+            chip.className = 'email-chip';
+            chip.dataset.email = val;
+            chip.innerHTML = `${val}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+            container.insertBefore(chip, input);
+            input.value = '';
+            validateFsOurCcEmail();
+        }
+
+        async function sendFromFinalSummary() {
+            const btn = document.getElementById('fs-send-btn');
             btn.disabled = true;
             btn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block"></div> Sending...';
 
             try {
-                const result = await api.post('/email/send', { companies: companiesPayload });
-                const stats = result.stats;
+                // Collect client emails and our CC for this company
+                const clientEmails = Array.from(document.querySelectorAll('#fs-client-chips .email-chip')).map(c => c.dataset.email);
+                const ourCcEmails = Array.from(document.querySelectorAll('#fs-ourcc-chips .email-chip')).map(c => c.dataset.email);
 
-                if (stats.sent > 0 && stats.failed === 0) {
-                    showToast(`Successfully sent ${stats.sent} ${stats.sent === 1 ? 'email' : 'emails'}`, 'success');
-                } else if (stats.sent > 0 && stats.failed > 0) {
-                    showToast(`Sent ${stats.sent}, Failed ${stats.failed}. Check errors below.`, 'warning');
-                } else {
-                    showToast(`Failed to send emails: ${stats.errors.join('; ')}`, 'error');
+                if (clientEmails.length === 0) {
+                    showToast('Please add at least one client email', 'warning');
+                    btn.disabled = false;
+                    const isLast = _finalSummaryCurrentIndex >= _finalSummaryAllPayload.length - 1;
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> <span id="fs-send-btn-text">${isLast ? 'Send Mail' : 'Send & Next'}</span>`;
+                    return;
                 }
 
-                // Reload companies and logs
-                selectedCompanies.clear();
-                await loadCompanies();
-                loadEmailLogs();
+                // Save Our CC back to settings (best effort)
+                try {
+                    await api.put('/email/credentials', {
+                        gmail_client_id: document.getElementById('email-client-id').value.trim(),
+                        gmail_client_secret: document.getElementById('email-client-secret').value,
+                        gmail_refresh_token: document.getElementById('email-refresh-token').value,
+                        sender_email: document.getElementById('email-sender').value.trim(),
+                        sender_name: document.getElementById('email-sender-name').value.trim(),
+                        cc_emails: JSON.stringify(ourCcEmails),
+                    });
+                } catch(e) { /* best effort */ }
+
+                const company = _finalSummaryAllPayload[_finalSummaryCurrentIndex];
+
+                // Save updated client email back to this agreement
+                try {
+                    await api.put(`/agreements/${company.agreement_id}/analysis`, { email: JSON.stringify(clientEmails) });
+                } catch(e) { /* best effort */ }
+
+                // Send email for just this company
+                const result = await api.post('/email/send', {
+                    companies: [{
+                        agreement_id: company.agreement_id,
+                        email: clientEmails[0],
+                        payment_ids: company.payment_ids,
+                    }]
+                });
+                const stats = result.stats;
+                _finalSummarySentCount += stats.sent || 0;
+                _finalSummaryFailedCount += stats.failed || 0;
+                if (stats.errors && stats.errors.length) _finalSummaryErrors.push(...stats.errors);
+
+                // Advance to next company or finish
+                _finalSummaryCurrentIndex++;
+                if (_finalSummaryCurrentIndex < _finalSummaryAllPayload.length) {
+                    // Show next company summary
+                    _showFinalSummaryForCurrent();
+                    showToast(`Sent for ${company.company_name}. Now showing next company.`, 'info');
+                } else {
+                    // All done
+                    document.getElementById('final-summary-overlay').classList.remove('open');
+                    _finalSummaryAllPayload = [];
+                    _finalSummaryCurrentIndex = 0;
+
+                    if (_finalSummarySentCount > 0 && _finalSummaryFailedCount === 0) {
+                        showToast(`Successfully sent ${_finalSummarySentCount} ${_finalSummarySentCount === 1 ? 'email' : 'emails'}`, 'success');
+                    } else if (_finalSummarySentCount > 0 && _finalSummaryFailedCount > 0) {
+                        showToast(`Sent ${_finalSummarySentCount}, Failed ${_finalSummaryFailedCount}. Check errors below.`, 'warning');
+                    } else {
+                        showToast(`Failed to send emails: ${_finalSummaryErrors.join('; ')}`, 'error');
+                    }
+
+                    selectedCompanies.clear();
+                    await loadCompanies();
+                    loadEmailLogs();
+                }
             } catch (err) {
                 showToast(err.message || 'Failed to send emails', 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Send Email`;
+                const isLast = _finalSummaryCurrentIndex >= _finalSummaryAllPayload.length;
+                const btnTextEl = document.getElementById('fs-send-btn-text');
+                if (btnTextEl) {
+                    btnTextEl.textContent = (isLast || _finalSummaryAllPayload.length === 0) ? 'Send Mail' : 'Send & Next';
+                }
+                btn.disabled = false;
             }
         }
 
@@ -3781,6 +4220,10 @@
             currentPopupPaymentRow = null;
         }
 
+        // Stores the pending consultant send payload while user reviews the final summary
+        let _cfsPayload = null;
+        let _cfsPaymentRow = null;
+
         async function submitConsultantPreferenceSend() {
             if (!currentPopupPaymentRow) return;
 
@@ -3794,39 +4237,132 @@
                 return;
             }
 
-            const paymentId = currentPopupPaymentRow.payment_id;
-            const agreementId = currentPopupPaymentRow.agreement_id;
+            // Close preference modal
+            const prefModal = document.getElementById('consultant-preference-modal');
+            prefModal.classList.remove('open');
 
-            const sendBtn = document.getElementById('pref-send-btn');
-            const originalHtml = sendBtn.innerHTML;
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block"></div> Sending...';
+            // Save context for final send
+            _cfsPaymentRow = currentPopupPaymentRow;
+            _cfsPayload = {
+                agreement_id: currentPopupPaymentRow.agreement_id,
+                payment_id: currentPopupPaymentRow.payment_id,
+                consultant_ids: selectedConsultantIds,
+            };
+
+            // Get selected consultant details from the row
+            const selectedConsultants = (currentPopupPaymentRow.consultants || [])
+                .filter(c => selectedConsultantIds.includes(c.id));
+
+            // Open consultant final summary popup
+            await openConsultantFinalSummary(_cfsPaymentRow, selectedConsultants, _cfsPayload);
+        }
+
+        async function openConsultantFinalSummary(paymentRow, selectedConsultants, payload) {
+            const overlay = document.getElementById('consultant-final-summary-overlay');
+
+            // Company / payment info
+            document.getElementById('cfs-company-icon').textContent = (paymentRow.company_name || 'C').charAt(0).toUpperCase();
+            document.getElementById('cfs-company-name').textContent = paymentRow.company_name || 'Unknown';
+            document.getElementById('cfs-payment-info').textContent =
+                `${formatDate(paymentRow.due_date)} — ${paymentRow.currency || '₹'}${(paymentRow.amount || 0).toLocaleString('en-IN', {minimumFractionDigits:2})} (${paymentRow.agreement_title || 'Agreement'})`;
+
+            // Consultant chips
+            const listEl = document.getElementById('cfs-consultant-list');
+            listEl.innerHTML = selectedConsultants.map(c =>
+                `<span class="badge badge-pending" style="font-size:0.82rem;padding:4px 10px">${c.name}<span style="font-size:0.7rem;color:var(--color-text-muted);margin-left:6px">${c.email || ''}</span></span>`
+            ).join('');
+
+            // Load consultant email template settings
+            let settings = {};
+            try {
+                const data = await api.get('/email/consultant-template');
+                settings = data.template || {};
+            } catch(e) { /* silent */ }
+
+            // Template variables
+            const now = new Date();
+            const dueDate = paymentRow.due_date ? new Date(paymentRow.due_date) : now;
+            const daysRemaining = Math.max(0, Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24)));
+            const variables = {
+                consultant_name: selectedConsultants.length === 1 ? selectedConsultants[0].name : 'Consultants',
+                company_name: paymentRow.company_name || 'Unknown',
+                payment_amount: (paymentRow.amount || 0).toLocaleString('en-IN', {minimumFractionDigits:2}),
+                payment_due_date: paymentRow.due_date || '',
+                days_remaining: String(daysRemaining),
+                currency: paymentRow.currency || '₹',
+                agreement_title: paymentRow.agreement_title || 'Consulting Agreement',
+                contact_person: paymentRow.contact_person || 'N/A',
+            };
+
+            // Resolve subject
+            const subjectTmpl = settings.consultant_email_subject || 'Payment Reminder — {{company_name}} (Internal)';
+            document.getElementById('cfs-subject').value = subjectTmpl.replace(/\{\{(\w+)\}\}/g, (m, k) => variables[k] || m);
+
+            // Resolve body
+            const templateType = settings.consultant_email_template_type || 'text';
+            const template = templateType === 'html'
+                ? (settings.consultant_email_template_html || settings.consultant_email_template || '')
+                : (settings.consultant_email_template || '');
+            const resolvedBody = template.replace(/\{\{(\w+)\}\}/g, (m, k) => variables[k] || m);
+            const preview = document.getElementById('cfs-body-preview');
+            if (template.includes('<') && template.includes('>')) {
+                preview.innerHTML = resolvedBody;
+            } else {
+                preview.textContent = resolvedBody;
+            }
+
+            overlay.classList.add('open');
+        }
+
+        function closeConsultantFinalSummary() {
+            document.getElementById('consultant-final-summary-overlay').classList.remove('open');
+            // Deselect the payment row since user cancelled
+            if (_cfsPaymentRow) {
+                const paymentId = _cfsPaymentRow.payment_id;
+                selectedConsultantPayments.delete(paymentId);
+                const row = document.querySelector(`tr[data-cpid="${paymentId}"]`);
+                if (row) {
+                    row.classList.remove('company-row-selected');
+                    const cb = row.querySelector('.consultant-cb');
+                    if (cb) cb.checked = false;
+                }
+                updateConsultantSelectionUI();
+            }
+            _cfsPayload = null;
+            _cfsPaymentRow = null;
+            currentPopupPaymentRow = null;
+        }
+
+        async function confirmConsultantFinalSend() {
+            if (!_cfsPayload) return;
+
+            const btn = document.getElementById('cfs-send-btn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;border-width:2px;display:inline-block"></div> Sending...';
 
             try {
-                const payload = {
-                    companies: [
-                        {
-                            agreement_id: agreementId,
-                            payment_ids: [paymentId],
-                            consultant_ids: selectedConsultantIds
-                        }
-                    ]
-                };
-
-                const result = await api.post('/email/consultant-send', payload);
+                const result = await api.post('/email/consultant-send', {
+                    companies: [{
+                        agreement_id: _cfsPayload.agreement_id,
+                        payment_ids: [_cfsPayload.payment_id],
+                        consultant_ids: _cfsPayload.consultant_ids,
+                    }]
+                });
                 const stats = result.stats;
+
+                document.getElementById('consultant-final-summary-overlay').classList.remove('open');
+                _cfsPayload = null;
+                _cfsPaymentRow = null;
+                currentPopupPaymentRow = null;
 
                 if (stats.sent > 0 && stats.failed === 0) {
                     showToast(`Successfully sent email to ${stats.sent} selected consultant${stats.sent === 1 ? '' : 's'}`, 'success');
                 } else if (stats.sent > 0 && stats.failed > 0) {
                     showToast(`Sent ${stats.sent}, Failed ${stats.failed}. Check errors below.`, 'warning');
                 } else {
-                    showToast(`Failed to send email: ${stats.errors.join('; ')}`, 'error');
+                    showToast(`Failed to send email: ${(stats.errors || []).join('; ')}`, 'error');
                 }
-
-                const modal = document.getElementById('consultant-preference-modal');
-                modal.classList.remove('open');
-                currentPopupPaymentRow = null;
 
                 selectedConsultantPayments.clear();
                 await loadConsultantCompanies();
@@ -3835,8 +4371,8 @@
             } catch (err) {
                 showToast(err.message || 'Failed to send consultant email', 'error');
             } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = originalHtml;
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             }
         }
 
@@ -4064,7 +4600,7 @@
                     gmail_refresh_token: document.getElementById('email-refresh-token').value,
                     sender_email: document.getElementById('email-sender').value.trim(),
                     sender_name: document.getElementById('email-sender-name').value.trim(),
-                    cc_emails: document.getElementById('email-cc').value.trim(),
+                    cc_emails: JSON.stringify(getCcEmailChips()),
                 });
                 showToast('Credentials saved successfully', 'success');
             } catch (err) {

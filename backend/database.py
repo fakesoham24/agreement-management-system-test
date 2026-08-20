@@ -576,6 +576,35 @@ def init_db():
     """)
     conn.commit()
 
+    # One-time data migration: convert email fields to JSON arrays
+    # Convert agreement_analysis.email from plain string to JSON array
+    import json as _json
+    rows = cursor.execute("SELECT id, email FROM agreement_analysis WHERE email IS NOT NULL AND email != ''").fetchall()
+    for row in rows:
+        _id, _email = row[0], row[1]
+        try:
+            _parsed = _json.loads(_email)
+            if isinstance(_parsed, list):
+                continue  # Already a JSON array
+        except (ValueError, TypeError):
+            pass
+        # Wrap single email string in a JSON array
+        cursor.execute("UPDATE agreement_analysis SET email = ? WHERE id = ?", (_json.dumps([_email.strip()]), _id))
+
+    # Convert email_settings.cc_emails from comma-separated to JSON array
+    cc_row = cursor.execute("SELECT id, cc_emails FROM email_settings WHERE cc_emails IS NOT NULL AND cc_emails != ''").fetchone()
+    if cc_row:
+        _cc_id, _cc_val = cc_row[0], cc_row[1]
+        try:
+            _cc_parsed = _json.loads(_cc_val)
+            if not isinstance(_cc_parsed, list):
+                raise ValueError()
+        except (ValueError, TypeError):
+            # Comma-separated — split and convert
+            _cc_list = [e.strip() for e in _cc_val.split(',') if e.strip()]
+            cursor.execute("UPDATE email_settings SET cc_emails = ? WHERE id = ?", (_json.dumps(_cc_list), _cc_id))
+    conn.commit()
+
     # Create default admin if not exists
     from passlib.hash import bcrypt
     admin_exists = cursor.execute("SELECT id FROM users WHERE role='admin'").fetchone()

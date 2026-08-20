@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="icon" type="image/webp" href="/static/favicon.webp">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body>
     <div class="app-shell">
         <!-- Sidebar Backdrop (mobile) -->
@@ -26,22 +28,37 @@
                 <div class="nav-section">
                     <div class="nav-section-title">Main</div>
                     <a class="nav-item active" href="/dashboard" id="nav-dashboard">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg>
                         Dashboard
                     </a>
                     <a class="nav-item" href="/payments" id="nav-payments">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                        </svg>
                         Payments
                     </a>
                     <a class="nav-item" href="/renewals" id="nav-renewals">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115.36-6.36L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15.36 6.36L3 16"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M21 2v6h-6" />
+                            <path d="M3 12a9 9 0 0115.36-6.36L21 8" />
+                            <path d="M3 22v-6h6" />
+                            <path d="M21 12a9 9 0 01-15.36 6.36L3 16" />
+                        </svg>
                         Renewals
                     </a>
                 </div>
                 <div class="nav-section" id="admin-nav-section" style="display:none">
                     <div class="nav-section-title">Administration</div>
                     <a class="nav-item" href="/admin" id="nav-admin">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
                         Admin Panel
                     </a>
                 </div>
@@ -55,7 +72,12 @@
                         <div class="user-role" id="user-role">User</div>
                     </div>
                     <button class="btn-ghost btn-icon" onclick="Auth.logout()" title="Logout">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:18px;height:18px"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:18px;height:18px">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -66,32 +88,51 @@
             <header class="content-header">
                 <div style="display:flex;align-items:center;gap:12px">
                     <button class="mobile-toggle" onclick="toggleSidebar()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="width:20px;height:20px">
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
                     </button>
                     <h1>Dashboard</h1>
                 </div>
                 <div class="header-actions">
                     <div class="search-bar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="M21 21l-4.35-4.35" />
+                        </svg>
                         <input type="text" id="search-input" placeholder="Search agreements...">
                     </div>
                     <!-- Notifications -->
                     <div class="notification-bell" id="notification-bell" onclick="toggleNotifications()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:20px;height:20px"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:20px;height:20px">
+                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 01-3.46 0" />
+                        </svg>
                         <div class="notification-count" id="notification-count" style="display:none">0</div>
                         <div class="notification-dropdown" id="notification-dropdown">
                             <div class="notification-dropdown-header">
                                 <h4>Notifications</h4>
                                 <div class="notification-header-actions">
-                                    <button class="btn btn-ghost btn-sm" onclick="markAllRead(event)">Mark all read</button>
-                                    <button class="btn-clear-all" onclick="clearAllNotifications(event)" title="Delete all notifications">✕ Clear All</button>
+                                    <button class="btn btn-ghost btn-sm" onclick="markAllRead(event)">Mark all
+                                        read</button>
+                                    <button class="btn-clear-all" onclick="clearAllNotifications(event)"
+                                        title="Delete all notifications">✕ Clear All</button>
                                 </div>
                             </div>
                             <div class="notification-list" id="notification-list"></div>
                         </div>
                     </div>
                     <button class="btn btn-primary btn-sm" id="upload-agreement-btn" onclick="showUploadModal()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            style="width:16px;height:16px">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
                         Upload Agreement
                     </button>
                 </div>
@@ -99,9 +140,20 @@
 
             <div class="content-body">
 
+                <!-- Mobile Search Bar (hidden on desktop, shown on mobile) -->
+                <div class="mobile-search-bar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                    <input type="text" id="search-input-mobile" placeholder="Search agreements..."
+                        oninput="var si=document.getElementById('search-input'); si.value=this.value; si.dispatchEvent(new Event('input'))">
+                </div>
+
                 <!-- Monthly Payment Summary Cards -->
                 <div class="dashboard-payment-cards" id="dashboard-payment-cards"></div>
-                <div class="payments-filters" style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:nowrap;justify-content:space-between">
+                <div class="payments-filters" id="dashboard-payments-filters"
+                    style="margin-bottom:16px;justify-content: space-between;">
                     <div class="filter-tabs" id="filter-tabs">
                         <button class="filter-tab active" data-filter="">All</button>
                         <button class="filter-tab" data-filter="active">Active</button>
@@ -111,23 +163,51 @@
                     </div>
                     <div style="display:flex;align-items:center;gap:10px">
                         <!-- Assigned Users Filter Button -->
-                        <button class="btn btn-sm btn-assigned-users-filter" id="assigned-users-filter-btn" onclick="toggleAssignedUsersPopup()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                        <button class="btn btn-sm btn-assigned-users-filter" id="assigned-users-filter-btn"
+                            onclick="toggleAssignedUsersPopup()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                style="width:16px;height:16px">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                            </svg>
                             <span id="assigned-users-filter-label">Assigned Users</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="width:12px;height:12px">
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
                         </button>
                         <div class="view-toggle" id="dashboard-view-toggle">
-                            <button class="view-toggle-btn active" data-view="template" onclick="switchDashboardView('template')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                            <button class="view-toggle-btn active" data-view="template"
+                                onclick="switchDashboardView('template')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                                </svg>
                                 Template
                             </button>
                             <button class="view-toggle-btn" data-view="list" onclick="switchDashboardView('list')">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    style="width:14px;height:14px">
+                                    <line x1="3" y1="6" x2="21" y2="6" />
+                                    <line x1="3" y1="12" x2="21" y2="12" />
+                                    <line x1="3" y1="18" x2="21" y2="18" />
+                                </svg>
                                 List
                             </button>
                         </div>
-                        <button class="btn btn-sm btn-export" id="dashboard-export-btn" onclick="exportDashboardExcelWithLoading(this)" title="Export filtered agreements to Excel" style="display:none">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <button class="btn btn-sm btn-export" id="dashboard-export-btn"
+                            onclick="exportDashboardExcelWithLoading(this)" title="Export filtered agreements to Excel"
+                            style="display:none">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                style="width:16px;height:16px">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
                             Export Excel
                         </button>
                     </div>
@@ -160,8 +240,11 @@
 
                 <!-- Empty State -->
                 <div class="empty-state" id="empty-state" style="display:none">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:#9ba3b2;margin-bottom:16px">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        style="width:48px;height:48px;color:#9ba3b2;margin-bottom:16px">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M16 13H8M16 17H8M10 9H8" />
                     </svg>
                     <h3>No agreements found</h3>
                     <p>Upload your first consulting agreement to get started.</p>
@@ -179,52 +262,81 @@
                     <!-- Scanned PDF -->
                     <div class="upload-option-card">
                         <div class="upload-option-icon scan-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M3 9h18M9 3v18" />
+                            </svg>
                         </div>
                         <h4>Scanned PDF</h4>
                         <p>Image-based PDF with OCR text extraction</p>
                         <span class="size-limit">Max 100 MB</span>
                         <button class="upload-option-btn" onclick="triggerUpload('scanned')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
                             Upload
                         </button>
                     </div>
                     <!-- Standard PDF -->
                     <div class="upload-option-card">
                         <div class="upload-option-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                <path d="M14 2v6h6" />
+                                <path d="M16 13H8M16 17H8M10 9H8" />
+                            </svg>
                         </div>
                         <h4>Standard PDF</h4>
                         <p>Normal text-based PDF document</p>
                         <span class="size-limit">Max 20 MB</span>
                         <button class="upload-option-btn" onclick="triggerUpload('standard')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
                             Upload
                         </button>
                     </div>
                     <!-- DOCX -->
                     <div class="upload-option-card">
                         <div class="upload-option-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                <path d="M14 2v6h6" />
+                                <path d="M12 18v-6M9 15l3 3 3-3" />
+                            </svg>
                         </div>
                         <h4>Word Document</h4>
                         <p>Microsoft Word DOCX file</p>
                         <span class="size-limit">Max 20 MB</span>
                         <button class="upload-option-btn" onclick="triggerUpload('docx')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
                             Upload
                         </button>
                     </div>
                     <!-- Manual Entry -->
                     <div class="upload-option-card">
                         <div class="upload-option-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
                         </div>
                         <h4>Manual Entry</h4>
                         <p>Fill all agreement details manually</p>
                         <span class="size-limit">File required, no AI</span>
                         <button class="upload-option-btn" onclick="openManualUpload()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
                             Manual
                         </button>
                     </div>
@@ -233,7 +345,8 @@
                     <div class="analysis-progress-container" id="analysis-progress-box">
                         <div class="analysis-progress-header">
                             <div class="loading-spinner" id="analysis-spinner"></div>
-                            <span class="analysis-progress-status" id="analysis-status-text">Uploading agreement...</span>
+                            <span class="analysis-progress-status" id="analysis-status-text">Uploading
+                                agreement...</span>
                         </div>
                         <div class="analysis-progress-bar-track">
                             <div class="analysis-progress-bar-fill" id="analysis-bar-fill" style="width:0%"></div>
@@ -257,13 +370,14 @@
             <div class="error-popup-header">
                 <div class="error-popup-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M15 9l-6 6M9 9l6 6"/>
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M15 9l-6 6M9 9l6 6" />
                     </svg>
                 </div>
                 <button class="error-popup-close" onclick="closeErrorPopup()" title="Close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-                        <path d="M18 6L6 18M6 6l12 12"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="width:18px;height:18px">
+                        <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -279,11 +393,17 @@
     <div class="manual-upload-overlay" id="manual-upload-modal">
         <div class="manual-upload-header">
             <h2>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
                 Manual Agreement Entry
             </h2>
             <button class="manual-upload-close" onclick="cancelManualUpload()" title="Close">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="width:18px;height:18px">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
             </button>
         </div>
         <div class="manual-upload-body">
@@ -291,38 +411,74 @@
             <!-- Section: File Upload -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                    <div class="section-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg></div>
                     Upload Agreement File <span class="required">*</span>
                 </div>
-                <div class="manual-file-zone" id="manual-file-zone" onclick="document.getElementById('manual-file-input').click()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="manual-file-zone" id="manual-file-zone"
+                    onclick="document.getElementById('manual-file-input').click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
                     <p id="manual-file-text">Click to select PDF or DOCX file</p>
                     <p class="file-hint">PDF or Word Document — Max 100 MB</p>
                 </div>
-                <input type="file" id="manual-file-input" accept=".pdf,.docx" style="display:none" onchange="onManualFileSelect(this)">
+                <input type="file" id="manual-file-input" accept=".pdf,.docx" style="display:none"
+                    onchange="onManualFileSelect(this)">
             </div>
 
             <!-- Section: Agreement Overview -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></div>
+                    <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M16 13H8M16 17H8M10 9H8" />
+                        </svg></div>
                     Agreement Overview
                 </div>
                 <div class="manual-form-grid">
-                    <div class="form-group"><label>Company Name <span class="required">*</span></label><input type="text" class="form-input" id="m-company-name" placeholder="Enter company name"></div>
-                    <div class="form-group"><label>Agreement Title</label><input type="text" class="form-input" id="m-agreement-title" placeholder="Agreement title"></div>
-                    <div class="form-group"><label>Contact Person</label><input type="text" class="form-input" id="m-contact-person" placeholder="Primary contact"></div>
-                    <div class="form-group"><label>Agreement Date</label><input type="date" class="form-input" id="m-agreement-date"></div>
-                    <div class="form-group"><label>Effective Date (Consulting Start Date) <span class="required">*</span></label><input type="date" class="form-input" id="m-effective-date"></div>
-                    <div class="form-group"><label>Expiry Date (Consulting End Date) <span class="required">*</span></label><input type="date" class="form-input" id="m-expiry-date"></div>
+                    <div class="form-group"><label>Company Name <span class="required">*</span></label><input
+                            type="text" class="form-input" id="m-company-name" placeholder="Enter company name"></div>
+                    <div class="form-group"><label>Agreement Title</label><input type="text" class="form-input"
+                            id="m-agreement-title" placeholder="Agreement title" list="dl-agreement-title"><datalist
+                            id="dl-agreement-title">
+                            <option value="Consulting Agreement">
+                        </datalist></div>
+                    <div class="form-group"><label>Contact Person</label><input type="text" class="form-input"
+                            id="m-contact-person" placeholder="Primary contact"></div>
+                    <div class="form-group"><label>Agreement Date</label><input type="date" class="form-input"
+                            id="m-agreement-date"></div>
+                    <div class="form-group"><label>Effective Date (Consulting Start Date) <span
+                                class="required">*</span></label><input type="date" class="form-input"
+                            id="m-effective-date"></div>
+                    <div class="form-group"><label>Expiry Date (Consulting End Date) <span
+                                class="required">*</span></label><input type="date" class="form-input"
+                            id="m-expiry-date"></div>
                     <div class="form-group"><label>Priority Level</label>
-                        <select class="form-input" id="m-priority-level"><option value="Casual">Casual</option><option value="High">High</option></select>
+                        <select class="form-input" id="m-priority-level">
+                            <option value="Casual">Casual</option>
+                            <option value="High">High</option>
+                        </select>
                     </div>
                     <div class="form-group"><label>Auto Renewal</label>
-                        <select class="form-input" id="m-auto-renewal"><option value="No">No</option><option value="Yes">Yes</option></select>
+                        <select class="form-input" id="m-auto-renewal">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
                     </div>
                     <div class="form-group"><label>Currency</label>
-                        <select class="form-input" id="m-currency"><option value="₹">₹ Indian Rupee</option><option value="$">$ US Dollar</option></select>
+                        <select class="form-input" id="m-currency">
+                            <option value="₹">₹ Indian Rupee</option>
+                            <option value="$">$ US Dollar</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -330,31 +486,58 @@
             <!-- Section: Company Information -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01"/></svg></div>
+                    <div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <rect x="4" y="2" width="16" height="20" rx="1" />
+                            <path d="M9 22v-4h6v4" />
+                            <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+                        </svg></div>
                     Company Information
                 </div>
                 <div class="manual-form-grid">
-                    <div class="form-group"><label>Email</label><input type="email" class="form-input" id="m-email" placeholder="company@example.com"></div>
-                    <div class="form-group"><label>Phone</label><input type="tel" class="form-input" id="m-phone" placeholder="Phone number"></div>
-                    <div class="form-group"><label>Alternate Contact</label><input type="tel" class="form-input" id="m-alt-contact" placeholder="Alternate phone"></div>
+                    <div class="form-group" style="grid-column:1/-1"><label>Email(s)</label>
+                        <div class="email-chips-container" id="m-email-chips"
+                            onclick="document.getElementById('m-email-input').focus()">
+                            <input type="email" class="email-chips-input" id="m-email-input"
+                                placeholder="Enter email and click Add" oninput="validateManualEmailInput()"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();addManualEmailChip()}">
+                            <button type="button" class="email-add-btn" id="m-email-add-btn"
+                                onclick="addManualEmailChip()" disabled>Add</button>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Phone</label><input type="tel" class="form-input" id="m-phone"
+                            placeholder="Phone number"></div>
+                    <div class="form-group"><label>Alternate Contact</label><input type="tel" class="form-input"
+                            id="m-alt-contact" placeholder="Alternate phone"></div>
                 </div>
             </div>
 
             <!-- Section: Timeline Dates -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                    <div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg></div>
                     Timeline Dates
                 </div>
                 <div class="manual-form-grid">
-                    <div class="form-group"><label>Renewal Due Date</label><input type="date" class="form-input" id="m-renewal-due-date"></div>
+                    <div class="form-group"><label>Renewal Due Date</label><input type="date" class="form-input"
+                            id="m-renewal-due-date"></div>
                 </div>
             </div>
 
             <!-- Section: Payment Structure -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                    <div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                        </svg></div>
                     Payment Structure <span class="required">*</span>
                 </div>
                 <div style="overflow-x:auto">
@@ -375,7 +558,10 @@
                     </table>
                 </div>
                 <button class="btn-add-row" onclick="addManualPaymentRow()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
                     Add Payment Plan
                 </button>
             </div>
@@ -383,18 +569,32 @@
             <!-- Section: Note -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></div>
-                    Note <span style="font-weight:400;font-size:0.82rem;color:var(--color-text-muted);margin-left:4px">(Optional — explain payment structure)</span>
+                    <div class="section-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M16 13H8M16 17H8M10 9H8" />
+                        </svg></div>
+                    Note <span
+                        style="font-weight:400;font-size:0.82rem;color:var(--color-text-muted);margin-left:4px">(Optional
+                        — explain payment structure)</span>
                 </div>
                 <div class="form-group" style="margin-bottom:0">
-                    <textarea class="form-input" id="m-note" rows="3" placeholder="Explain any special payment structures, odd schedules, or other notes..." style="resize:vertical;min-height:80px"></textarea>
+                    <textarea class="form-input" id="m-note" rows="3"
+                        placeholder="Explain any special payment structures, odd schedules, or other notes..."
+                        style="resize:vertical;min-height:80px"></textarea>
                 </div>
             </div>
 
             <!-- Section: Consulting Visit Schedule -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+                    <div class="section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        </svg></div>
                     Consulting Visit Schedule <span class="required">*</span>
                 </div>
                 <table class="manual-dynamic-table" id="m-visit-table">
@@ -408,7 +608,10 @@
                     <tbody id="m-visit-tbody"></tbody>
                 </table>
                 <button class="btn-add-row" onclick="addManualVisitRow()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
                     Add Visit Entry
                 </button>
             </div>
@@ -416,7 +619,12 @@
             <!-- Section: Services Provided -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+                    <div class="section-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                            <rect x="9" y="3" width="6" height="4" rx="1" />
+                            <path d="M9 14l2 2 4-4" />
+                        </svg></div>
                     Services Provided <span class="required">*</span>
                 </div>
                 <table class="manual-dynamic-table" id="m-service-table">
@@ -430,7 +638,10 @@
                     <tbody id="m-service-tbody"></tbody>
                 </table>
                 <button class="btn-add-row" onclick="addManualServiceRow()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
                     Add Service
                 </button>
             </div>
@@ -438,17 +649,50 @@
             <!-- Section: Legal Clauses -->
             <div class="manual-section">
                 <div class="manual-section-title">
-                    <div class="section-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="section-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg></div>
                     Legal Clauses
                 </div>
                 <div class="manual-form-grid">
-                    <div class="form-group"><label>NDA Included</label><select class="form-input" id="m-nda"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
-                    <div class="form-group"><label>Non-Solicitation</label><select class="form-input" id="m-non-solicitation"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
-                    <div class="form-group"><label>Non-Compete</label><select class="form-input" id="m-non-compete"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
-                    <div class="form-group"><label>Confidentiality Clause</label><select class="form-input" id="m-confidentiality"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
-                    <div class="form-group"><label>Data Protection Clause</label><select class="form-input" id="m-data-protection"><option value="">Select</option><option value="Yes">Yes</option><option value="No">No</option><option value="Not Mentioned">Not Mentioned</option></select></div>
-                    <div class="form-group"><label>Arbitration Clause</label><input type="text" class="form-input" id="m-arbitration" placeholder="e.g. Included, Not Mentioned"></div>
-                    <div class="form-group"><label>Jurisdiction</label><input type="text" class="form-input" id="m-jurisdiction" placeholder="e.g. Ahmedabad, Gujarat"></div>
+                    <div class="form-group"><label>NDA Included</label><select class="form-input" id="m-nda">
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Not Mentioned">Not Mentioned</option>
+                        </select></div>
+                    <div class="form-group"><label>Non-Solicitation</label><select class="form-input"
+                            id="m-non-solicitation">
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Not Mentioned">Not Mentioned</option>
+                        </select></div>
+                    <div class="form-group"><label>Non-Compete</label><select class="form-input" id="m-non-compete">
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Not Mentioned">Not Mentioned</option>
+                        </select></div>
+                    <div class="form-group"><label>Confidentiality Clause</label><select class="form-input"
+                            id="m-confidentiality">
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Not Mentioned">Not Mentioned</option>
+                        </select></div>
+                    <div class="form-group"><label>Data Protection Clause</label><select class="form-input"
+                            id="m-data-protection">
+                            <option value="">Select</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                            <option value="Not Mentioned">Not Mentioned</option>
+                        </select></div>
+                    <div class="form-group"><label>Arbitration Clause</label><input type="text" class="form-input"
+                            id="m-arbitration" placeholder="e.g. Included, Not Mentioned"></div>
+                    <div class="form-group"><label>Jurisdiction</label><input type="text" class="form-input"
+                            id="m-jurisdiction" placeholder="e.g. Ahmedabad, Gujarat"></div>
                 </div>
             </div>
 
@@ -456,7 +700,12 @@
         <div class="manual-upload-footer">
             <button class="btn btn-secondary" onclick="cancelManualUpload()">Cancel</button>
             <button class="btn btn-primary" id="manual-submit-btn" onclick="submitManualUpload()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="width:16px;height:16px">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
                 Upload Agreement
             </button>
         </div>
@@ -466,13 +715,18 @@
     <div class="cancel-warning-overlay" id="cancel-warning-modal">
         <div class="cancel-warning-modal">
             <div class="cancel-warning-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
             </div>
             <h3>Cancel Template?</h3>
             <p>Cancel the template means do not make template. Are you sure you want to cancel?</p>
             <div class="cancel-warning-actions">
                 <button class="btn btn-secondary" onclick="closeCancelWarning()">Go Back</button>
-                <button class="btn btn-primary" style="background:var(--color-danger);border-color:var(--color-danger)" onclick="confirmCancelManual()">Yes, Cancel</button>
+                <button class="btn btn-primary" style="background:var(--color-danger);border-color:var(--color-danger)"
+                    onclick="confirmCancelManual()">Yes, Cancel</button>
             </div>
         </div>
     </div>
@@ -544,7 +798,7 @@
             const cardsContainer = document.getElementById('dashboard-payment-cards');
             cardsContainer.innerHTML = `
                 <div class="skeleton-pay-grid">
-                    ${[0,1,2,3].map(() => `
+                    ${[0, 1, 2, 3].map(() => `
                         <div class="skeleton-pay-card">
                             <div class="skeleton skeleton-icon"></div>
                             <div class="skeleton skeleton-label"></div>
@@ -576,7 +830,7 @@
                             try {
                                 const d = new Date(p.due_date);
                                 return d.getMonth() === m && d.getFullYear() === y && p.status !== 'paid';
-                            } catch(e) { return false; }
+                            } catch (e) { return false; }
                         })
                         .reduce((sum, p) => sum + (p.amount || 0), 0);
 
@@ -606,7 +860,7 @@
             // S27: Show skeleton on first load only
             if (!agreementsLoaded) {
                 grid.innerHTML = `<div class="skeleton-grid">
-                    ${[0,1,2,3,4,5].map(() => `
+                    ${[0, 1, 2, 3, 4, 5].map(() => `
                         <div class="skeleton-card">
                             <div class="skeleton skeleton-title"></div>
                             <div class="skeleton skeleton-badge"></div>
@@ -698,7 +952,7 @@
                                 if ((p.status || '').toLowerCase() === 'paid') paidAmount += (p.amount || 0);
                             });
                         }
-                    } catch(e) {}
+                    } catch (e) { }
 
                     const currency = a.currency || '₹';
 
@@ -742,7 +996,7 @@
                                 if ((p.status || '').toLowerCase() === 'paid') paidAmount += (p.amount || 0);
                             });
                         }
-                    } catch(e) {}
+                    } catch (e) { }
 
                     const currency = a.currency || '₹';
 
@@ -1013,6 +1267,10 @@
             zone.style.borderColor = '';
             document.getElementById('manual-file-text').innerHTML = 'Click to select PDF or DOCX file';
             document.getElementById('manual-file-input').value = '';
+            // Clear email chips
+            document.querySelectorAll('#m-email-chips .email-chip').forEach(c => c.remove());
+            document.getElementById('m-email-input').value = '';
+            validateManualEmailInput();
             // Clear dynamic tables and add 1 default row each
             document.getElementById('m-payment-tbody').innerHTML = '';
             document.getElementById('m-visit-tbody').innerHTML = '';
@@ -1065,7 +1323,7 @@
         }
 
         // Back button interception
-        window.addEventListener('popstate', function(e) {
+        window.addEventListener('popstate', function (e) {
             if (document.getElementById('manual-upload-modal').classList.contains('open')) {
                 e.preventDefault();
                 cancelManualUpload();
@@ -1073,7 +1331,7 @@
         });
 
         // Escape key interception
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 if (document.getElementById('cancel-warning-modal').classList.contains('open')) {
                     closeCancelWarning();
@@ -1113,27 +1371,82 @@
         }
 
         // Dynamic Visit Rows
+        let _visitRowIdx = 0;
         function addManualVisitRow() {
             const tbody = document.getElementById('m-visit-tbody');
             const tr = document.createElement('tr');
+            const idx = _visitRowIdx++;
             tr.innerHTML = `
-                <td><input type="text" class="form-input" placeholder="e.g. Senior Consultant" data-field="role"></td>
-                <td><input type="text" class="form-input" placeholder="e.g. 12" data-field="total_visits"></td>
+                <td><input type="text" class="form-input" placeholder="e.g. Senior Consultant" data-field="role" list="dl-visit-role-${idx}"><datalist id="dl-visit-role-${idx}"><option value="Project Manager"><option value="Opex Consultant"><option value="Lead Consultant"><option value="Lean Consultant"></datalist></td>
+                <td><input type="text" class="form-input" placeholder="e.g. 12" data-field="total_visits" list="dl-visit-count-${idx}"><datalist id="dl-visit-count-${idx}"><option value="Remote Support"><option value="Fulltime"></datalist></td>
                 <td><button class="btn-remove-row" onclick="this.closest('tr').remove()" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
             `;
             tbody.appendChild(tr);
         }
 
         // Dynamic Service Rows
+        const SERVICE_DESCRIPTIONS = {
+            'Sales Scope': 'Assessment and optimization of sales processes, pipeline management, and revenue growth strategies.',
+            'HR Scope': 'Human resources policy development, talent acquisition, performance management, and organizational development.',
+            'Finance Scope': 'Financial planning, budgeting, cash flow management, compliance, and accounting process improvement.',
+            'Operation Scope': 'Operational efficiency improvement, process optimization, supply chain management, and quality control.',
+            'Lead Generation': 'Lead identification, qualification, nurturing strategies, and conversion funnel optimization.'
+        };
+        let _svcRowIdx = 0;
         function addManualServiceRow() {
             const tbody = document.getElementById('m-service-tbody');
             const tr = document.createElement('tr');
+            const idx = _svcRowIdx++;
             tr.innerHTML = `
-                <td><input type="text" class="form-input" placeholder="e.g. Tax Compliance" data-field="service_name"></td>
-                <td><input type="text" class="form-input" placeholder="Brief description" data-field="description"></td>
+                <td><input type="text" class="form-input" placeholder="e.g. Tax Compliance" data-field="service_name" list="dl-svc-name-${idx}" oninput="autoFillServiceDesc(this)"><datalist id="dl-svc-name-${idx}"><option value="Sales Scope"><option value="HR Scope"><option value="Finance Scope"><option value="Operation Scope"><option value="Lead Generation"></datalist></td>
+                <td><input type="text" class="form-input" placeholder="Brief description" data-field="description" list="dl-svc-desc-${idx}"><datalist id="dl-svc-desc-${idx}"><option value="Assessment and optimization of sales processes, pipeline management, and revenue growth strategies."><option value="Human resources policy development, talent acquisition, performance management, and organizational development."><option value="Financial planning, budgeting, cash flow management, compliance, and accounting process improvement."><option value="Operational efficiency improvement, process optimization, supply chain management, and quality control."><option value="Lead identification, qualification, nurturing strategies, and conversion funnel optimization."></datalist></td>
                 <td><button class="btn-remove-row" onclick="this.closest('tr').remove()" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
             `;
             tbody.appendChild(tr);
+        }
+
+        function autoFillServiceDesc(input) {
+            const name = input.value.trim();
+            if (SERVICE_DESCRIPTIONS[name]) {
+                const tr = input.closest('tr');
+                const descInput = tr.querySelector('[data-field="description"]');
+                if (descInput && !descInput.value.trim()) {
+                    descInput.value = SERVICE_DESCRIPTIONS[name];
+                }
+            }
+        }
+
+        // Multi-email chip helpers for manual upload
+        function validateManualEmailInput() {
+            const input = document.getElementById('m-email-input');
+            const btn = document.getElementById('m-email-add-btn');
+            const val = (input.value || '').trim();
+            const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+            btn.disabled = !isValid;
+        }
+
+        function addManualEmailChip() {
+            const input = document.getElementById('m-email-input');
+            const container = document.getElementById('m-email-chips');
+            const val = (input.value || '').trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return;
+            // Check duplicate
+            const existing = container.querySelectorAll('.email-chip');
+            for (const chip of existing) {
+                if (chip.dataset.email === val) { input.value = ''; validateManualEmailInput(); return; }
+            }
+            const chip = document.createElement('span');
+            chip.className = 'email-chip';
+            chip.dataset.email = val;
+            chip.innerHTML = `${val}<button type="button" class="remove-chip" onclick="this.parentElement.remove()">&times;</button>`;
+            container.insertBefore(chip, input);
+            input.value = '';
+            validateManualEmailInput();
+        }
+
+        function getManualEmailChips() {
+            const chips = document.querySelectorAll('#m-email-chips .email-chip');
+            return Array.from(chips).map(c => c.dataset.email);
         }
 
         // Submit Manual Upload
@@ -1264,7 +1577,7 @@
                 priority_level: document.getElementById('m-priority-level').value,
                 auto_renewal: document.getElementById('m-auto-renewal').value,
                 currency: document.getElementById('m-currency').value,
-                email: document.getElementById('m-email').value.trim(),
+                email: JSON.stringify(getManualEmailChips()),
                 phone: document.getElementById('m-phone').value.trim(),
                 alternate_contact: document.getElementById('m-alt-contact').value.trim(),
                 renewal_due_date: document.getElementById('m-renewal-due-date').value,
@@ -1410,25 +1723,25 @@
             fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
-            .then(response => {
-                if (!response.ok) throw new Error('Export failed');
-                return response.blob();
-            })
-            .then(blob => {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `Agreements_Report${currentFilter ? '_' + currentFilter : ''}.xlsx`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                URL.revokeObjectURL(a.href);
-                showToast('Agreements exported successfully', 'success');
-            })
-            .catch(err => showToast(err.message, 'error'))
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-            });
+                .then(response => {
+                    if (!response.ok) throw new Error('Export failed');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `Agreements_Report${currentFilter ? '_' + currentFilter : ''}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(a.href);
+                    showToast('Agreements exported successfully', 'success');
+                })
+                .catch(err => showToast(err.message, 'error'))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                });
         }
 
         // Mobile sidebar
@@ -1956,4 +2269,5 @@
         _liveSocket.connect();
     </script>
 </body>
+
 </html>
